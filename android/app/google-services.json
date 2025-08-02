@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "222174717889",
+    "project_id": "iron-log-7021f",
+    "storage_bucket": "iron-log-7021f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:222174717889:android:93477929fb30d826d97140",
+        "android_client_info": {
+          "package_name": "com.example.iron_log"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBENuYRBND9PeiQ47iirZGEXT-2XeXGaeM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
