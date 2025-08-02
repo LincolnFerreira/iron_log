@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>222174717889-7m6icuuo1onk6l5t7k56mefok4ks332j.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.222174717889-7m6icuuo1onk6l5t7k56mefok4ks332j</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>222174717889-10df6q5sco86au6j756ehcj10shde2oa.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyA5gcLql5vFDzWb3-TPAXvHDuCJ4fd_06I</string>
+	<key>GCM_SENDER_ID</key>
+	<string>222174717889</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.ironLog</string>
+	<key>PROJECT_ID</key>
+	<string>iron-log-7021f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>iron-log-7021f.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:222174717889:ios:15d50db88310e282d97140</string>
+</dict>
+</plist>
