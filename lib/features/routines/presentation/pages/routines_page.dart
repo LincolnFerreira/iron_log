@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../domain/entities/routine.dart';
 import '../bloc/routine_provider.dart';
 
@@ -283,10 +284,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage> {
   }
 
   void _navigateToRoutineDetail(BuildContext context, Routine routine) {
-    // TODO: Navegar para página de detalhes da rotina
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Detalhes da rotina: ${routine.name}')),
-    );
+    context.push('/routines/${routine.id}/edit', extra: routine);
   }
 
   String _formatDate(DateTime date) {

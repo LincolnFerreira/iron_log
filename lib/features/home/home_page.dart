@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_state.dart';
+import '../workout_day/workout_day.dart';
 import 'components/templates/home_template.dart';
+import 'state/home_provider.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -10,13 +12,20 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
+    final homeState = ref.watch(homeProvider);
+
     return Scaffold(
       body: HomeTemplate(
-        userName: 'Lincoln',
+        userName: authState.user?.displayName ?? 'Usuário',
         imageUrl: authState.user?.photoURL,
-        onStartWorkout: () => _navigateToWorkout(context),
+        todaysRoutine: homeState.todaysRoutine,
+        todaysSession: homeState.todaysSession,
+        isLoadingWorkout: homeState.isLoading,
+        error: homeState.error,
+        onStartWorkout: () => _navigateToWorkout(context, ref),
         onChangeWorkout: () => _changeWorkout(context),
         onQuickCreate: () => _quickCreateWorkout(context),
+        onRetryWorkout: () => _retryWorkout(ref),
       ),
       bottomNavigationBar: _buildBottomNavBar(context),
     );
@@ -63,8 +72,13 @@ class HomePage extends ConsumerWidget {
     }
   }
 
-  void _navigateToWorkout(BuildContext context) {
-    // Implementar navegação
+  void _navigateToWorkout(BuildContext context, WidgetRef ref) {
+    final homeState = ref.read(homeProvider);
+    if (homeState.todaysRoutine != null && homeState.todaysSession != null) {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => const WorkoutDayScreen()));
+    }
   }
 
   void _changeWorkout(BuildContext context) {
@@ -73,5 +87,9 @@ class HomePage extends ConsumerWidget {
 
   void _quickCreateWorkout(BuildContext context) {
     context.push('/workout/quick-create');
+  }
+
+  void _retryWorkout(WidgetRef ref) {
+    ref.read(homeProvider.notifier).refresh();
   }
 }

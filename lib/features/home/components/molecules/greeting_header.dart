@@ -37,9 +37,7 @@ class GreetingHeader extends StatelessWidget {
           ],
         ),
         CircleAvatar(
-          foregroundImage: NetworkImage(
-            imageUrl ?? 'https://via.placeholder.com/150',
-          ),
+          foregroundImage: NetworkImage(imageUrl ?? 'https://placehold.co/150'),
           radius: 30,
         ),
       ],

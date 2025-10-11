@@ -2,15 +2,32 @@
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AuthState extends ChangeNotifier {
-  User? _user;
-  bool _onboardingCompleted = false;
-  bool _isLoading = true; // Estado inicial de loading
+class AuthState {
+  final User? user;
+  final bool onboardingCompleted;
+  final bool isLoading;
 
-  AuthState() {
+  const AuthState({
+    this.user,
+    this.onboardingCompleted = false,
+    this.isLoading = true,
+  });
+
+  AuthState copyWith({User? user, bool? onboardingCompleted, bool? isLoading}) {
+    return AuthState(
+      user: user ?? this.user,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+
+  bool get isLoggedIn => user != null;
+}
+
+class AuthNotifier extends StateNotifier<AuthState> {
+  AuthNotifier() : super(const AuthState()) {
     _init();
   }
 
@@ -22,9 +39,6 @@ class AuthState extends ChangeNotifier {
 
     // Observa mudanças de autenticação
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      _user = user;
-      _isLoading = false; // Terminou de carregar
-
       if (user != null) {
         print('🔐 Usuário logado: ${user.email}');
         print('🔑 Token/ID do usuário: ${user.uid}');
@@ -34,14 +48,10 @@ class AuthState extends ChangeNotifier {
       } else {
         print('🚪 Usuário não está logado');
       }
-      notifyListeners();
+
+      state = state.copyWith(user: user, isLoading: false);
     });
   }
-
-  User? get user => _user;
-  bool get isLoggedIn => _user != null;
-  bool get onboardingCompleted => _onboardingCompleted;
-  bool get isLoading => _isLoading;
 
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
@@ -52,18 +62,19 @@ class AuthState extends ChangeNotifier {
     // Exemplo com SharedPreferences:
     // final prefs = await SharedPreferences.getInstance();
     // _onboardingCompleted = prefs.getBool('onboardingCompleted') ?? false;
-    _onboardingCompleted = true; // Valor padrão temporário
+    state = state.copyWith(
+      onboardingCompleted: true,
+    ); // Valor padrão temporário
   }
 
   void completeOnboarding() {
-    _onboardingCompleted = true;
+    state = state.copyWith(onboardingCompleted: true);
     // Persistir no SharedPreferences se necessário
     // await prefs.setBool('onboardingCompleted', true);
-    notifyListeners();
   }
 }
 
 // Provider global para o AuthState
-final authStateProvider = ChangeNotifierProvider<AuthState>((ref) {
-  return AuthState();
+final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  return AuthNotifier();
 });

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 
 import '../molecules/greeting_header.dart';
-import '../molecules/last_workout_card.dart';
+import '../molecules/todays_workout_card.dart';
 import '../organisms/metrics_row.dart';
 import '../organisms/workout_options_grid.dart';
 
@@ -10,7 +11,12 @@ class HomeTemplate extends StatelessWidget {
   final VoidCallback onStartWorkout;
   final VoidCallback onChangeWorkout;
   final VoidCallback onQuickCreate;
+  final VoidCallback? onRetryWorkout;
   final String? imageUrl;
+  final Routine? todaysRoutine;
+  final Session? todaysSession;
+  final bool isLoadingWorkout;
+  final String? error;
 
   const HomeTemplate({
     super.key,
@@ -19,6 +25,11 @@ class HomeTemplate extends StatelessWidget {
     required this.onStartWorkout,
     required this.onChangeWorkout,
     required this.onQuickCreate,
+    this.onRetryWorkout,
+    this.todaysRoutine,
+    this.todaysSession,
+    this.isLoadingWorkout = false,
+    this.error,
   });
 
   @override
@@ -36,17 +47,19 @@ class HomeTemplate extends StatelessWidget {
             imageUrl: imageUrl,
           ),
           WorkoutOptionsGrid(
+            todaysRoutine: todaysRoutine,
+            todaysSession: todaysSession,
+            isLoadingWorkout: isLoadingWorkout,
+            error: error,
             onStartWorkout: onStartWorkout,
             onChangeWorkout: onChangeWorkout,
             onQuickCreate: onQuickCreate,
+            onRetryWorkout: onRetryWorkout,
           ),
-          const LastWorkoutCard(
-            workoutName: 'Treino B - Costas e Bíceps',
-            date: 'Ontem',
-            duration: '1h 15m',
-            volume: '8.5t',
-            exercises: '12',
-            observation: 'Ótimo treino! Consegui aumentar carga no supino.',
+          TodaysWorkoutCard(
+            todaysRoutine: todaysRoutine,
+            todaysSession: todaysSession,
+            isLoading: isLoadingWorkout,
           ),
           const MetricsRow(monthlyWorkouts: 28, currentStreak: 5),
         ],

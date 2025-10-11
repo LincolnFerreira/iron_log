@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import '../../state/workout_provider.dart';
 
 class WorkoutOptionsGrid extends ConsumerWidget {
   final VoidCallback onStartWorkout;
   final VoidCallback onChangeWorkout;
   final VoidCallback onQuickCreate;
+  final VoidCallback? onRetryWorkout;
+  final Routine? todaysRoutine;
+  final Session? todaysSession;
+  final bool isLoadingWorkout;
+  final String? error;
   final int primary; // 0: start, 1: change, 2: quick create
 
   const WorkoutOptionsGrid({
@@ -13,8 +19,29 @@ class WorkoutOptionsGrid extends ConsumerWidget {
     required this.onStartWorkout,
     required this.onChangeWorkout,
     required this.onQuickCreate,
+    this.onRetryWorkout,
+    this.todaysRoutine,
+    this.todaysSession,
+    this.isLoadingWorkout = false,
+    this.error,
     this.primary = 0,
   });
+
+  String _getWorkoutSubtitle() {
+    if (error != null) {
+      return 'Erro ao carregar';
+    }
+    if (isLoadingWorkout) {
+      return 'Carregando...';
+    }
+    if (todaysRoutine == null) {
+      return 'Nenhuma rotina encontrada';
+    }
+    if (todaysSession == null) {
+      return 'Nenhuma sessão para hoje';
+    }
+    return '${todaysSession!.name} (${todaysSession!.exercises.length} exercícios)';
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,20 +57,31 @@ class WorkoutOptionsGrid extends ConsumerWidget {
           children: [
             _buildOptionCard(
               context,
-              'Iniciar treino de hoje',
-              workoutState.currentWorkout,
-              Icons.play_arrow,
+              error != null ? 'Tentar novamente' : 'Iniciar treino de hoje',
+              _getWorkoutSubtitle(),
+              error != null ? Icons.refresh : Icons.play_arrow,
               () {
-                ref.read(workoutProvider.notifier).startWorkout();
-                onStartWorkout();
+                if (error != null && onRetryWorkout != null) {
+                  onRetryWorkout!();
+                } else {
+                  ref.read(workoutProvider.notifier).startWorkout();
+                  onStartWorkout();
+                }
               },
               isPrimary: primary == 0,
-              isLoading: workoutState.isLoading,
+              isLoading: workoutState.isLoading || isLoadingWorkout,
+              isEnabled:
+                  (todaysSession != null &&
+                      !isLoadingWorkout &&
+                      error == null) ||
+                  (error != null && onRetryWorkout != null),
             ),
             _buildOptionCard(
               context,
               'Trocar treino do dia',
-              'Escolher outro treino',
+              todaysSession != null
+                  ? 'Sessão atual: ${todaysSession!.name}'
+                  : 'Escolher outro treino',
               Icons.sync,
               onChangeWorkout,
               isPrimary: primary == 1,
@@ -70,6 +108,7 @@ class WorkoutOptionsGrid extends ConsumerWidget {
     VoidCallback onTap, {
     bool isPrimary = false,
     bool isLoading = false,
+    bool isEnabled = true,
   }) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
@@ -85,7 +124,7 @@ class WorkoutOptionsGrid extends ConsumerWidget {
       color: cardColor,
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
-        onTap: onTap,
+        onTap: isEnabled ? onTap : null,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
