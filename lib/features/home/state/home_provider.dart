@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/core/services/auth_service.dart';
+import '../../../core/services/http_service.dart';
+import '../../../core/api/api_endpoints.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 
 class HomeState {
@@ -23,56 +24,63 @@ class HomeState {
     Session? todaysSession,
     String? error,
     List<Routine>? userRoutines,
+    bool clearError = false,
+    bool clearTodaysRoutine = false,
+    bool clearTodaysSession = false,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
-      todaysRoutine: todaysRoutine ?? this.todaysRoutine,
-      todaysSession: todaysSession ?? this.todaysSession,
-      error: error ?? this.error,
+      todaysRoutine: clearTodaysRoutine ? null : (todaysRoutine ?? this.todaysRoutine),
+      todaysSession: clearTodaysSession ? null : (todaysSession ?? this.todaysSession),
+      error: clearError ? null : (error ?? this.error),
       userRoutines: userRoutines ?? this.userRoutines,
     );
   }
 }
 
 class HomeNotifier extends StateNotifier<HomeState> {
-  final AuthService _authService;
+  final HttpService _httpService;
 
-  HomeNotifier(this._authService) : super(HomeState()) {
+  HomeNotifier(this._httpService) : super(HomeState()) {
     _loadTodaysWorkout();
   }
 
   Future<void> _loadTodaysWorkout() async {
     try {
-      state = state.copyWith(isLoading: true, error: null);
+      state = state.copyWith(isLoading: true, clearError: true);
 
-      // Busca rotinas do usuário
-      final response = await _authService.authenticatedRequest(
-        method: 'GET',
-        path: '/routine',
-      );
+      // Usa URL centralizada
+      final response = await _httpService.get(ApiEndpoints.routines);
 
-      final routinesData = response.data as List<dynamic>;
-      final routines = routinesData
-          .map((json) => Routine.fromJson(json as Map<String, dynamic>))
-          .toList();
+      if (response.statusCode == 200) {
+        final routinesData = response.data as List<dynamic>;
+        final routines = routinesData
+            .map((json) => Routine.fromJson(json as Map<String, dynamic>))
+            .toList();
 
-      if (routines.isEmpty) {
-        state = state.copyWith(isLoading: false, userRoutines: []);
-        return;
+        if (routines.isEmpty) {
+          state = state.copyWith(isLoading: false, userRoutines: []);
+          return;
+        }
+
+        // Pega a primeira rotina (poderia ter lógica para escolher a ativa)
+        final todaysRoutine = routines.first;
+
+        // Determina qual sessão fazer hoje baseado no dia da semana
+        final todaysSession = _getTodaysSession(todaysRoutine);
+
+        state = state.copyWith(
+          isLoading: false,
+          todaysRoutine: todaysRoutine,
+          todaysSession: todaysSession,
+          userRoutines: routines,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Erro ao carregar rotinas',
+        );
       }
-
-      // Pega a primeira rotina (poderia ter lógica para escolher a ativa)
-      final todaysRoutine = routines.first;
-
-      // Determina qual sessão fazer hoje baseado no dia da semana
-      final todaysSession = _getTodaysSession(todaysRoutine);
-
-      state = state.copyWith(
-        isLoading: false,
-        todaysRoutine: todaysRoutine,
-        todaysSession: todaysSession,
-        userRoutines: routines,
-      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -100,6 +108,6 @@ class HomeNotifier extends StateNotifier<HomeState> {
 }
 
 final homeProvider = StateNotifierProvider<HomeNotifier, HomeState>((ref) {
-  final authService = AuthService();
-  return HomeNotifier(authService);
+  final httpService = ref.read(httpServiceProvider);
+  return HomeNotifier(httpService);
 });

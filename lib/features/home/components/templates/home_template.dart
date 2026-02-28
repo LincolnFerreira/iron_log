@@ -12,6 +12,7 @@ class HomeTemplate extends StatelessWidget {
   final VoidCallback onChangeWorkout;
   final VoidCallback onQuickCreate;
   final VoidCallback? onRetryWorkout;
+  final VoidCallback? onAvatarTap;
   final String? imageUrl;
   final Routine? todaysRoutine;
   final Session? todaysSession;
@@ -26,6 +27,7 @@ class HomeTemplate extends StatelessWidget {
     required this.onChangeWorkout,
     required this.onQuickCreate,
     this.onRetryWorkout,
+    this.onAvatarTap,
     this.todaysRoutine,
     this.todaysSession,
     this.isLoadingWorkout = false,
@@ -45,6 +47,7 @@ class HomeTemplate extends StatelessWidget {
             name: userName,
             date: 'Hoje • ${DateTime.now().day} de ${_getMonthName()}',
             imageUrl: imageUrl,
+            onAvatarTap: onAvatarTap,
           ),
           WorkoutOptionsGrid(
             todaysRoutine: todaysRoutine,

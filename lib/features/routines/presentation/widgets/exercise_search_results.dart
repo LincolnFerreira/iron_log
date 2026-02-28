@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'exercise_search_field.dart';
 import 'exercise_result_card.dart';
+import '../components/molecules/exercise_search_initial_state.dart';
+import '../components/molecules/exercise_search_no_results.dart';
+import '../../domain/entities/search_exercise.dart';
 
 class ExerciseSearchResults extends ConsumerWidget {
   final VoidCallback? onExerciseSelected;
@@ -14,104 +17,44 @@ class ExerciseSearchResults extends ConsumerWidget {
     final searchResults = ref.watch(exerciseSearchResultsProvider);
 
     if (searchQuery.isEmpty) {
-      return _buildInitialState(context);
+      return const ExerciseSearchInitialState();
     }
 
     if (searchResults.isEmpty) {
-      return _buildNoResultsState(context, searchQuery);
+      return ExerciseSearchNoResults(searchQuery: searchQuery);
     }
 
-    return _buildResultsList(context, searchResults);
-  }
-
-  Widget _buildInitialState(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.search,
-            size: 64,
-            color: theme.colorScheme.onSurface.withOpacity(0.3),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Busque por exercícios',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Digite pelo menos 2 caracteres',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNoResultsState(BuildContext context, String query) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.search_off,
-            size: 64,
-            color: theme.colorScheme.onSurface.withOpacity(0.3),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Nenhum resultado encontrado',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tente buscar por "$query"',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResultsList(
-    BuildContext context,
-    List<Map<String, dynamic>> results,
-  ) {
     return ListView.builder(
-      itemCount: results.length,
+      itemCount: searchResults.length,
       itemBuilder: (context, index) {
-        final exercise = results[index];
+        final exercise = searchResults[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: ExerciseResultCard(
             exercise: exercise,
             onSelect: () {
-              // Atualiza providers de selecionados
               final container = ProviderScope.containerOf(context);
               final ids = container.read(selectedExerciseIdsProvider);
-              final selectedExercises = container.read(selectedExercisesProvider);
-              final idsNotifier = container.read(selectedExerciseIdsProvider.notifier);
-              final exercisesNotifier = container.read(selectedExercisesProvider.notifier);
+              final selectedExercises = container.read(
+                selectedExercisesProvider,
+              );
+              final idsNotifier = container.read(
+                selectedExerciseIdsProvider.notifier,
+              );
+              final exercisesNotifier = container.read(
+                selectedExercisesProvider.notifier,
+              );
 
-              final id = (exercise['id'] as String? ?? '');
+              final id = exercise.id;
               final nextIds = Set<String>.of(ids);
-              final nextExercises = List<Map<String, dynamic>>.from(selectedExercises);
+              final nextExercises = List<SearchExercise>.from(
+                selectedExercises,
+              );
               final wasSelected = nextIds.contains(id);
 
               if (wasSelected) {
                 nextIds.remove(id);
-                nextExercises.removeWhere((e) => (e['id'] as String?) == id);
+                nextExercises.removeWhere((e) => e.id == id);
               } else {
                 nextIds.add(id);
                 nextExercises.add(exercise);
@@ -124,8 +67,8 @@ class ExerciseSearchResults extends ConsumerWidget {
                 SnackBar(
                   content: Text(
                     wasSelected
-                        ? 'Exercício "${exercise['name']}" removido'
-                        : 'Exercício "${exercise['name']}" selecionado!',
+                        ? 'Exercício "${exercise.name}" removido'
+                        : 'Exercício "${exercise.name}" selecionado!',
                   ),
                   duration: const Duration(seconds: 1),
                 ),

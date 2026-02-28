@@ -1,4 +1,6 @@
 import '../entities/routine.dart';
+import '../entities/session_creation.dart';
+import '../entities/routine_update.dart';
 import '../repositories/routine_repository.dart';
 
 class GetRoutinesUseCase {
@@ -30,7 +32,7 @@ class CreateRoutineUseCase {
     required String name,
     String? division,
     bool isTemplate = false,
-    List<Map<String, dynamic>>? sessions,
+    List<SessionCreation>? sessions,
   }) async {
     return await repository.createRoutine(
       name: name,
@@ -46,7 +48,7 @@ class UpdateRoutineUseCase {
 
   UpdateRoutineUseCase(this.repository);
 
-  Future<Routine> execute(String id, Map<String, dynamic> updates) async {
+  Future<Routine> execute(String id, RoutineUpdate updates) async {
     return await repository.updateRoutine(id, updates);
   }
 }

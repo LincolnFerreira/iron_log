@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/routine.dart';
+import '../../domain/entities/session_creation.dart';
+import '../../domain/entities/routine_update.dart';
 import '../../domain/repositories/routine_repository.dart';
 import '../../domain/usecases/routine_usecases.dart';
 
@@ -52,12 +54,14 @@ class RoutineState {
     bool? isLoading,
     String? error,
     Routine? selectedRoutine,
+    bool clearError = false,
+    bool clearSelectedRoutine = false,
   }) {
     return RoutineState(
       routines: routines ?? this.routines,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-      selectedRoutine: selectedRoutine ?? this.selectedRoutine,
+      error: clearError ? null : (error ?? this.error),
+      selectedRoutine: clearSelectedRoutine ? null : (selectedRoutine ?? this.selectedRoutine),
     );
   }
 }
@@ -80,7 +84,7 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
 
   Future<void> loadRoutines() async {
     print('🔄 Iniciando carregamento de rotinas...');
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final routines = await _getRoutinesUseCase.execute();
       print('✅ Rotinas carregadas: ${routines.length}');
@@ -95,7 +99,7 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
   }
 
   Future<void> loadRoutine(String id) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final routine = await _getRoutineUseCase.execute(id);
       state = state.copyWith(selectedRoutine: routine, isLoading: false);
@@ -111,10 +115,10 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
     required String name,
     String? division,
     bool isTemplate = false,
-    List<Map<String, dynamic>>? sessions,
+    List<SessionCreation>? sessions,
   }) async {
     print('➕ Criando rotina: $name');
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final newRoutine = await _createRoutineUseCase.execute(
         name: name,
@@ -134,8 +138,8 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
     }
   }
 
-  Future<void> updateRoutine(String id, Map<String, dynamic> updates) async {
-    state = state.copyWith(isLoading: true, error: null);
+  Future<void> updateRoutine(String id, RoutineUpdate updates) async {
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final updatedRoutine = await _updateRoutineUseCase.execute(id, updates);
       final updatedRoutines = state.routines.map((routine) {
@@ -151,7 +155,7 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
   }
 
   Future<void> deleteRoutine(String id) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       await _deleteRoutineUseCase.execute(id);
       final updatedRoutines = state.routines
@@ -167,7 +171,7 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
   }
 
   void clearError() {
-    state = state.copyWith(error: null);
+    state = state.copyWith(clearError: true);
   }
 
   void selectRoutine(Routine? routine) {

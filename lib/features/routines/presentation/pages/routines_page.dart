@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/routine.dart';
+import '../../domain/entities/routine_update.dart';
 import '../bloc/routine_provider.dart';
 
 class RoutinesPage extends ConsumerStatefulWidget {
@@ -233,14 +234,15 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage> {
           ElevatedButton(
             onPressed: () {
               if (nameController.text.isNotEmpty) {
+                final updates = RoutineUpdate(
+                  name: nameController.text,
+                  division: divisionController.text.isEmpty
+                      ? null
+                      : divisionController.text,
+                );
                 ref
                     .read(routineNotifierProvider.notifier)
-                    .updateRoutine(routine.id, {
-                      'name': nameController.text,
-                      'division': divisionController.text.isEmpty
-                          ? null
-                          : divisionController.text,
-                    });
+                    .updateRoutine(routine.id, updates);
                 Navigator.of(context).pop();
               }
             },

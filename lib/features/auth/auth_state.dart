@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'presentation/providers/user_profile_provider.dart';
 
 class AuthState {
   final User? user;
@@ -27,9 +28,11 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState()) {
+  AuthNotifier(this._ref) : super(const AuthState()) {
     _init();
   }
+
+  final Ref _ref;
 
   Future<void> _init() async {
     print('🔄 Inicializando estado de autenticação...');
@@ -37,16 +40,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // Carrega status do onboarding
     await loadOnboardingStatus();
 
+    // Verifica estado atual imediatamente
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      print('🔐 Usuário já logado: ${currentUser.email}');
+      state = state.copyWith(user: currentUser, isLoading: false);
+    } else {
+      print('🚪 Nenhum usuário logado');
+      state = state.copyWith(user: null, isLoading: false);
+    }
+
     // Observa mudanças de autenticação
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
-        print('🔐 Usuário logado: ${user.email}');
+        print('🔐 Mudança de auth - Usuário logado: ${user.email}');
         print('🔑 Token/ID do usuário: ${user.uid}');
         user.getIdToken(true).then((token) {
           log('🔑 Token de autenticação: $token');
         });
+
+        // Invalidar o provider do perfil para buscar os dados atualizados
+        _ref.invalidate(userProfileProvider);
       } else {
-        print('🚪 Usuário não está logado');
+        print('🚪 Mudança de auth - Usuário não está logado');
       }
 
       state = state.copyWith(user: user, isLoading: false);
@@ -76,5 +92,5 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 // Provider global para o AuthState
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  return AuthNotifier(ref);
 });

@@ -1,17 +1,35 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/routine.dart';
+import '../../domain/entities/search_exercise.dart';
 import 'selected_exercise_card.dart';
-import 'exercise_search_field.dart'; // Para acessar o provider
+import '../providers/session_selection_provider.dart';
+import 'atoms/empty_exercises_state.dart';
 
-class SelectedExercisesSection extends ConsumerWidget {
+class SelectedExercisesSection extends ConsumerStatefulWidget {
   final Session session;
 
   const SelectedExercisesSection({super.key, required this.session});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedExercises = ref.watch(selectedExercisesProvider);
+  ConsumerState<SelectedExercisesSection> createState() =>
+      _SelectedExercisesSectionState();
+}
+
+class _SelectedExercisesSectionState
+    extends ConsumerState<SelectedExercisesSection> {
+  Timer? _debounceTimer;
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedExercises = ref.watch(sessionSelectedExercisesProvider);
     final theme = Theme.of(context);
     final viewportWidth = MediaQuery.of(context).size.width;
     const horizontalPadding = 16.0;
@@ -64,7 +82,7 @@ class SelectedExercisesSection extends ConsumerWidget {
 
           // Lista horizontal de exercícios selecionados
           if (selectedExercises.isEmpty)
-            _buildEmptyState(context)
+            const EmptyExercisesState()
           else
             SizedBox(
               height: 200,
@@ -72,26 +90,17 @@ class SelectedExercisesSection extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 buildDefaultDragHandles: false,
                 onReorder: (oldIndex, newIndex) {
-                  if (oldIndex < newIndex) newIndex -= 1;
-                  final exercisesNotifier = ref.read(
-                    selectedExercisesProvider.notifier,
-                  );
-                  final exercises = List<Map<String, dynamic>>.from(
-                    selectedExercises,
-                  );
-                  final exercise = exercises.removeAt(oldIndex);
-                  exercises.insert(newIndex, exercise);
-                  exercisesNotifier.state = exercises;
+                  _onReorder(oldIndex, newIndex);
                 },
                 children: selectedExercises.asMap().entries.map((entry) {
                   final exercise = entry.value;
                   return Container(
-                    key: ValueKey(exercise['id']),
+                    key: ValueKey(exercise.id),
                     width: cardWidth,
                     margin: const EdgeInsets.only(right: 12),
                     child: SelectedExerciseCard(
                       exercise: _convertToSessionExercise(exercise),
-                      onDelete: () => _removeExercise(ref, exercise),
+                      onDelete: () => _removeExercise(exercise),
                     ),
                   );
                 }).toList(),
@@ -102,68 +111,51 @@ class SelectedExercisesSection extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    final theme = Theme.of(context);
-    return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.fitness_center_outlined,
-              size: 48,
-              color: theme.colorScheme.onSurface.withOpacity(0.3),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Nenhum exercício selecionado',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Toque em "Buscar" para adicionar exercícios',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.4),
-              ),
-            ),
-          ],
-        ),
-      ),
+  void _onReorder(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) newIndex -= 1;
+
+    final exercisesNotifier = ref.read(
+      sessionSelectedExercisesProvider.notifier,
     );
+    final selectedExercises = ref.read(sessionSelectedExercisesProvider);
+    final exercises = List<SearchExercise>.from(selectedExercises);
+    final exercise = exercises.removeAt(oldIndex);
+    exercises.insert(newIndex, exercise);
+    exercisesNotifier.state = exercises;
+
+    // Debounce: aguarda 800ms após última mudança antes de persistir
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 800), () {
+      _persistExercisesOrder(exercises);
+    });
   }
 
-  void _removeExercise(WidgetRef ref, Map<String, dynamic> exercise) {
-    final idsNotifier = ref.read(selectedExerciseIdsProvider.notifier);
-    final exercisesNotifier = ref.read(selectedExercisesProvider.notifier);
-    final selectedExercises = ref.read(selectedExercisesProvider);
-    final selectedIds = ref.read(selectedExerciseIdsProvider);
-
-    final id = exercise['id'] as String;
-    final nextIds = Set<String>.from(selectedIds)..remove(id);
-    final nextExercises = List<Map<String, dynamic>>.from(selectedExercises)
-      ..removeWhere((e) => e['id'] == id);
-
-    idsNotifier.state = nextIds;
-    exercisesNotifier.state = nextExercises;
+  Future<void> _persistExercisesOrder(List<SearchExercise> exercises) async {
+    // TODO: Implementar chamada ao backend para atualizar ordem dos exercícios
+    // Aguardando endpoint no backend para atualizar SessionExercise.order
   }
 
-  SessionExercise _convertToSessionExercise(Map<String, dynamic> exercise) {
-    // Converte o mapa de exercício da API para um SessionExercise
-    // Isso é uma conversão temporária - idealmente deveria vir do backend
+  void _removeExercise(SearchExercise exercise) {
+    ref
+        .read(sessionExerciseSelectionNotifierProvider.notifier)
+        .removeExercise(exercise);
+  }
+
+  SessionExercise _convertToSessionExercise(SearchExercise exercise) {
+    // Converte o SearchExercise para um SessionExercise
+    // TODO: Implementar integração real com API quando disponível
     return SessionExercise(
-      id: exercise['id'] ?? '',
-      exerciseId: exercise['id'] ?? '',
+      id: exercise.id,
+      exerciseId: exercise.id,
       exercise: Exercise(
-        id: exercise['id'] ?? '',
-        name: exercise['name'] ?? '',
-        description: exercise['description'],
-        primaryMuscle: exercise['primaryMuscleId'] ?? exercise['primaryMuscle'],
-        equipment: exercise['equipmentId'] ?? exercise['equipment'],
-        tags: (exercise['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+        id: exercise.id,
+        name: exercise.name,
+        description: exercise.description,
+        primaryMuscle: exercise.primaryMuscle ?? '',
+        equipment: exercise.equipment ?? '',
+        tags: [], // TODO: Mapear tags quando disponível
       ),
-      config: exercise['config'] ?? {},
+      config: {}, // TODO: Configuração padrão do exercício
     );
   }
 }

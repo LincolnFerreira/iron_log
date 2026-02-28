@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import '../../domain/entities/routine.dart';
+import 'package:flutter/material.dart';
 
 class SelectedExerciseCard extends StatefulWidget {
   final SessionExercise exercise;
@@ -106,39 +106,39 @@ class _SelectedExerciseCardState extends State<SelectedExerciseCard> {
               const SizedBox(height: 12),
 
               // Campos de input
-              Row(
-                children: [
-                  // Séries
-                  Expanded(
-                    child: _buildInputField(
-                      controller: seriesController,
-                      label: 'Séries',
-                      hint: '3',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
+              // Row(
+              //   children: [
+              //     // Séries
+              //     Expanded(
+              //       child: _buildInputField(
+              //         controller: seriesController,
+              //         label: 'Séries',
+              //         hint: '3',
+              //       ),
+              //     ),
+              //     const SizedBox(width: 8),
 
-                  // Reps
-                  Expanded(
-                    child: _buildInputField(
-                      controller: repsController,
-                      label: 'Reps',
-                      hint: '10',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
+              //     // Reps
+              //     Expanded(
+              //       child: _buildInputField(
+              //         controller: repsController,
+              //         label: 'Reps',
+              //         hint: '10',
+              //       ),
+              //     ),
+              //     const SizedBox(width: 8),
 
-                  // Carga
-                  Expanded(
-                    child: _buildInputField(
-                      controller: weightController,
-                      label: 'Carga',
-                      hint: '0',
-                      suffix: 'kg',
-                    ),
-                  ),
-                ],
-              ),
+              //     // Carga
+              //     Expanded(
+              //       child: _buildInputField(
+              //         controller: weightController,
+              //         label: 'Carga',
+              //         hint: '0',
+              //         suffix: 'kg',
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

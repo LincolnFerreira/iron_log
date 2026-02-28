@@ -58,30 +58,9 @@ class SessionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 onTap: onTap,
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     children: [
-                      // Espaço para o drag handle quando não é draggable
-                      if (!isDraggable) const SizedBox(width: 24),
-                      const SizedBox(width: 12),
-
-                      // Session icon
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.fitness_center,
-                          color: theme.colorScheme.primary,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // Session info
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

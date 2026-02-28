@@ -1,26 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/auth/domain/entities/user_profile.dart';
+import 'http_service.dart';
 
-class ApiConfig {
-  // Para emulador Android: 10.0.2.2 é o alias para localhost do host
-  // Para iOS Simulator: localhost funciona
-  // Para dispositivo físico: use o IP da máquina host
-  static const String baseUrl =
-      'http://10.0.2.2:3000'; // Altere para sua URL de produção
-
-  // Headers padrão
-  static const Map<String, String> defaultHeaders = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-}
-
+/// Serviço responsável pela autenticação e requisições autenticadas
+/// Segue o Single Responsibility Principle - foca em autenticação
 class AuthService {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
   AuthService._internal();
 
-  final Dio _dio = Dio();
+  final HttpService _httpService = HttpService();
 
   // Getters para estado do Firebase Auth
   User? get currentUser => FirebaseAuth.instance.currentUser;
@@ -28,92 +19,77 @@ class AuthService {
   Stream<User?> get authStateChanges =>
       FirebaseAuth.instance.authStateChanges();
 
-  /// Inicializa o serviço com interceptors
+  /// Inicializa o serviço de autenticação
   void initialize() {
-    _setupDioInterceptors();
+    _httpService.initialize();
   }
 
-  /// Configura interceptors do Dio para adicionar token automaticamente
-  void _setupDioInterceptors() {
-    _dio.options.baseUrl = ApiConfig.baseUrl;
-    _dio.options.headers.addAll(ApiConfig.defaultHeaders);
-
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // Adiciona token Firebase automaticamente se o usuário estiver logado
-          if (isAuthenticated) {
-            try {
-              final token = await currentUser!.getIdToken();
-              options.headers['Authorization'] = 'Bearer $token';
-              print('🔑 Token adicionado automaticamente');
-            } catch (e) {
-              print('❌ Erro ao obter token Firebase: $e');
-            }
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          print(
-            '✅ Resposta recebida: ${response.statusCode} - ${response.requestOptions.path}',
-          );
-          handler.next(response);
-        },
-        onError: (error, handler) {
-          print('❌ Erro na requisição: ${error.message}');
-          _handleApiError(error);
-          handler.next(error);
-        },
-      ),
+  /// Executa uma requisição autenticada
+  /// Wrapper que garante que o token será adicionado automaticamente pelo interceptor
+  Future<Response> authenticatedRequest({
+    required String method,
+    required String path,
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    return await _httpService.request(
+      method: method,
+      path: path,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
     );
   }
 
-  /// Trata erros da API de forma centralizada
-  void _handleApiError(DioException error) {
-    switch (error.response?.statusCode) {
-      case 401:
-        print('🚨 Token inválido ou expirado');
-        // Você pode implementar logout automático aqui se necessário
-        break;
-      case 403:
-        print('🚨 Acesso negado');
-        break;
-      case 500:
-        print('🚨 Erro interno do servidor');
-        break;
-      default:
-        print('🚨 Erro desconhecido: ${error.message}');
-    }
+  /// Métodos de conveniência para requisições autenticadas
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters}) {
+    return authenticatedRequest(
+      method: 'GET',
+      path: path,
+      queryParameters: queryParameters,
+    );
   }
 
-  /// Valida token manualmente (POST /auth/validate)
-  Future<Map<String, dynamic>> validateToken(String token) async {
-    try {
-      final response = await _dio.post(
-        '/auth/validate',
-        data: {'token': token},
-      );
-      return response.data;
-    } catch (e) {
-      throw Exception('Erro ao validar token: $e');
-    }
+  Future<Response> post(String path, {dynamic data}) {
+    return authenticatedRequest(method: 'POST', path: path, data: data);
   }
 
-  /// Obtém dados do usuário autenticado (GET /auth/me)
-  Future<Map<String, dynamic>> getUserProfile() async {
-    if (!isAuthenticated) {
-      throw Exception('Usuário não está autenticado');
-    }
-
-    try {
-      final response = await _dio.get('/auth/me');
-      return response.data;
-    } catch (e) {
-      throw Exception('Erro ao obter perfil do usuário: $e');
-    }
+  Future<Response> put(String path, {dynamic data}) {
+    return authenticatedRequest(method: 'PUT', path: path, data: data);
   }
 
-  /// Faz logout do Firebase
+  Future<Response> patch(String path, {dynamic data}) {
+    return authenticatedRequest(method: 'PATCH', path: path, data: data);
+  }
+
+  Future<Response> delete(String path) {
+    return authenticatedRequest(method: 'DELETE', path: path);
+  }
+
+  /// Login com email e senha
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    return await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  /// Registro com email e senha
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    return await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  /// Faz logout do Firebase e limpa dados locais
   Future<void> signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
@@ -124,40 +100,47 @@ class AuthService {
     }
   }
 
-  /// Faz uma requisição autenticada genérica
-  Future<Response> authenticatedRequest({
-    required String method,
-    required String path,
-    Map<String, dynamic>? data,
-    Map<String, dynamic>? queryParameters,
-  }) async {
-    if (!isAuthenticated) {
-      throw Exception('Usuário não está autenticado');
-    }
+  /// Busca exercícios (método específico mantido por compatibilidade)
+  /// TODO: Mover para um ExerciseService dedicado no futuro
+  static Future<List<SearchExercise>> searchExercises(String query) async {
+    final authService = AuthService();
+    authService.initialize();
 
+    final response = await authService.get(
+      '/exercises/search',
+      queryParameters: {'q': query, 'limit': 30},
+    );
+
+    final results = (response.data as List).cast<Map<String, dynamic>>();
+    return results.map((json) => SearchExercise.fromJson(json)).toList();
+  }
+
+  /// Busca dados do perfil do usuário autenticado via /auth/me
+  Future<UserProfile?> getUserProfile() async {
     try {
-      switch (method.toUpperCase()) {
-        case 'GET':
-          return await _dio.get(path, queryParameters: queryParameters);
-        case 'POST':
-          return await _dio.post(
-            path,
-            data: data,
-            queryParameters: queryParameters,
-          );
-        case 'PUT':
-          return await _dio.put(
-            path,
-            data: data,
-            queryParameters: queryParameters,
-          );
-        case 'DELETE':
-          return await _dio.delete(path, queryParameters: queryParameters);
-        default:
-          throw Exception('Método HTTP não suportado: $method');
+      if (!isAuthenticated) {
+        return null;
       }
+
+      final response = await get('/auth/me');
+      final userData = response.data as Map<String, dynamic>?;
+
+      if (userData == null) {
+        return null;
+      }
+
+      // O backend retorna { message: ..., user: { ... } }
+      // Precisamos acessar o objeto 'user' dentro da resposta
+      final userObject = userData['user'] as Map<String, dynamic>?;
+
+      if (userObject == null) {
+        return null;
+      }
+
+      return UserProfile.fromJson(userObject);
     } catch (e) {
-      throw Exception('Erro na requisição autenticada: $e');
+      print('❌ Erro ao buscar perfil do usuário: $e');
+      return null;
     }
   }
 }

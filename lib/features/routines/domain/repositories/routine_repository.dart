@@ -1,4 +1,6 @@
 import '../entities/routine.dart';
+import '../entities/session_creation.dart';
+import '../entities/routine_update.dart';
 
 abstract class RoutineRepository {
   Future<List<Routine>> getRoutines();
@@ -7,8 +9,8 @@ abstract class RoutineRepository {
     required String name,
     String? division,
     bool isTemplate = false,
-    List<Map<String, dynamic>>? sessions,
+    List<SessionCreation>? sessions,
   });
-  Future<Routine> updateRoutine(String id, Map<String, dynamic> updates);
+  Future<Routine> updateRoutine(String id, RoutineUpdate updates);
   Future<void> deleteRoutine(String id);
 }

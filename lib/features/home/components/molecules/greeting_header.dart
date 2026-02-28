@@ -4,12 +4,14 @@ class GreetingHeader extends StatelessWidget {
   final String name;
   final String date;
   final String? imageUrl;
+  final VoidCallback? onAvatarTap;
 
   const GreetingHeader({
     super.key,
     required this.name,
     required this.date,
     this.imageUrl,
+    this.onAvatarTap,
   });
 
   @override
@@ -20,7 +22,6 @@ class GreetingHeader extends StatelessWidget {
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
             Text(
               'Bom treino,\n$name!',
@@ -36,9 +37,14 @@ class GreetingHeader extends StatelessWidget {
             ),
           ],
         ),
-        CircleAvatar(
-          foregroundImage: NetworkImage(imageUrl ?? 'https://placehold.co/150'),
-          radius: 30,
+        GestureDetector(
+          onTap: onAvatarTap,
+          child: CircleAvatar(
+            foregroundImage: NetworkImage(
+              imageUrl ?? 'https://placehold.co/150',
+            ),
+            radius: 30,
+          ),
         ),
       ],
     );

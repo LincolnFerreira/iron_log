@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../atoms/atoms.dart';
 import '../molecules/molecules.dart';
+import '../providers/session_exercises_provider.dart';
 
-class WorkoutSessionScreen extends StatefulWidget {
+class WorkoutSessionScreen extends ConsumerStatefulWidget {
   final String workoutId;
   final String subtitle;
   const WorkoutSessionScreen({
@@ -13,37 +15,13 @@ class WorkoutSessionScreen extends StatefulWidget {
   });
 
   @override
-  State<WorkoutSessionScreen> createState() => _WorkoutSessionScreenState();
+  ConsumerState<WorkoutSessionScreen> createState() =>
+      _WorkoutSessionScreenState();
 }
 
-class _WorkoutSessionScreenState extends State<WorkoutSessionScreen> {
+class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   late Timer _timer;
   int _elapsedSeconds = 0;
-
-  // Mock exercises for the session
-  final List<Map<String, dynamic>> _sessionExercises = [
-    {
-      'name': 'Desenvolvimento Halteres',
-      'sets': 4,
-      'done': 0,
-      'weight': '30kg',
-      'reps': '8-10',
-    },
-    {
-      'name': 'Elevação Lateral',
-      'sets': 3,
-      'done': 0,
-      'weight': '10kg',
-      'reps': '12-15',
-    },
-    {
-      'name': 'Tríceps Corda',
-      'sets': 3,
-      'done': 0,
-      'weight': '25kg',
-      'reps': '10-12',
-    },
-  ];
 
   @override
   void initState() {
@@ -83,41 +61,89 @@ class _WorkoutSessionScreenState extends State<WorkoutSessionScreen> {
               },
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 16),
-                itemCount: _sessionExercises.length + 2,
-                itemBuilder: (context, index) {
-                  if (index < _sessionExercises.length) {
-                    final ex = _sessionExercises[index];
-                    return ExerciseRow(
-                      name: ex['name'],
-                      progressText: '${ex['done']}/${ex['sets']} séries',
-                      weightText: ex['weight'],
-                      repsText: ex['reps'],
-                      count: ex['done'],
-                      onIncrement: () {
-                        setState(() {
-                          if (ex['done'] < ex['sets']) ex['done']++;
-                        });
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final sessionExercises = ref.watch(
+                    sessionExercisesProvider(widget.workoutId),
+                  );
+
+                  return sessionExercises.when(
+                    data: (exercises) => ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      itemCount: exercises.length + 2,
+                      itemBuilder: (context, index) {
+                        if (index < exercises.length) {
+                          final ex = exercises[index];
+                          return ExerciseRow(
+                            name: ex.name,
+                            progressText: '${ex.done}/${ex.sets} séries',
+                            weightText: ex.weight,
+                            repsText: ex.reps,
+                            count: ex.done,
+                            onIncrement: () {
+                              ref
+                                  .read(
+                                    sessionExercisesProvider(
+                                      widget.workoutId,
+                                    ).notifier,
+                                  )
+                                  .markSetAsDone(index);
+                            },
+                          );
+                        }
+                        if (index == exercises.length) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            child: DottedBorderButton(
+                              label: '+ Adicionar Exercício',
+                              onTap: () {
+                                // TODO: Implementar adição de exercícios durante a sessão
+                              },
+                            ),
+                          );
+                        }
+                        return const WorkoutSummaryCard(
+                          totalVolume: '1,240kg',
+                          topSets: '1',
+                          avgRir: '2.0',
+                        );
                       },
-                    );
-                  }
-                  if (index == _sessionExercises.length) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stackTrace) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Erro ao carregar exercícios',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              ref
+                                  .read(
+                                    sessionExercisesProvider(
+                                      widget.workoutId,
+                                    ).notifier,
+                                  )
+                                  .loadSessionExercises();
+                            },
+                            child: const Text('Tentar novamente'),
+                          ),
+                        ],
                       ),
-                      child: DottedBorderButton(
-                        label: '+ Adicionar Exercício',
-                        onTap: () {},
-                      ),
-                    );
-                  }
-                  return const WorkoutSummaryCard(
-                    totalVolume: '1,240kg',
-                    topSets: '1',
-                    avgRir: '2.0',
+                    ),
                   );
                 },
               ),
@@ -162,11 +188,34 @@ class _WorkoutSessionScreenState extends State<WorkoutSessionScreen> {
     setState(() {});
   }
 
-  void _finish() {
-    // mock finalize
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Treino finalizado (mock)')));
+  Future<void> _finish() async {
+    try {
+      // Salvar progresso da sessão
+      await ref
+          .read(sessionExercisesProvider(widget.workoutId).notifier)
+          .saveSessionProgress();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Treino finalizado com sucesso!'),
+            backgroundColor: Color(0xFF1B873E),
+          ),
+        );
+
+        // Navegar de volta após salvar
+        Navigator.of(context).pop();
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao finalizar treino: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

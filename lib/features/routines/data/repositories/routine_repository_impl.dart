@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../domain/entities/routine.dart';
+import '../../domain/entities/session_creation.dart';
+import '../../domain/entities/routine_update.dart';
 import '../../domain/repositories/routine_repository.dart';
 import '../models/routine_model.dart';
 
@@ -34,14 +36,15 @@ class RoutineRepositoryImpl implements RoutineRepository {
     required String name,
     String? division,
     bool isTemplate = false,
-    List<Map<String, dynamic>>? sessions,
+    List<SessionCreation>? sessions,
   }) async {
     try {
       final data = {
         'name': name,
         'division': division,
         'isTemplate': isTemplate,
-        if (sessions != null) 'sessions': sessions,
+        if (sessions != null)
+          'sessions': sessions.map((s) => s.toJson()).toList(),
       };
 
       final response = await _dio.post('/routine', data: data);
@@ -52,9 +55,9 @@ class RoutineRepositoryImpl implements RoutineRepository {
   }
 
   @override
-  Future<Routine> updateRoutine(String id, Map<String, dynamic> updates) async {
+  Future<Routine> updateRoutine(String id, RoutineUpdate updates) async {
     try {
-      final response = await _dio.patch('/routine/$id', data: updates);
+      final response = await _dio.patch('/routine/$id', data: updates.toJson());
       return RoutineModel.fromJson(response.data);
     } catch (e) {
       throw Exception('Erro ao atualizar rotina: $e');

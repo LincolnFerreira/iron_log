@@ -2,21 +2,31 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/services/auth_service.dart';
+import '../../domain/entities/search_exercise.dart';
 
-// Provider para gerenciar a busca de exercícios
+/// DEPRECATED: Use UnifiedExerciseSearch from core/components/exercise_search instead
+/// Provider para gerenciar a busca de exercícios
+@Deprecated('Use unifiedExerciseSearchQueryProvider from UnifiedExerciseSearch')
 final exerciseSearchQueryProvider = StateProvider<String>((ref) => '');
-final exerciseSearchResultsProvider = StateProvider<List<Map<String, dynamic>>>(
+@Deprecated(
+  'Use unifiedExerciseSearchResultsProvider from UnifiedExerciseSearch',
+)
+final exerciseSearchResultsProvider = StateProvider<List<SearchExercise>>(
   (ref) => [],
 );
 // IDs dos exercícios selecionados na sessão atual (compartilhado entre busca e selecionados)
+@Deprecated('Use local state management or UnifiedExerciseSearch providers')
 final selectedExerciseIdsProvider = StateProvider<Set<String>>(
   (ref) => <String>{},
 );
 // Objetos completos dos exercícios selecionados
-final selectedExercisesProvider = StateProvider<List<Map<String, dynamic>>>(
+@Deprecated('Use local state management or UnifiedExerciseSearch providers')
+final selectedExercisesProvider = StateProvider<List<SearchExercise>>(
   (ref) => [],
 );
 
+/// DEPRECATED: Use UnifiedExerciseSearch from core/components/exercise_search instead
+@Deprecated('Use UnifiedExerciseSearch instead')
 class ExerciseSearchField extends ConsumerStatefulWidget {
   const ExerciseSearchField({super.key});
 
@@ -114,7 +124,10 @@ class _ExerciseSearchFieldState extends ConsumerState<ExerciseSearchField> {
         path: '/exercises/search',
         queryParameters: {'q': query, 'limit': 30},
       );
-      final results = (response.data as List).cast<Map<String, dynamic>>();
+      final results = (response.data as List)
+          .cast<Map<String, dynamic>>()
+          .map((json) => SearchExercise.fromJson(json))
+          .toList();
       ref.read(exerciseSearchResultsProvider.notifier).state = results;
     } catch (e) {
       // Em caso de erro, limpa resultados e exibe feedback mínimo via log

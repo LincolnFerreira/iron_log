@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'exercise_search_field.dart';
+import '../../domain/entities/search_exercise.dart';
 
 class ExerciseResultCard extends ConsumerWidget {
-  final Map<String, dynamic> exercise;
+  final SearchExercise exercise;
   final VoidCallback onSelect;
 
   const ExerciseResultCard({
@@ -16,8 +17,7 @@ class ExerciseResultCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final selectedIds = ref.watch(selectedExerciseIdsProvider);
-    final id = exercise['id'] as String? ?? '';
-    final isSelected = selectedIds.contains(id);
+    final isSelected = selectedIds.contains(exercise.id);
 
     return Card(
       elevation: 1,
@@ -52,7 +52,7 @@ class ExerciseResultCard extends ConsumerWidget {
                   children: [
                     // Nome do exercício
                     Text(
-                      exercise['name'] as String,
+                      exercise.name,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -62,16 +62,16 @@ class ExerciseResultCard extends ConsumerWidget {
                     // Músculo primário e equipamento
                     Row(
                       children: [
-                        if (exercise['primaryMuscle'] != null)
+                        if (exercise.primaryMuscle != null)
                           Text(
-                            exercise['primaryMuscle'] as String,
+                            exercise.primaryMuscle!,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                        if (exercise['primaryMuscle'] != null &&
-                            exercise['equipment'] != null)
+                        if (exercise.primaryMuscle != null &&
+                            exercise.equipment != null)
                           Text(
                             ' • ',
                             style: theme.textTheme.bodySmall?.copyWith(
@@ -80,9 +80,9 @@ class ExerciseResultCard extends ConsumerWidget {
                               ),
                             ),
                           ),
-                        if (exercise['equipment'] != null)
+                        if (exercise.equipment != null)
                           Text(
-                            exercise['equipment'] as String,
+                            exercise.equipment!,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withOpacity(
                                 0.6,
@@ -93,12 +93,12 @@ class ExerciseResultCard extends ConsumerWidget {
                     ),
 
                     // Tags
-                    if ((exercise['tags'] as List?)?.isNotEmpty ?? false)
+                    if (exercise.muscles.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Wrap(
                           spacing: 4,
-                          children: (exercise['tags'] as List)
+                          children: exercise.muscles
                               .take(3)
                               .map(
                                 (tag) => Container(
@@ -112,7 +112,7 @@ class ExerciseResultCard extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    tag as String,
+                                    tag,
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: theme.colorScheme.secondary,
                                       fontSize: 10,
@@ -138,9 +138,9 @@ class ExerciseResultCard extends ConsumerWidget {
                   );
                   final current = Set<String>.of(selectedIds);
                   if (isSelected) {
-                    current.remove(id);
+                    current.remove(exercise.id);
                   } else {
-                    current.add(id);
+                    current.add(exercise.id);
                   }
                   notifier.state = current;
                   onSelect();
