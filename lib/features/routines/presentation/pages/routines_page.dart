@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/routes/app_router.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_update.dart';
 import '../bloc/routine_provider.dart';
@@ -13,29 +14,40 @@ class RoutinesPage extends ConsumerStatefulWidget {
 }
 
 class _RoutinesPageState extends ConsumerState<RoutinesPage>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, RouteAware {
   @override
   void initState() {
     super.initState();
-    // Carregar rotinas quando a página for inicializada
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(routineNotifierProvider.notifier).loadRoutines();
     });
-
-    // Adicionar observer para detectar quando app volta do background
     WidgetsBinding.instance.addObserver(this);
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final modal = ModalRoute.of(context);
+    if (modal != null) {
+      routeObserver.subscribe(this, modal);
+    }
+  }
+
+  @override
   void dispose() {
-    // Remover observer ao desmontar
+    routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
+  void didPopNext() {
+    // Voltamos para esta página (subpágina foi fechada) — recarrega.
+    ref.read(routineNotifierProvider.notifier).loadRoutines();
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Recarregar rotinas quando app volta do background
     if (state == AppLifecycleState.resumed) {
       ref.read(routineNotifierProvider.notifier).loadRoutines();
     }

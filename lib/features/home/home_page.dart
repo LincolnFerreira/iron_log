@@ -76,7 +76,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         onChangeWorkout: () => _changeWorkout(context),
         onQuickCreate: () => _quickCreateWorkout(context),
         onRetryWorkout: () => _retryWorkout(ref),
+        onRefresh: () => ref.read(homeProvider.notifier).refresh(),
         onAvatarTap: () => _showUserMenu(context, ref),
+        metrics: homeState.metrics,
       ),
       bottomNavigationBar: _buildBottomNavBar(context),
     );

@@ -35,7 +35,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   @override
   void initState() {
     super.initState();
-    _series = widget.exercise.series;
+    _series = 0; // Começa sem séries; usuário adiciona ao realizar
     _reps = widget.exercise.reps;
     _weight = widget.exercise.weight;
     _rir = widget.exercise.rir;

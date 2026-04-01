@@ -10,6 +10,8 @@ class ApiEndpoints {
   static const String exercises = '/exercises';
   // Find or create via backend (Gemini-assisted)
   static const String exerciseFindOrCreate = '/exercises/find-or-create';
+  // User exercise creation
+  static const String exerciseCreate = '/exercises';
 
   // Workouts
   static const String workouts = '/workouts';

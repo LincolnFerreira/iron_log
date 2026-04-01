@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
 
 import '../molecules/greeting_header.dart';
 import '../molecules/active_sequence_card.dart';
@@ -14,11 +15,13 @@ class HomeTemplate extends StatelessWidget {
   final VoidCallback onQuickCreate;
   final VoidCallback? onRetryWorkout;
   final VoidCallback? onAvatarTap;
+  final Future<void> Function()? onRefresh;
   final String? imageUrl;
   final Routine? todaysRoutine;
   final Session? todaysSession;
   final bool isLoadingWorkout;
   final String? error;
+  final HomeMetrics? metrics;
 
   const HomeTemplate({
     super.key,
@@ -29,63 +32,69 @@ class HomeTemplate extends StatelessWidget {
     required this.onQuickCreate,
     this.onRetryWorkout,
     this.onAvatarTap,
+    this.onRefresh,
     this.todaysRoutine,
     this.todaysSession,
     this.isLoadingWorkout = false,
     this.error,
+    this.metrics,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      child: Column(
-        spacing: 10,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 24),
-          // Active sequence card
-          // Greeting header with date
-          GreetingHeader(
-            name: userName,
-            title: 'BOM TREINO,',
-            imageUrl: imageUrl,
-            onAvatarTap: onAvatarTap,
-          ),
-          const ActiveSequenceCard(streak: 5), //TODO: passar do provider
-          Column(
-            spacing: 8,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${_getWeekdayAbbr()} • ${DateTime.now().day} DE ${_getMonthName()}',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-              ),
-              // Today's workout card with exercise chips and start button
-              TodaysWorkoutCard(
-                todaysRoutine: todaysRoutine,
-                todaysSession: todaysSession,
-                isLoading: isLoadingWorkout,
-                onStartWorkout: onStartWorkout,
-              ),
-            ],
-          ),
-          // Quick actions grid
-          WorkoutQuickActionsGrid(
-            onMyRoutinesTap: onChangeWorkout,
-            onNewRoutinesTap: () {
-              // TODO: navigate to new routines
-            },
-            onQuickCreateTap: onQuickCreate,
-          ),
-          // Your month section with metrics and monthly goal progress
-          YourMonthSection(
-            workoutsCompleted: 3, //TODO: passar do provider
-            monthlyGoal: 20, //TODO: passar do provider
-            totalSeries: 45, //TODO: passar do provider
-            totalRoutines: 2, //TODO: passar do provider
-          ),
-        ],
+    return RefreshIndicator(
+      onRefresh: onRefresh ?? () async {},
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        child: Column(
+          spacing: 10,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 24),
+            // Active sequence card
+            // Greeting header with date
+            GreetingHeader(
+              name: userName,
+              title: 'BOM TREINO,',
+              imageUrl: imageUrl,
+              onAvatarTap: onAvatarTap,
+            ),
+            const ActiveSequenceCard(streak: 5), //TODO: passar do provider
+            Column(
+              spacing: 8,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_getWeekdayAbbr()} • ${DateTime.now().day} DE ${_getMonthName()}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+                // Today's workout card with exercise chips and start button
+                TodaysWorkoutCard(
+                  todaysRoutine: todaysRoutine,
+                  todaysSession: todaysSession,
+                  isLoading: isLoadingWorkout,
+                  onStartWorkout: onStartWorkout,
+                ),
+              ],
+            ),
+            // Quick actions grid
+            WorkoutQuickActionsGrid(
+              onMyRoutinesTap: onChangeWorkout,
+              onNewRoutinesTap: () {
+                // TODO: navigate to new routines
+              },
+              onQuickCreateTap: onQuickCreate,
+            ),
+            // Your month section with metrics and monthly goal progress
+            YourMonthSection(
+              workoutsCompleted: metrics?.workoutsCompleted ?? 0,
+              monthlyGoal: metrics?.monthlyGoal ?? 12,
+              totalSeries: metrics?.totalSeries ?? 0,
+              totalRoutines: metrics?.totalRoutines ?? 0,
+            ),
+          ],
+        ),
       ),
     );
   }

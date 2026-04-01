@@ -28,6 +28,24 @@ class _ReorderableSessionListState
   }
 
   @override
+  void didUpdateWidget(ReorderableSessionList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Quando o pai passa uma routine atualizada (após rebusca no didPopNext),
+    // sincroniza a lista local preservando a ordem visual atual do drag-and-drop.
+    if (oldWidget.routine != widget.routine) {
+      final currentIds = sessions.map((s) => s.id).toList();
+      final newSessions = widget.routine.sessions;
+      final reordered = [
+        ...currentIds
+            .map((id) => newSessions.where((s) => s.id == id).firstOrNull)
+            .whereType<Session>(),
+        ...newSessions.where((s) => !currentIds.contains(s.id)),
+      ];
+      setState(() => sessions = reordered);
+    }
+  }
+
+  @override
   void dispose() {
     _debounceTimer?.cancel();
     super.dispose();

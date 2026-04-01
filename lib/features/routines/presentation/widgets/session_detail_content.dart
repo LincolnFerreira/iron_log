@@ -31,6 +31,7 @@ class SessionDetailContent extends ConsumerStatefulWidget {
 class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
   late TextEditingController _musclesController;
   bool _isSaving = false;
+  String? _nameError;
 
   @override
   void initState() {
@@ -39,33 +40,43 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
       text: widget.session?.muscles.join(', ') ?? '',
     );
 
-    // Sempre limpar o estado anterior e repopular com os exercícios da sessão.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
-      final notifier = ref.read(
-        sessionExerciseSelectionNotifierProvider.notifier,
-      );
-
-      if (widget.session != null && widget.session!.exercises.isNotEmpty) {
-        final searchExercises = widget.session!.exercises.map((se) {
-          return SearchExercise(
-            id: se.exerciseId,
-            name: se.exercise.name,
-            description: se.exercise.description,
-            primaryMuscle: se.exercise.primaryMuscle,
-            equipment: se.exercise.equipment,
-            category: se.exercise.tags.isNotEmpty
-                ? se.exercise.tags.first
-                : null,
-          );
-        }).toList();
-
-        notifier.initWithSessionExercises(searchExercises);
-      } else {
-        notifier.clearAll();
-      }
+      _initializeExercises();
     });
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    // Hot reload: Riverpod reseta os StateProviders mas initState não roda de novo.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _initializeExercises();
+    });
+  }
+
+  void _initializeExercises() {
+    final notifier = ref.read(
+      sessionExerciseSelectionNotifierProvider.notifier,
+    );
+
+    if (widget.session != null && widget.session!.exercises.isNotEmpty) {
+      final searchExercises = widget.session!.exercises.map((se) {
+        return SearchExercise(
+          id: se.exerciseId,
+          name: se.exercise.name,
+          description: se.exercise.description,
+          primaryMuscle: se.exercise.primaryMuscle,
+          equipment: se.exercise.equipment,
+          category: se.exercise.tags.isNotEmpty ? se.exercise.tags.first : null,
+        );
+      }).toList();
+
+      notifier.initWithSessionExercises(searchExercises);
+    } else {
+      notifier.clearAll();
+    }
   }
 
   @override
@@ -78,6 +89,7 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
   Widget build(BuildContext context) {
     final selectedExerciseIds = ref.watch(sessionAllExerciseIdsProvider);
     final hasSelectedExercises = selectedExerciseIds.isNotEmpty && !_isSaving;
+    final hasName = widget.sessionNameController.text.trim().isNotEmpty;
 
     return Column(
       children: [
@@ -94,15 +106,26 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
               // Nome da Sessão
               const SessionSectionTitle('NOME DA SESSÃO'),
               const SizedBox(height: 8),
-              TextField(
-                controller: widget.sessionNameController,
-                decoration: InputDecoration(
-                  hintText: 'Ex: Peito e Tríceps',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  prefixIcon: const Icon(Icons.edit),
-                ),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: widget.sessionNameController,
+                builder: (context, value, child) {
+                  return TextField(
+                    controller: widget.sessionNameController,
+                    onChanged: (_) {
+                      if (_nameError != null) {
+                        setState(() => _nameError = null);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Ex: Peito e Tríceps',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      prefixIcon: const Icon(Icons.edit),
+                      errorText: _nameError,
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
 
@@ -204,12 +227,19 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
                             : AppColors.gray20,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: hasSelectedExercises
+                      onPressed: hasSelectedExercises && hasName
                           ? () {
                               setState(() {
                                 _isSaving = true;
                               });
                               _onSave();
+                            }
+                          : hasSelectedExercises && !hasName
+                          ? () {
+                              setState(
+                                () => _nameError =
+                                    'Informe um nome para a sessão',
+                              );
                             }
                           : null,
                       child: _isSaving
@@ -265,11 +295,10 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
         .toList();
 
     if (sessionName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, insira um nome para a sessão'),
-        ),
-      );
+      setState(() {
+        _nameError = 'Informe um nome para a sessão';
+        _isSaving = false;
+      });
       return;
     }
 

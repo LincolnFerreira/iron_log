@@ -4,6 +4,7 @@ import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
 import 'package:iron_log/core/app_colors.dart';
 import '../../domain/entities/search_exercise.dart';
 import '../providers/session_selection_provider.dart';
+import 'empty_exercise_state.dart';
 import 'exercise_browse_list.dart';
 
 /// Widget que exibe os exercícios disponíveis baseado na busca
@@ -27,7 +28,14 @@ class AvailableExercisesList extends ConsumerWidget {
     }
 
     if (searchState.results.isEmpty) {
-      return _buildNoResultsState(context, searchState.query);
+      return EmptyExerciseState(
+        query: searchState.query,
+        onExerciseCreated: (exercise) {
+          ref
+              .read(sessionExerciseSelectionNotifierProvider.notifier)
+              .toggleExercise(exercise);
+        },
+      );
     }
 
     return ListView.builder(
@@ -42,31 +50,7 @@ class AvailableExercisesList extends ConsumerWidget {
     );
   }
 
-  Widget _buildNoResultsState(BuildContext context, String query) {
-    return SizedBox(
-      height: 260,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.fitness_center,
-              size: 48,
-              color: AppColors.primaryLight.withOpacity(0.5),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Nenhum exercício encontrado\npara "$query"',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildExerciseCard(
     BuildContext context,

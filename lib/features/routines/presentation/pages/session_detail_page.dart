@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iron_log/core/widgets/page_header_title.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/app_colors.dart';
@@ -50,16 +51,9 @@ class _SessionDetailPageState extends ConsumerState<SessionDetailPage> {
           valueListenable: _sessionNameController,
           builder: (context, value, child) {
             final displayName = value.text.trim();
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(session != null ? 'Editar Sessão' : 'Nova Sessão'),
-                if (displayName.isNotEmpty)
-                  Text(
-                    displayName,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-              ],
+            return PageHeaderTitle(
+              title: session != null ? 'Editar Sessão' : 'Nova Sessão',
+              subtitle: displayName,
             );
           },
         ),

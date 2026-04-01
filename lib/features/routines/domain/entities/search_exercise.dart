@@ -7,6 +7,8 @@ class SearchExercise {
   final String? category;
   final List<String> muscles;
   final int useCount;
+  final String? source;
+  final String? status;
 
   const SearchExercise({
     required this.id,
@@ -17,6 +19,8 @@ class SearchExercise {
     this.category,
     this.muscles = const [],
     this.useCount = 0,
+    this.source,
+    this.status,
   });
 
   factory SearchExercise.fromJson(Map<String, dynamic> json) {
@@ -31,6 +35,8 @@ class SearchExercise {
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           [],
       useCount: (json['useCount'] as num?)?.toInt() ?? 0,
+      source: json['source']?.toString(),
+      status: json['status']?.toString(),
     );
   }
 
@@ -44,6 +50,8 @@ class SearchExercise {
       'category': category,
       'tags': muscles,
       'useCount': useCount,
+      'source': source,
+      'status': status,
     };
   }
 

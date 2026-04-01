@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/http_service.dart';
 import '../../../core/api/api_endpoints.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
 
 class HomeState {
   final bool isLoading;
@@ -9,6 +10,7 @@ class HomeState {
   final Session? todaysSession;
   final String? error;
   final List<Routine> userRoutines;
+  final HomeMetrics? metrics;
 
   HomeState({
     this.isLoading = true,
@@ -16,6 +18,7 @@ class HomeState {
     this.todaysSession,
     this.error,
     this.userRoutines = const [],
+    this.metrics,
   });
 
   HomeState copyWith({
@@ -27,6 +30,8 @@ class HomeState {
     bool clearError = false,
     bool clearTodaysRoutine = false,
     bool clearTodaysSession = false,
+    HomeMetrics? metrics,
+    bool clearMetrics = false,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -38,6 +43,7 @@ class HomeState {
           : (todaysSession ?? this.todaysSession),
       error: clearError ? null : (error ?? this.error),
       userRoutines: userRoutines ?? this.userRoutines,
+      metrics: clearMetrics ? null : (metrics ?? this.metrics),
     );
   }
 }
@@ -62,8 +68,27 @@ class HomeNotifier extends StateNotifier<HomeState> {
             .map((json) => Routine.fromJson(json as Map<String, dynamic>))
             .toList();
 
+        // Busca métricas em paralelo
+        HomeMetrics? metrics;
+        try {
+          final metricsResponse = await _httpService.get(
+            ApiEndpoints.meMetrics,
+          );
+          if (metricsResponse.statusCode == 200) {
+            metrics = HomeMetrics.fromJson(
+              metricsResponse.data as Map<String, dynamic>,
+            );
+          }
+        } catch (_) {
+          // Métricas são não-críticas, continua sem elas
+        }
+
         if (routines.isEmpty) {
-          state = state.copyWith(isLoading: false, userRoutines: []);
+          state = state.copyWith(
+            isLoading: false,
+            userRoutines: [],
+            metrics: metrics,
+          );
           return;
         }
 
@@ -78,6 +103,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
           todaysRoutine: todaysRoutine,
           todaysSession: todaysSession,
           userRoutines: routines,
+          metrics: metrics,
         );
       } else {
         state = state.copyWith(

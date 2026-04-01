@@ -1,5 +1,7 @@
 /// Configuração centralizada de todas as URLs e endpoints da API
 /// Segue o Single Responsibility Principle - apenas URLs
+library;
+
 import '../env.dart';
 
 class ApiEndpoints {
@@ -8,6 +10,7 @@ class ApiEndpoints {
 
   // Auth endpoints
   static const String login = '/auth/login';
+  static const String meMetrics = '/auth/me/metrics';
   static const String register = '/auth/register';
   static const String refreshToken = '/auth/refresh';
 
