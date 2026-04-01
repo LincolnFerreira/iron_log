@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class WorkoutChip extends StatelessWidget {
   final String label;
   final Color backgroundColor;
-  
+
   const WorkoutChip({
     super.key,
     required this.label,

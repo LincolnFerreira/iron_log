@@ -1,11 +1,11 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/app_colors.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/search_exercise.dart';
 import 'selected_exercise_card.dart';
 import '../providers/session_selection_provider.dart';
-import 'atoms/empty_exercises_state.dart';
+import '../providers/session_provider.dart';
 
 class SelectedExercisesSection extends ConsumerStatefulWidget {
   final Session session;
@@ -19,126 +19,69 @@ class SelectedExercisesSection extends ConsumerStatefulWidget {
 
 class _SelectedExercisesSectionState
     extends ConsumerState<SelectedExercisesSection> {
-  Timer? _debounceTimer;
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final selectedExercises = ref.watch(sessionSelectedExercisesProvider);
+    final selectedExercises = ref.watch(sessionAllExercisesProvider);
     final theme = Theme.of(context);
-    final viewportWidth = MediaQuery.of(context).size.width;
-    const horizontalPadding = 16.0;
-    final cardWidth = viewportWidth - (horizontalPadding * 2);
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Exercícios Selecionados',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    '${selectedExercises.length}',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Lista horizontal de exercícios selecionados
-          if (selectedExercises.isEmpty)
-            const EmptyExercisesState()
-          else
-            SizedBox(
-              height: 200,
-              child: ReorderableListView(
-                scrollDirection: Axis.horizontal,
-                buildDefaultDragHandles: false,
-                onReorder: (oldIndex, newIndex) {
-                  _onReorder(oldIndex, newIndex);
-                },
-                children: selectedExercises.asMap().entries.map((entry) {
-                  final exercise = entry.value;
-                  return Container(
-                    key: ValueKey(exercise.id),
-                    width: cardWidth,
-                    margin: const EdgeInsets.only(right: 12),
-                    child: SelectedExerciseCard(
-                      exercise: _convertToSessionExercise(exercise),
-                      onDelete: () => _removeExercise(exercise),
-                    ),
-                  );
-                }).toList(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header — mesmo estilo dos outros labels da página
+        Row(
+          children: [
+            Text(
+              'EXERCÍCIOS SELECIONADOS',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondaryLight,
               ),
             ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${selectedExercises.length}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Lista vertical — sem scroll próprio, flui junto com a página
+        for (int index = 0; index < selectedExercises.length; index++) ...[
+          if (index > 0) const SizedBox(height: 8),
+          SelectedExerciseCard(
+            key: ValueKey(selectedExercises[index].id),
+            exercise: _convertToSessionExercise(selectedExercises[index]),
+            onDelete: () => _removeExercise(selectedExercises[index]),
+            index: index,
+            totalCount: selectedExercises.length,
+          ),
         ],
-      ),
+      ],
     );
-  }
-
-  void _onReorder(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) newIndex -= 1;
-
-    final exercisesNotifier = ref.read(
-      sessionSelectedExercisesProvider.notifier,
-    );
-    final selectedExercises = ref.read(sessionSelectedExercisesProvider);
-    final exercises = List<SearchExercise>.from(selectedExercises);
-    final exercise = exercises.removeAt(oldIndex);
-    exercises.insert(newIndex, exercise);
-    exercisesNotifier.state = exercises;
-
-    // Debounce: aguarda 800ms após última mudança antes de persistir
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 800), () {
-      _persistExercisesOrder(exercises);
-    });
-  }
-
-  Future<void> _persistExercisesOrder(List<SearchExercise> exercises) async {
-    // TODO: Implementar chamada ao backend para atualizar ordem dos exercícios
-    // Aguardando endpoint no backend para atualizar SessionExercise.order
   }
 
   void _removeExercise(SearchExercise exercise) {
+    // Remover do provider local (UI)
     ref
         .read(sessionExerciseSelectionNotifierProvider.notifier)
         .removeExercise(exercise);
+
+    // Se é uma sessão existente, remover também do backend
+    if (widget.session.id != 'temp') {
+      final sessionNotifier = ref.read(sessionNotifierProvider.notifier);
+      sessionNotifier.removeExerciseFromSession(widget.session.id, exercise.id);
+    }
   }
 
   SessionExercise _convertToSessionExercise(SearchExercise exercise) {

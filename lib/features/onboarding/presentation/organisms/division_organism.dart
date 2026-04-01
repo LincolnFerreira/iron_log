@@ -33,7 +33,7 @@ class DivisionOrganism extends ConsumerWidget {
           const SizedBox(height: 24),
           const PrimaryText('Frequência Semanal', isTitle: true),
           Slider(
-            overlayColor: MaterialStateProperty.all<Color>(
+            overlayColor: WidgetStateProperty.all<Color>(
               Colors.grey.withOpacity(0.2),
             ),
             thumbColor: Colors.blue,

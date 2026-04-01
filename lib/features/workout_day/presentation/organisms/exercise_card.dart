@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/features/workout_day/presentation/molecules/series_selector.dart';
 import '../atoms/custom_badge.dart';
-// import '../molecules/metrics_row.dart'; // removed: metrics now interactive
-import '../molecules/series_selector.dart';
+import '../molecules/series_table.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../providers/workout_day_provider.dart';
 
@@ -126,6 +126,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
             ],
           ),
           const SizedBox(height: 4),
+          //TODO: verificar no back-end pq aqui não está vindo o nome dos musculos e sim um id, pra isso vamos precisar verificar bem provavelmente talvez um log no back-end pra ver o que está passando aqui
           Text(
             widget.exercise.muscles,
             style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
@@ -133,226 +134,52 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           const SizedBox(height: 8),
 
           // Variation Dropdown
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Variação: ${widget.exercise.variation}',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                const Spacer(),
-                const Icon(Icons.keyboard_arrow_down),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          //   decoration: BoxDecoration(
+          //     color: Colors.grey.shade50,
+          //     borderRadius: BorderRadius.circular(8),
+          //   ),
+          //   child: Row(
+          //     children: [
+          //       Text(
+          //         'Variação: ${widget.exercise.variation}',
+          //         style: const TextStyle(fontSize: 14),
+          //       ),
+          //       const Spacer(),
+          //       const Icon(Icons.keyboard_arrow_down),
+          //     ],
+          //   ),
+          // ),
+          // const SizedBox(height: 16),
 
-          // Interactive metrics: Séries, Reps, Carga
-          Row(
-            children: [
-              // Séries (1..10)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Séries', style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<int>(
-                      value: _series,
-                      items: List.generate(10, (i) => i + 1)
-                          .map(
-                            (v) =>
-                                DropdownMenuItem(value: v, child: Text('$v')),
-                          )
-                          .toList(),
-                      onChanged: (v) {
-                        if (v == null) return;
-                        setState(() => _series = v);
-                        _updateExercise();
-                      },
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        border: OutlineInputBorder(),
-                      ),
+          // Add series button (shows rows when _series > 0)
+          SeriesTable(
+            count: _series,
+            weight: _weight,
+            reps: _reps,
+            onToggleDone: (index, done) {
+              // TODO: persistir estado por série no provider/backend quando necessário
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      done
+                          ? 'Série ${index + 1} marcada como feita'
+                          : 'Série ${index + 1} desmarcada',
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Reps (1..100)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Reps', style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<int>(
-                      value: int.tryParse(_reps) ?? 10,
-                      items: List.generate(100, (i) => i + 1)
-                          .map(
-                            (v) =>
-                                DropdownMenuItem(value: v, child: Text('$v')),
-                          )
-                          .toList(),
-                      onChanged: (v) {
-                        if (v == null) return;
-                        setState(() => _reps = v.toString());
-                        _updateExercise();
-                      },
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Carga (1..1000)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Carga (kg)', style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      height: 44,
-                      child: TextField(
-                        controller: TextEditingController(
-                          text: _weight.replaceAll('kg', ''),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (val) {
-                          final num = int.tryParse(val) ?? 1;
-                          final clamped = num.clamp(1, 1000);
-                          setState(() => _weight = '${clamped}kg');
-                          _updateExercise();
-                        },
-                        decoration: const InputDecoration(
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 12,
-                          ),
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // RIR selector with help and Rest time display
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('RIR', style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<int>(
-                      value: _rir,
-                      items: List.generate(11, (i) => i)
-                          .map(
-                            (v) =>
-                                DropdownMenuItem(value: v, child: Text('$v')),
-                          )
-                          .toList(),
-                      onChanged: (v) {
-                        if (v == null) return;
-                        setState(() => _rir = v);
-                        _updateExercise();
-                      },
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'O que é RIR?',
-                icon: const Icon(Icons.help_outline, size: 20),
-                onPressed: _showRirHelp,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Descanso', style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${_restTime}s',
-                      style: TextStyle(color: Colors.grey.shade700),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Series Type Selector
-          SeriesSelector(
-            seriesTypes: const [
-              SeriesType.warmUp,
-              SeriesType.feeder,
-              SeriesType.topSet,
-              SeriesType.backOff,
-            ],
-            selectedType: _selectedSeriesType,
-            onTypeSelected: (type) {
-              setState(() {
-                _selectedSeriesType = type;
-              });
+                  ),
+                );
+              }
             },
           ),
-          const SizedBox(height: 16),
-
-          // Notes Field
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Observações...',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-              maxLines: 2,
-              style: const TextStyle(fontSize: 12),
-            ),
+          TextButton.icon(
+            onPressed: () {
+              setState(() => _series = (_series + 1));
+              _updateExercise();
+            },
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('Adicionar série'),
           ),
         ],
       ),

@@ -8,12 +8,14 @@ class TodaysWorkoutCard extends StatelessWidget {
   final Routine? todaysRoutine;
   final Session? todaysSession;
   final bool isLoading;
+  final VoidCallback? onStartWorkout;
 
   const TodaysWorkoutCard({
     super.key,
     this.todaysRoutine,
     this.todaysSession,
     this.isLoading = false,
+    this.onStartWorkout,
   });
 
   @override
@@ -26,6 +28,10 @@ class TodaysWorkoutCard extends StatelessWidget {
       return const NoWorkoutCard();
     }
 
-    return ActiveWorkoutCard(routine: todaysRoutine!, session: todaysSession!);
+    return ActiveWorkoutCard(
+      routine: todaysRoutine!,
+      session: todaysSession!,
+      onStartWorkout: onStartWorkout,
+    );
   }
 }

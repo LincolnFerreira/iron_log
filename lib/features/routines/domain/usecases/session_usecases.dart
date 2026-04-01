@@ -50,3 +50,26 @@ class DeleteSessionUseCase {
     return await repository.deleteSession(id);
   }
 }
+
+class UpdateSessionExercisesUseCase {
+  final SessionRepository repository;
+
+  UpdateSessionExercisesUseCase(this.repository);
+
+  Future<Session> execute(
+    String sessionId,
+    List<Map<String, dynamic>> exercises,
+  ) async {
+    return await repository.updateSessionExercises(sessionId, exercises);
+  }
+}
+
+class RemoveExerciseFromSessionUseCase {
+  final SessionRepository repository;
+
+  RemoveExerciseFromSessionUseCase(this.repository);
+
+  Future<void> execute(String sessionId, String exerciseId) async {
+    return await repository.removeExerciseFromSession(sessionId, exerciseId);
+  }
+}

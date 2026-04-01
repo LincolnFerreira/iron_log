@@ -19,6 +19,11 @@ class AppColors {
   static const blue140 = Color(0xFF1C3399);
   static const blue150 = Color(0xFF172980);
 
+  // ========== Shades para primaryDark (blue40) ==========
+  static const primaryDarkShade200 = blue20;
+  static const primaryDarkShade600 = blue60;
+  static const primaryDarkShade800 = blue100;
+
   // Neutros Light
   static const white = Color(0xFFFFFFFF);
   static const gray10 = Color(0xFFF5F7FA);

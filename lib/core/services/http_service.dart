@@ -1,13 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_interceptor.dart';
+import '../env.dart';
 
 /// Configuração da API
 class ApiConfig {
   // Para emulador Android: 10.0.2.2 é o alias para localhost do host
   // Para iOS Simulator: localhost funciona
   // Para dispositivo físico: use o IP da máquina host
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  static final String baseUrl = Env.apiBaseUrl;
 
   // Headers padrão
   static const Map<String, String> defaultHeaders = {

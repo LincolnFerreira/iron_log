@@ -30,8 +30,12 @@ class HomeState {
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
-      todaysRoutine: clearTodaysRoutine ? null : (todaysRoutine ?? this.todaysRoutine),
-      todaysSession: clearTodaysSession ? null : (todaysSession ?? this.todaysSession),
+      todaysRoutine: clearTodaysRoutine
+          ? null
+          : (todaysRoutine ?? this.todaysRoutine),
+      todaysSession: clearTodaysSession
+          ? null
+          : (todaysSession ?? this.todaysSession),
       error: clearError ? null : (error ?? this.error),
       userRoutines: userRoutines ?? this.userRoutines,
     );

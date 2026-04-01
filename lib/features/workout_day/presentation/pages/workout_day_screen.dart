@@ -1,16 +1,19 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../organisms/footer_actions.dart';
-import '../../../workout_session/presentation/pages/workout_session_screen.dart';
-import '../components/molecules/workout_day_header.dart';
-import '../components/molecules/workout_title_section.dart';
-import '../components/molecules/exercise_search_bar.dart';
-import '../components/organisms/reorderable_exercises_list.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../../domain/entities/exercise_tag.dart';
 import '../../../routines/domain/entities/search_exercise.dart';
+import '../../domain/entities/exercise_tag.dart';
+import '../../domain/entities/exercise_summary.dart';
+import '../../domain/entities/serie_log.dart';
+import '../../domain/entities/workout_exercise.dart';
+import '../../domain/entities/workout_summary.dart';
+import '../components/molecules/workout_day_header.dart';
+import '../components/organisms/add_exercise_bottom_sheet.dart';
+import '../components/organisms/reorderable_exercises_list.dart';
+import '../organisms/footer_actions.dart';
 import '../providers/workout_day_provider.dart';
+import '../providers/workout_timer_provider.dart';
+import './workout_summary_screen.dart';
 
 class WorkoutDayScreen extends ConsumerStatefulWidget {
   final String? routineId; // rotina atual para contexto
@@ -28,15 +31,36 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
+  bool _workoutStarted = false;
+
   @override
   void initState() {
     super.initState();
     // Carrega a sessão específica se o ID for fornecido
     if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         _loadSession();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    // Reseta o timer ao sair da tela se o treino não foi iniciado
+    if (!_workoutStarted) {
+      try {
+        if (mounted) {
+          ref.read(workoutTimerProvider.notifier).resetTimer();
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Aviso: não foi possível resetar o timer no dispose: $e');
+        }
+      }
+    }
+
+    super.dispose();
   }
 
   @override
@@ -45,6 +69,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     // Auto-reload quando retornar para a tela (ex: de "organize suas sessões")
     if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         _reloadSessionIfNeeded();
       });
     }
@@ -89,27 +114,23 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         child: Column(
           children: [
             // Header
-            const WorkoutDayHeader(),
-            const SizedBox(height: 24),
-            // Title Section
             exercisesAsync.when(
-              data: (exercises) => WorkoutTitleSection(
-                title: widget.subtitle ?? 'Erro inesperado',
-                exerciseCount: '${exercises.length} exercícios adicionados',
+              data: (exercises) => WorkoutDayHeader(
+                title: widget.subtitle ?? 'Exercícios do Dia',
+                subtitle: exercises.isEmpty
+                    ? 'Nenhum exercício'
+                    : '${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
               ),
-              loading: () => const WorkoutTitleSection(
-                title: 'Carregando...',
-                exerciseCount: 'Carregando exercícios...',
+              loading: () => WorkoutDayHeader(
+                title: widget.subtitle ?? 'Exercícios do Dia',
+                subtitle: 'Carregando...',
               ),
-              error: (error, _) => WorkoutTitleSection(
-                title: widget.subtitle ?? 'Erro inesperado',
-                exerciseCount: 'Erro ao carregar exercícios',
+              error: (_, __) => WorkoutDayHeader(
+                title: widget.subtitle ?? 'Exercícios do Dia',
+                subtitle: 'Erro ao carregar',
               ),
             ),
-            const SizedBox(height: 16),
-            // Search Bar
-            ExerciseSearchBar(onExerciseSelected: _addExercise),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             // Content
             Expanded(
               child: exercisesAsync.when(
@@ -124,7 +145,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Use o botão + para adicionar exercícios',
+                              'Use o botão abaixo para adicionar exercícios',
                               style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     color: Theme.of(context)
@@ -134,17 +155,32 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                                         ?.withValues(alpha: 0.6),
                                   ),
                             ),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              onPressed: _showAddExerciseBottomSheet,
+                              icon: const Icon(Icons.add),
+                              label: const Text('Adicionar Exercício'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 24,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       )
                     : ReorderableExercisesList(
                         exercises: exercises,
-                        sessionId: widget.sessionId, // Passa o sessionId
+                        sessionId: widget.sessionId,
                         onReorder: (oldIndex, newIndex) {
                           ref
                               .read(workoutDayExercisesProvider.notifier)
                               .reorderExercises(oldIndex, newIndex);
                         },
+
+                        //NÃO retirar esse método daqui, ele está totalmente correto aqui!
+                        onAddExercise: () => _showAddExerciseBottomSheet(),
                       ),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, stackTrace) => Center(
@@ -179,12 +215,141 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       bottomNavigationBar: exercisesAsync.when(
         data: (exercises) => exercises.isNotEmpty
             ? FooterActions(
-                onStartWorkout: () => _startWorkoutSession(exercises),
-                onSaveRoutine: () => _saveRoutine(exercises),
+                seriesDone: _calculateSeriesDone(exercises),
+                volumeKg: _calculateVolume(exercises),
+                completionPercent: _calculateCompletion(exercises),
+                workoutStarted: _workoutStarted,
+                onStartWorkout: _handleStartWorkout,
+                onFinishWorkout: () async {
+                  if (widget.sessionId == null || widget.sessionId!.isEmpty) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Nenhuma sessão associada para finalizar.',
+                          ),
+                        ),
+                      );
+                    }
+                    return;
+                  }
+
+                  try {
+                    await ref
+                        .read(workoutDayExercisesProvider.notifier)
+                        .saveSessionExercises(widget.sessionId!);
+
+                    if (mounted) {
+                      // Cria um WorkoutSummary com os dados atuais
+                      final currentExercises = exercisesAsync.value ?? [];
+                      final timerStartTime = ref.read(workoutTimerProvider);
+
+                      // Calcula a duração do treino
+                      final duration = timerStartTime != null
+                          ? DateTime.now().difference(timerStartTime)
+                          : const Duration(seconds: 0);
+
+                      final workoutSummary = WorkoutSummary(
+                        sessionName: widget.subtitle ?? 'Treino',
+                        date: DateTime.now(),
+                        duration: duration,
+                        exercises: _buildExerciseSummaries(currentExercises),
+                        totalSeries: _calculateSeriesDone(currentExercises),
+                        completedSeries: _calculateSeriesDone(currentExercises),
+                        totalVolume: _calculateVolume(currentExercises),
+                        isFirstWorkout:
+                            false, // TODO: Verificar se é primeiro treino
+                        previousWorkouts:
+                            [], // TODO: Carregar histórico real do backend
+                      );
+
+                      if (mounted) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => WorkoutSummaryScreen(
+                              workoutSummary: workoutSummary,
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Erro ao finalizar treino: $e'),
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                      );
+                    }
+                  }
+                },
+                onDiscard: () => _discardWorkout(),
+                onSaveTrain: () async {
+                  if (widget.sessionId == null || widget.sessionId!.isEmpty) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Nenhuma sessão associada para salvar.',
+                          ),
+                        ),
+                      );
+                    }
+                    return;
+                  }
+
+                  try {
+                    await ref
+                        .read(workoutDayExercisesProvider.notifier)
+                        .saveSessionExercises(widget.sessionId!);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Treino salvo com sucesso'),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Erro ao salvar treino: $e'),
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                        ),
+                      );
+                    }
+                  }
+                },
               )
             : null,
         loading: () => null,
         error: (_, __) => null,
+      ),
+    );
+  }
+
+  void _handleStartWorkout() {
+    setState(() {
+      _workoutStarted = true;
+    });
+    ref.read(workoutTimerProvider.notifier).startTimer();
+  }
+
+  void _showAddExerciseBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      builder: (context) => AddExerciseBottomSheet(
+        onExerciseSelected: (searchExercise) {
+          _addExercise(searchExercise);
+        },
       ),
     );
   }
@@ -196,11 +361,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       tag: _mapExerciseTag(searchExercise.category ?? ''),
       muscles: searchExercise.primaryMuscle ?? 'Não especificado',
       variation: 'Traditional',
-      series: 3,
-      reps: '10-12',
-      weight: '0kg',
-      rir: 2,
-      restTime: 120,
+      series: 0, // Começa sem séries - usuário adiciona
+      reps: '', // Vazio para o usuário preencher
+      weight: '', // Vazio para o usuário preencher
+      rir: 0, // Zerado
+      restTime: 0, // Zerado
     );
 
     ref.read(workoutDayExercisesProvider.notifier).addExercise(newExercise);
@@ -222,44 +387,74 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     }
   }
 
-  void _startWorkoutSession(List<WorkoutExercise> exercises) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => WorkoutSessionScreen(
-          workoutId: 'workout_${DateTime.now().millisecondsSinceEpoch}',
-          subtitle: widget.subtitle ?? 'Treino do dia',
+  void _discardWorkout() async {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Treino descartado'),
+          backgroundColor: Colors.red,
         ),
-      ),
-    );
+      );
+      // TODO: Implementar navegação de volta ou limpeza do estado
+      Navigator.pop(context);
+    }
   }
 
-  void _saveRoutine(List<WorkoutExercise> exercises) async {
-    try {
-      final sessionId = widget.sessionId;
-      if (sessionId != null) {
-        // Usa o método que JÁ EXISTE no provider
-        await ref
-            .read(workoutDayExercisesProvider.notifier)
-            .saveSessionExercises(sessionId);
+  int _calculateSeriesDone(List<WorkoutExercise> exercises) {
+    // TODO: Implementar cálculo real baseado no histórico de séries completadas
+    // Por enquanto, retorna o total de séries configuradas
+    return exercises.fold<int>(0, (sum, exercise) => sum + exercise.series);
+  }
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Exercícios salvos com sucesso'),
-              backgroundColor: Colors.green,
-            ),
-          );
+  double _calculateVolume(List<WorkoutExercise> exercises) {
+    // TODO: Implementar cálculo real baseado no peso registrado
+    // Por enquanto, tenta extrair valor numérico do campo weight
+    return exercises.fold<double>(0.0, (sum, exercise) {
+      final weightStr = exercise.weight.replaceAll(RegExp(r'[^0-9.]'), '');
+      final weight = double.tryParse(weightStr) ?? 0.0;
+      return sum + (weight * exercise.series);
+    });
+  }
+
+  int _calculateCompletion(List<WorkoutExercise> exercises) {
+    // TODO: Implementar cálculo real baseado no progresso do treino
+    // Por enquanto, retorna 0% pois é um novo treino
+    return 0;
+  }
+
+  /// Constrói a lista de ExerciseSummary a partir da lista de WorkoutExercise
+  List<ExerciseSummary> _buildExerciseSummaries(
+    List<WorkoutExercise> exercises,
+  ) {
+    return exercises.map((exercise) {
+      // Para cada exercício, cria séries de mock baseado no número de séries configuradas
+      // TODO: Buscar dados reais de séries completadas do backend/banco de dados
+      final series = List<SerieLog>.generate(exercise.series, (index) {
+        final serieNumber = index + 1;
+        // Determina o tipo da série
+        String serieType = 'work';
+        if (serieNumber == 1) {
+          serieType = 'warmup'; // Primeira série é aquecimento
         }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao salvar: $e'),
-            backgroundColor: Colors.red,
-          ),
+
+        // Por enquanto, todas as séries são marcadas como "completed"
+        // TODO: Buscar status real do banco de dados
+        return SerieLog(
+          serieNumber: serieNumber,
+          type: serieType,
+          weight: exercise.weight,
+          reps: exercise.reps,
+          rir: exercise.rir.toString(),
+          status: 'completed', // TODO: Buscar status real
         );
-      }
-    }
+      });
+
+      return ExerciseSummary(
+        id: exercise.id,
+        name: exercise.name,
+        muscleGroup: exercise.muscles,
+        series: series,
+      );
+    }).toList();
   }
 }

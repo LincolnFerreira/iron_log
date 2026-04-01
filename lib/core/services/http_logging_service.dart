@@ -91,7 +91,7 @@ class HttpLoggingService {
       '${AnsiColors.cyan}🔗 URL: ${AnsiColors.white}${response.requestOptions.path}${AnsiColors.reset}',
     );
     print(
-      '${AnsiColors.cyan}📊 Status: ${statusColor}${response.statusCode}${AnsiColors.reset}',
+      '${AnsiColors.cyan}📊 Status: $statusColor${response.statusCode}${AnsiColors.reset}',
     );
     print(
       '${AnsiColors.cyan}📝 Headers: ${AnsiColors.white}${response.headers}${AnsiColors.reset}',
@@ -116,7 +116,7 @@ class HttpLoggingService {
           ? AnsiColors.yellow
           : AnsiColors.green;
       print(
-        '${AnsiColors.cyan}⏱️  Duration: ${durationColor}${duration}ms${AnsiColors.reset}',
+        '${AnsiColors.cyan}⏱️  Duration: $durationColor${duration}ms${AnsiColors.reset}',
       );
     } else {
       print(
@@ -140,7 +140,7 @@ class HttpLoggingService {
       '${AnsiColors.cyan}🔗 URL: ${AnsiColors.white}${error.requestOptions.path}${AnsiColors.reset}',
     );
     print(
-      '${AnsiColors.cyan}📊 Status: ${statusColor}${error.response?.statusCode}${AnsiColors.reset}',
+      '${AnsiColors.cyan}📊 Status: $statusColor${error.response?.statusCode}${AnsiColors.reset}',
     );
     print(
       '${AnsiColors.cyan}❌ Error: ${AnsiColors.brightRed}${error.message}${AnsiColors.reset}',

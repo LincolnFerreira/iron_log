@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'workout_timer.dart';
 
-class WorkoutDayHeader extends StatelessWidget {
+class WorkoutDayHeader extends ConsumerWidget {
   final VoidCallback? onBackPressed;
   final VoidCallback? onMorePressed;
   final String title;
+  final String? subtitle;
 
   const WorkoutDayHeader({
     super.key,
     this.onBackPressed,
     this.onMorePressed,
-    //TODO: deveria ser passado o titulo do treino passado pelo usuário, ou o nome do treino do dia
     this.title = 'Exercícios do Dia',
+    this.subtitle,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
@@ -33,10 +36,32 @@ class WorkoutDayHeader extends StatelessWidget {
             icon: const Icon(Icons.arrow_back),
           ),
           Expanded(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 4),
+                const WorkoutTimer(),
+              ],
             ),
           ),
           IconButton(

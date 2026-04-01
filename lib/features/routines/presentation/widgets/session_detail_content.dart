@@ -1,121 +1,362 @@
-// import 'package:flutter/material.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
-// import '../../domain/entities/routine.dart';
-// import 'selected_exercises_section.dart';
-// import '../providers/session_selection_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
+import 'package:iron_log/core/app_colors.dart';
+import '../../domain/entities/routine.dart';
+import '../../domain/entities/search_exercise.dart';
+import 'available_exercises_list.dart';
+import 'selected_exercises_section.dart';
+import '../providers/session_selection_provider.dart';
+import '../providers/session_provider.dart';
+import 'session_section_title.dart';
 
-// class SessionDetailContent extends ConsumerStatefulWidget {
-//   final Routine routine;
-//   final Session session;
+class SessionDetailContent extends ConsumerStatefulWidget {
+  final Routine routine;
+  final Session? session;
 
-//   const SessionDetailContent({
-//     super.key,
-//     required this.routine,
-//     required this.session,
-//   });
+  const SessionDetailContent({super.key, required this.routine, this.session});
 
-//   @override
-//   ConsumerState<SessionDetailContent> createState() =>
-//       _SessionDetailContentState();
-// }
+  @override
+  ConsumerState<SessionDetailContent> createState() =>
+      _SessionDetailContentState();
+}
 
-// class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
-//   @override
-//   Widget build(BuildContext context) {
-//     final selectedExerciseIds = ref.watch(sessionSelectedExerciseIdsProvider);
-//     final hasSelectedExercises = selectedExerciseIds.isNotEmpty;
+class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
+  late TextEditingController _sessionNameController;
+  late TextEditingController _musclesController;
+  bool _isSaving = false;
 
-//     return Scaffold(
-//       body: Column(
-//         crossAxisAlignment: CrossAxisAlignment.stretch,
-//         children: [
-//           // Header com botão de busca
-//           Container(
-//             padding: const EdgeInsets.all(16),
-//             decoration: BoxDecoration(
-//               color: Theme.of(context).colorScheme.surface,
-//               border: Border(
-//                 bottom: BorderSide(
-//                   color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-//                   width: 1,
-//                 ),
-//               ),
-//             ),
-//             child: Row(
-//               children: [
-//                 Expanded(
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text(
-//                         'Configurar ${widget.session.name}',
-//                         style: Theme.of(context).textTheme.headlineSmall
-//                             ?.copyWith(fontWeight: FontWeight.bold),
-//                       ),
-//                       const SizedBox(height: 4),
-//                       Text(
-//                         'Selecione os exercícios para esta sessão',
-//                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-//                           color: Theme.of(
-//                             context,
-//                           ).colorScheme.onSurface.withOpacity(0.7),
-//                         ),
-//                       ),
-//                       SizedBox(
-//                         width: 200,
-//                         child: UnifiedExerciseSearch(
-//                           hintText: 'Buscar exercícios para adicionar...',
-//                           useSearchAnchor: true,
-//                           onExerciseSelected: (exercise) {
-//                             // Usar o helper para adicionar exercício
-//                             ref
-//                                 .read(
-//                                   sessionExerciseSelectionNotifierProvider
-//                                       .notifier,
-//                                 )
-//                                 .addExercise(exercise);
-//                           },
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
+  @override
+  void initState() {
+    super.initState();
+    _sessionNameController = TextEditingController(
+      text: widget.session?.name ?? '',
+    );
+    _musclesController = TextEditingController(
+      text: widget.session?.muscles.join(', ') ?? '',
+    );
 
-//                 // Botão de busca usando componente unificado com largura limitada
-//               ],
-//             ),
-//           ),
+    // Sempre limpar o estado anterior e repopular com os exercícios da sessão.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
 
-//           // Exercícios selecionados (ocupa toda a tela restante)
-//           Expanded(child: SelectedExercisesSection(session: widget.session)),
-//         ],
-//       ),
-//       floatingActionButton: FloatingActionButton.extended(
-//         onPressed: hasSelectedExercises ? _onConcluir : null,
-//         icon: const Icon(Icons.check),
-//         label: const Text('Concluir'),
-//         backgroundColor: hasSelectedExercises
-//             ? Theme.of(context).colorScheme.primary
-//             : Theme.of(context).colorScheme.onSurface.withOpacity(0.12),
-//         foregroundColor: hasSelectedExercises
-//             ? Theme.of(context).colorScheme.onPrimary
-//             : Theme.of(context).colorScheme.onSurface.withOpacity(0.38),
-//       ),
-//     );
-//   }
+      final notifier = ref.read(
+        sessionExerciseSelectionNotifierProvider.notifier,
+      );
 
-//   void _onConcluir() {
-//     // TODO: Salvar configuração da sessão no backend
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       const SnackBar(
-//         content: Text('Sessão configurada com sucesso!'),
-//         duration: Duration(seconds: 2),
-//       ),
-//     );
+      if (widget.session != null && widget.session!.exercises.isNotEmpty) {
+        // Converte os SessionExercise salvos para SearchExercise e inicializa
+        // os providers base + newly (clearAll já está embutido no init).
+        final searchExercises = widget.session!.exercises.map((se) {
+          return SearchExercise(
+            id: se.exerciseId,
+            name: se.exercise.name,
+            description: se.exercise.description,
+            primaryMuscle: se.exercise.primaryMuscle,
+            equipment: se.exercise.equipment,
+            category: se.exercise.tags.isNotEmpty
+                ? se.exercise.tags.first
+                : null,
+          );
+        }).toList();
 
-//     // Voltar para a tela anterior
-//     context.pop();
-//   }
-// }
+        notifier.initWithSessionExercises(searchExercises);
+      } else {
+        // Sessão nova ou sem exercícios — só limpar
+        notifier.clearAll();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _sessionNameController.dispose();
+    _musclesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedExerciseIds = ref.watch(sessionAllExerciseIdsProvider);
+    final hasSelectedExercises = selectedExerciseIds.isNotEmpty && !_isSaving;
+
+    return Column(
+      children: [
+        // Conteúdo scrollável
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // Nome da Sessão
+              const SessionSectionTitle('NOME DA SESSÃO'),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _sessionNameController,
+                decoration: InputDecoration(
+                  hintText: 'Ex: Peito e Tríceps',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  prefixIcon: const Icon(Icons.edit),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Exercícios Selecionados (Preview com Drag & Drop)
+              if (hasSelectedExercises) ...[
+                SelectedExercisesSection(
+                  session: Session(
+                    id: widget.session?.id ?? 'temp',
+                    name: '',
+                    order: 0,
+                    muscles: [],
+                    exercises: [],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primaryLight.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 32,
+                        color: AppColors.primaryLight.withOpacity(0.7),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Adicione exercícios para criar uma nova sessão',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              Text(
+                'ADICIONAR EXERCÍCIOS',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondaryLight,
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 56,
+                child: UnifiedExerciseSearch(
+                  hintText: 'Pesquisar exercícios...',
+                  useSearchAnchor: false,
+                  onExerciseSelected: (exercise) {
+                    ref
+                        .read(sessionExerciseSelectionNotifierProvider.notifier)
+                        .toggleExercise(exercise);
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Exercícios Disponíveis
+              Text(
+                'Exercícios Encontrados',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              AvailableExercisesList(
+                onExerciseSelected: (exercise) {
+                  ref
+                      .read(sessionExerciseSelectionNotifierProvider.notifier)
+                      .toggleExercise(exercise);
+                },
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+
+        // Botão fixo no final
+        Container(
+          color: hasSelectedExercises ? AppColors.blue100 : AppColors.gray20,
+          width: double.infinity,
+          height: 80,
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: hasSelectedExercises
+                  ? () {
+                      setState(() {
+                        _isSaving = true;
+                      });
+                      _onSave();
+                    }
+                  : null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.save_rounded,
+                            color: hasSelectedExercises
+                                ? Colors.white
+                                : AppColors.gray50,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Salvar Sessão',
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: hasSelectedExercises
+                                      ? Colors.white
+                                      : AppColors.gray50,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onSave() async {
+    final sessionName = _sessionNameController.text.trim();
+    final muscles = _musclesController.text
+        .split(',')
+        .map((m) => m.trim())
+        .where((m) => m.isNotEmpty)
+        .toList();
+
+    if (sessionName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, insira um nome para a sessão'),
+        ),
+      );
+      return;
+    }
+
+    final selectedExerciseIds = ref.read(sessionAllExerciseIdsProvider);
+
+    if (selectedExerciseIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecione pelo menos um exercício')),
+      );
+      return;
+    }
+
+    final sessionNotifier = ref.read(sessionNotifierProvider.notifier);
+    final isEditing = widget.session != null;
+    final selectedExercises = ref.read(sessionAllExercisesProvider);
+
+    Session? result;
+    if (isEditing) {
+      // Atualizar sessão existente
+      result = await sessionNotifier.updateSession(
+        widget.session!.id,
+        name: sessionName,
+        muscles: muscles,
+      );
+    } else {
+      // Criar nova sessão
+      final newOrder = widget.routine.sessions.length + 1;
+      result = await sessionNotifier.createSession(
+        routineId: widget.routine.id,
+        name: sessionName,
+        order: newOrder,
+        muscles: muscles,
+      );
+    }
+
+    if (!mounted) return;
+
+    // Se a sessão foi salva com sucesso, atualizar os exercícios
+    if (result != null) {
+      // Formatar exercícios para o backend
+      final exercisesData = selectedExercises.asMap().entries.map((entry) {
+        return {
+          'exerciseId': entry.value.id,
+          'order': entry.key, // índice como ordem
+          'customName': null,
+          'config': {},
+        };
+      }).toList();
+
+      // Atualizar exercícios da sessão
+      final updateSuccess = await sessionNotifier.updateSessionExercises(
+        result.id,
+        exercisesData,
+      );
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      if (updateSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isEditing
+                  ? 'Sessão atualizada com sucesso!'
+                  : 'Sessão criada com sucesso!',
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        context.pop();
+      } else {
+        final error = ref.watch(sessionNotifierProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Erro ao salvar exercícios da sessão'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } else {
+      setState(() {
+        _isSaving = false;
+      });
+
+      final error = ref.watch(sessionNotifierProvider).error;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error ?? 'Erro ao salvar sessão'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+}

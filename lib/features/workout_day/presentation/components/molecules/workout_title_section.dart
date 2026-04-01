@@ -38,22 +38,23 @@ class WorkoutTitleSection extends StatelessWidget {
               ],
             ),
           ),
-          if (isActive)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE1BEE7),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                'Ativo',
-                style: TextStyle(
-                  color: Color(0xFF7B1FA2),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
+          //TODO: não vi muita finalidade para isso aqui
+          // if (isActive)
+          //   Container(
+          //     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          //     decoration: BoxDecoration(
+          //       color: const Color(0xFFE1BEE7),
+          //       borderRadius: BorderRadius.circular(12),
+          //     ),
+          //     child: const Text(
+          //       'Ativo',
+          //       style: TextStyle(
+          //         color: Color(0xFF7B1FA2),
+          //         fontSize: 12,
+          //         fontWeight: FontWeight.w500,
+          //       ),
+          //     ),
+          //   ),
         ],
       ),
     );

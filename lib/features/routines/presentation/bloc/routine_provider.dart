@@ -61,7 +61,9 @@ class RoutineState {
       routines: routines ?? this.routines,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
-      selectedRoutine: clearSelectedRoutine ? null : (selectedRoutine ?? this.selectedRoutine),
+      selectedRoutine: clearSelectedRoutine
+          ? null
+          : (selectedRoutine ?? this.selectedRoutine),
     );
   }
 }

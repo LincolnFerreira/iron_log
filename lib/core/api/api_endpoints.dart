@@ -1,8 +1,10 @@
 /// Configuração centralizada de todas as URLs e endpoints da API
 /// Segue o Single Responsibility Principle - apenas URLs
+import '../env.dart';
+
 class ApiEndpoints {
-  // Base URL
-  static const String baseUrl = 'http://10.0.2.2:3000';
+  // Base URL (switchable via FLAVOR)
+  static final String baseUrl = Env.apiBaseUrl;
 
   // Auth endpoints
   static const String login = '/auth/login';

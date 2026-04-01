@@ -14,4 +14,13 @@ abstract class SessionRepository {
     List<String>? muscles,
   });
   Future<void> deleteSession(String id);
+
+  /// Atualizar exercícios da sessão
+  Future<Session> updateSessionExercises(
+    String sessionId,
+    List<Map<String, dynamic>> exercises,
+  );
+
+  /// Remover exercício específico da sessão
+  Future<void> removeExerciseFromSession(String sessionId, String exerciseId);
 }

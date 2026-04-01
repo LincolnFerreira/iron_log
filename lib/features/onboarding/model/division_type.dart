@@ -1,9 +1,4 @@
-enum DivisionType {
-  fullBody,
-  ppl,
-  abc,
-  custom
-}
+enum DivisionType { fullBody, ppl, abc, custom }
 
 extension DivisionTypeExtension on DivisionType {
   String get title {

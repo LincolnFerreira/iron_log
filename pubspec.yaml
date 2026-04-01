@@ -46,6 +46,7 @@ dependencies:
   equatable: ^2.0.7
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
+  flutter_svg: ^1.1.1
 
 
 dev_dependencies:
@@ -75,37 +76,38 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/fonts/Inter/
+    - assets/fonts/barlow/
+    - assets/fire-sequence.svg
     - assets/images/
   fonts:
-    - family: Inter
+    - family: Barlow
       fonts:
-        - asset: assets/fonts/Inter/Inter_18pt-Regular.ttf
-        - asset: assets/fonts/Inter/Inter_18pt-Medium.ttf
+        - asset: assets/fonts/barlow/Barlow-Regular.ttf
+        - asset: assets/fonts/barlow/Barlow-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Inter/Inter_18pt-SemiBold.ttf
+        - asset: assets/fonts/barlow/Barlow-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Inter/Inter_18pt-Bold.ttf
+        - asset: assets/fonts/barlow/Barlow-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Inter/Inter_18pt-ExtraBold.ttf
+        - asset: assets/fonts/barlow/Barlow-ExtraBold.ttf
           weight: 800
-        - asset: assets/fonts/Inter/Inter_18pt-Black.ttf
+        - asset: assets/fonts/barlow/Barlow-Black.ttf
           weight: 900
-        - asset: assets/fonts/Inter/Inter_18pt-Thin.ttf
+        - asset: assets/fonts/barlow/Barlow-Thin.ttf
           weight: 100
-        - asset: assets/fonts/Inter/Inter_18pt-ExtraLight.ttf
+        - asset: assets/fonts/barlow/Barlow-ExtraLight.ttf
           weight: 200
-        - asset: assets/fonts/Inter/Inter_18pt-Light.ttf
+        - asset: assets/fonts/barlow/Barlow-Light.ttf
           weight: 300
-        - asset: assets/fonts/Inter/Inter_18pt-Italic.ttf
+        - asset: assets/fonts/barlow/Barlow-Italic.ttf
           style: italic
-        - asset: assets/fonts/Inter/Inter_18pt-MediumItalic.ttf
+        - asset: assets/fonts/barlow/Barlow-MediumItalic.ttf
           weight: 500
           style: italic
-        - asset: assets/fonts/Inter/Inter_18pt-SemiBoldItalic.ttf
+        - asset: assets/fonts/barlow/Barlow-SemiBoldItalic.ttf
           weight: 600
           style: italic
-        - asset: assets/fonts/Inter/Inter_18pt-BoldItalic.ttf
+        - asset: assets/fonts/barlow/Barlow-BoldItalic.ttf
           weight: 700
           style: italic
 

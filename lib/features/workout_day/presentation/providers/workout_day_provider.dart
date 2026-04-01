@@ -181,7 +181,7 @@ class WorkoutDayExercisesNotifier
         }).toList(),
       };
 
-      final url = ApiEndpoints.sessionById(sessionId) + '/exercises';
+      final url = '${ApiEndpoints.sessionById(sessionId)}/exercises';
       final response = await _httpService.patch(url, data: payload);
 
       if (response.statusCode == 200) {

@@ -58,4 +58,34 @@ class SessionRepositoryImpl implements SessionRepository {
       throw Exception('Erro ao deletar sessão: $e');
     }
   }
+
+  @override
+  Future<Session> updateSessionExercises(
+    String sessionId,
+    List<Map<String, dynamic>> exercises,
+  ) async {
+    try {
+      final data = {'exercises': exercises};
+
+      final response = await _dio.patch(
+        '/session/$sessionId/exercises',
+        data: data,
+      );
+      return SessionModel.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Erro ao atualizar exercícios da sessão: $e');
+    }
+  }
+
+  @override
+  Future<void> removeExerciseFromSession(
+    String sessionId,
+    String exerciseId,
+  ) async {
+    try {
+      await _dio.delete('/session/$sessionId/exercises/$exerciseId');
+    } catch (e) {
+      throw Exception('Erro ao remover exercício da sessão: $e');
+    }
+  }
 }

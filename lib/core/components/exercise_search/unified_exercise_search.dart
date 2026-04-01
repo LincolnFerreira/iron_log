@@ -5,13 +5,179 @@ import 'package:iron_log/core/services/auth_service.dart';
 import 'package:iron_log/core/api/endpoints.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 
+// ============================================================================
+// STATE CLASS
+// ============================================================================
+
+/// Estado encapsulado da busca de exercícios
+class ExerciseSearchState {
+  final String query;
+  final List<SearchExercise> results;
+  final bool isLoading;
+
+  ExerciseSearchState({
+    required this.query,
+    required this.results,
+    required this.isLoading,
+  });
+
+  /// Cria uma cópia com parâmetros modificados
+  ExerciseSearchState copyWith({
+    String? query,
+    List<SearchExercise>? results,
+    bool? isLoading,
+  }) {
+    return ExerciseSearchState(
+      query: query ?? this.query,
+      results: results ?? this.results,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+
+  /// Estado inicial
+  factory ExerciseSearchState.initial() {
+    return ExerciseSearchState(query: '', results: [], isLoading: false);
+  }
+}
+
+// ============================================================================
+// STATE NOTIFIER
+// ============================================================================
+
+/// Notifier que gerencia a busca de exercícios com debounce integrado
+class ExerciseSearchNotifier extends StateNotifier<ExerciseSearchState> {
+  Timer? _debounceTimer;
+  int _searchCounter = 0;
+
+  ExerciseSearchNotifier() : super(ExerciseSearchState.initial());
+
+  /// Atualiza a query e faz debounce da busca
+  void updateQuery(String query) {
+    // Atualiza a query imediatamente
+    state = state.copyWith(query: query);
+
+    // Cancela timer anterior
+    _debounceTimer?.cancel();
+
+    if (query.isEmpty) {
+      // Limpa resultados se a query estiver vazia
+      state = state.copyWith(results: [], isLoading: false);
+      return;
+    }
+
+    // Inicia loading e debounce
+    state = state.copyWith(isLoading: true);
+    final currentCounter = ++_searchCounter;
+
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _performSearch(query, currentCounter);
+    });
+  }
+
+  /// Realiza a busca de exercícios (ignora respostas antigas usando token)
+  Future<void> _performSearch(String query, int token) async {
+    if (query.length < 2) {
+      if (token == _searchCounter) {
+        state = state.copyWith(results: [], isLoading: false);
+      }
+      return;
+    }
+
+    try {
+      final auth = AuthService();
+      auth.initialize();
+      final response = await auth.authenticatedRequest(
+        method: 'GET',
+        path: ApiEndpoints.exerciseSearch,
+        queryParameters: {'q': query, 'limit': 30},
+      );
+
+      // Ignora respostas que não pertençam à última busca
+      if (token != _searchCounter) return;
+
+      final results = (response.data as List).cast<Map<String, dynamic>>();
+      final searchExercises = results
+          .map((exercise) => SearchExercise.fromJson(exercise))
+          .toList();
+
+      // Atualiza resultados e termina loading
+      state = state.copyWith(results: searchExercises, isLoading: false);
+    } catch (e) {
+      if (token == _searchCounter) {
+        state = state.copyWith(results: [], isLoading: false);
+      }
+    }
+  }
+
+  /// Cria um novo exercício e o retorna
+  Future<SearchExercise?> createExercise(String name) async {
+    if (name.trim().isEmpty) return null;
+
+    try {
+      final auth = AuthService();
+      auth.initialize();
+
+      final response = await auth.authenticatedRequest(
+        method: 'GET',
+        path: ApiEndpoints.exerciseFindOrCreate,
+        queryParameters: {'name': name.trim()},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final created = SearchExercise.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+
+        // Adiciona ao início da lista
+        state = state.copyWith(results: [created, ...state.results]);
+
+        return created;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Limpa a busca
+  void clearSearch() {
+    _debounceTimer?.cancel();
+    state = ExerciseSearchState.initial();
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+}
+
+// ============================================================================
+// PROVIDER
+// ============================================================================
+
 /// Provider para gerenciar a busca unificada de exercícios
-final unifiedExerciseSearchQueryProvider = StateProvider<String>((ref) => '');
-final unifiedExerciseSearchResultsProvider =
-    StateProvider<List<SearchExercise>>((ref) => []);
-final unifiedExerciseSearchLoadingProvider = StateProvider<bool>(
-  (ref) => false,
-);
+final exerciseSearchProvider =
+    StateNotifierProvider<ExerciseSearchNotifier, ExerciseSearchState>((ref) {
+      return ExerciseSearchNotifier();
+    });
+
+// Providers auxiliares para acesso fácil aos estados individuais
+final exerciseSearchQueryProvider = Provider<String>((ref) {
+  return ref.watch(exerciseSearchProvider).query;
+});
+
+final exerciseSearchResultsProvider = Provider<List<SearchExercise>>((ref) {
+  return ref.watch(exerciseSearchProvider).results;
+});
+
+final exerciseSearchLoadingProvider = Provider<bool>((ref) {
+  return ref.watch(exerciseSearchProvider).isLoading;
+});
+
+// ============================================================================
+// COMPONENTE
+// ============================================================================
 
 /// Componente unificado de busca de exercícios
 /// Substitui as implementações duplicadas espalhadas pelo projeto
@@ -35,13 +201,11 @@ class UnifiedExerciseSearch extends ConsumerStatefulWidget {
 }
 
 class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
-  Timer? _debounceTimer;
   final TextEditingController _controller = TextEditingController();
   final SearchController _searchController = SearchController();
 
   @override
   void dispose() {
-    _debounceTimer?.cancel();
     _controller.dispose();
     _searchController.dispose();
     super.dispose();
@@ -57,15 +221,16 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
   }
 
   Widget _buildTextField() {
-    final searchQuery = ref.watch(unifiedExerciseSearchQueryProvider);
-    final isLoading = ref.watch(unifiedExerciseSearchLoadingProvider);
+    final searchState = ref.watch(exerciseSearchProvider);
 
     return TextField(
       controller: _controller,
-      onChanged: _onSearchChanged,
+      onChanged: (value) {
+        ref.read(exerciseSearchProvider.notifier).updateQuery(value);
+      },
       decoration: InputDecoration(
         hintText: widget.hintText,
-        prefixIcon: isLoading
+        prefixIcon: searchState.isLoading
             ? const Padding(
                 padding: EdgeInsets.all(12.0),
                 child: SizedBox(
@@ -75,8 +240,14 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
                 ),
               )
             : const Icon(Icons.search),
-        suffixIcon: searchQuery.isNotEmpty
-            ? IconButton(icon: const Icon(Icons.clear), onPressed: _clearSearch)
+        suffixIcon: searchState.query.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  _controller.clear();
+                  ref.read(exerciseSearchProvider.notifier).clearSearch();
+                },
+              )
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -101,6 +272,8 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
   }
 
   Widget _buildSearchAnchor() {
+    final searchState = ref.watch(exerciseSearchProvider);
+
     return SearchAnchor(
       isFullScreen: true,
       searchController: _searchController,
@@ -150,80 +323,50 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
       },
       suggestionsBuilder:
           (BuildContext context, SearchController controller) async {
-            final query = controller.text;
-            ref.read(unifiedExerciseSearchQueryProvider.notifier).state = query;
+            final query = controller.text.trim();
+            // inicia a busca (debounce + requisição)
+            ref.read(exerciseSearchProvider.notifier).updateQuery(query);
 
-            if (query.isNotEmpty) {
-              _debounceTimer?.cancel();
-              _debounceTimer = Timer(
-                const Duration(milliseconds: 300),
-                () async {
-                  await _performSearch(query);
-                },
-              );
+            if (query.isEmpty) {
+              return [_buildEmptyState()];
             }
 
-            final results = ref.read(unifiedExerciseSearchResultsProvider);
+            // se já temos resultados prontos para essa query, devolve imediatamente
+            final currentState = ref.read(exerciseSearchProvider);
+            if (!currentState.isLoading && currentState.query == query) {
+              return _buildSuggestions(currentState.results, controller, query);
+            }
+
+            // caso contrário aguardamos até que a busca termine (ou timeout)
+            final timeout = const Duration(seconds: 2);
+            final end = DateTime.now().add(timeout);
+            List<SearchExercise> results = [];
+
+            while (DateTime.now().isBefore(end)) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              final st = ref.read(exerciseSearchProvider);
+              if (st.query == query && !st.isLoading) {
+                results = st.results;
+                break;
+              }
+            }
+
+            // fallback para o estado atual caso tenha expirado o timeout
+            if (results.isEmpty) {
+              results = ref.read(exerciseSearchProvider).results;
+            }
+
+            if (results.isEmpty) {
+              return [_buildNoResultsState(controller, query)];
+            }
+
             return _buildSuggestions(results, controller, query);
           },
     );
   }
 
   void _onSearchChanged(String value) {
-    ref.read(unifiedExerciseSearchQueryProvider.notifier).state = value;
-    _controller.text = value;
-
-    _debounceTimer?.cancel();
-    if (value.isEmpty) {
-      ref.read(unifiedExerciseSearchResultsProvider.notifier).state = [];
-      ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = false;
-      return;
-    }
-
-    ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = true;
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
-      await _performSearch(value);
-    });
-  }
-
-  void _clearSearch() {
-    _controller.clear();
-    ref.read(unifiedExerciseSearchQueryProvider.notifier).state = '';
-    ref.read(unifiedExerciseSearchResultsProvider.notifier).state = [];
-    ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = false;
-    _debounceTimer?.cancel();
-  }
-
-  Future<void> _performSearch(String query) async {
-    if (query.length < 2) {
-      ref.read(unifiedExerciseSearchResultsProvider.notifier).state = [];
-      ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = false;
-      return;
-    }
-
-    try {
-      ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = true;
-
-      final auth = AuthService();
-      auth.initialize();
-      final response = await auth.authenticatedRequest(
-        method: 'GET',
-        path: ApiEndpoints.exerciseSearch,
-        queryParameters: {'q': query, 'limit': 30},
-      );
-
-      final results = (response.data as List).cast<Map<String, dynamic>>();
-      final searchExercises = results
-          .map((exercise) => SearchExercise.fromJson(exercise))
-          .toList();
-
-      ref.read(unifiedExerciseSearchResultsProvider.notifier).state =
-          searchExercises;
-    } catch (e) {
-      ref.read(unifiedExerciseSearchResultsProvider.notifier).state = [];
-    } finally {
-      ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = false;
-    }
+    ref.read(exerciseSearchProvider.notifier).updateQuery(value);
   }
 
   List<Widget> _buildSuggestions(
@@ -265,7 +408,12 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
         ),
         onTap: () {
           controller.closeView(exercise.name);
-          widget.onExerciseSelected?.call(exercise);
+          // Adiciona pequeno delay para permitir finalização das animações do SearchAnchor
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              widget.onExerciseSelected?.call(exercise);
+            }
+          });
         },
       );
     }).toList();
@@ -335,7 +483,28 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
           const SizedBox(height: 12),
           ElevatedButton.icon(
             onPressed: () async {
-              await _createExercise(controller, query);
+              final created = await ref
+                  .read(exerciseSearchProvider.notifier)
+                  .createExercise(query);
+              if (created != null) {
+                if (mounted) {
+                  controller.closeView(created.name);
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (mounted) {
+                      widget.onExerciseSelected?.call(created);
+                    }
+                  });
+                }
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Erro ao criar exercício'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             icon: const Icon(Icons.add),
             label: Text("Criar exercício '$query'"),
@@ -343,45 +512,6 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
         ],
       ),
     );
-  }
-
-  Future<void> _createExercise(SearchController controller, String name) async {
-    if (name.trim().isEmpty) return;
-
-    try {
-      ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = true;
-
-      final auth = AuthService();
-      auth.initialize();
-
-      final response = await auth.authenticatedRequest(
-        method: 'GET',
-        path: ApiEndpoints.exerciseFindOrCreate,
-        queryParameters: {'name': name.trim()},
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        final created = SearchExercise.fromJson(response.data as Map<String, dynamic>);
-
-        // Close the search view with the created name and notify parent
-        controller.closeView(created.name);
-        widget.onExerciseSelected?.call(created);
-
-        // Optionally add to results cache
-        final current = ref.read(unifiedExerciseSearchResultsProvider);
-        ref.read(unifiedExerciseSearchResultsProvider.notifier).state = [created, ...current];
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao criar exercício'), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao criar exercício: $e'), backgroundColor: Colors.red),
-      );
-    } finally {
-      ref.read(unifiedExerciseSearchLoadingProvider.notifier).state = false;
-    }
   }
 
   Color _getCategoryColor(String category) {

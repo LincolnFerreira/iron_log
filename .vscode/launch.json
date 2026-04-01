@@ -5,20 +5,33 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "iron_log",
-      "request": "launch",
-      "type": "dart"
-    },
-    {
-      "name": "iron_log (profile mode)",
+      "name": "Dev: Debug",
       "request": "launch",
       "type": "dart",
-      "flutterMode": "profile"
+      "program": "lib/main.dart",
+      "args": ["--dart-define=FLAVOR=dev"]
     },
     {
-      "name": "iron_log (release mode)",
+      "name": "Dev: Release",
       "request": "launch",
       "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--dart-define=FLAVOR=dev"],
+      "flutterMode": "release"
+    },
+    {
+      "name": "Prod: Debug",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--dart-define=FLAVOR=prod"]
+    },
+    {
+      "name": "Prod: Release",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": ["--dart-define=FLAVOR=prod"],
       "flutterMode": "release"
     }
   ]

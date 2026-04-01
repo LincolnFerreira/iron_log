@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 
 import '../molecules/greeting_header.dart';
+import '../molecules/active_sequence_card.dart';
 import '../molecules/todays_workout_card.dart';
-import '../organisms/metrics_row.dart';
-import '../organisms/workout_options_grid.dart';
+import '../organisms/workout_quick_actions_grid.dart';
+import '../organisms/your_month_section.dart';
 
 class HomeTemplate extends StatelessWidget {
   final String userName;
@@ -39,51 +40,75 @@ class HomeTemplate extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Column(
-        spacing: 12,
+        spacing: 10,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 24),
+          // Active sequence card
+          // Greeting header with date
           GreetingHeader(
             name: userName,
-            date: 'Hoje • ${DateTime.now().day} de ${_getMonthName()}',
+            title: 'BOM TREINO,',
             imageUrl: imageUrl,
             onAvatarTap: onAvatarTap,
           ),
-          WorkoutOptionsGrid(
-            todaysRoutine: todaysRoutine,
-            todaysSession: todaysSession,
-            isLoadingWorkout: isLoadingWorkout,
-            error: error,
-            onStartWorkout: onStartWorkout,
-            onChangeWorkout: onChangeWorkout,
-            onQuickCreate: onQuickCreate,
-            onRetryWorkout: onRetryWorkout,
+          const ActiveSequenceCard(streak: 5), //TODO: passar do provider
+          Column(
+            spacing: 8,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${_getWeekdayAbbr()} • ${DateTime.now().day} DE ${_getMonthName()}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+              // Today's workout card with exercise chips and start button
+              TodaysWorkoutCard(
+                todaysRoutine: todaysRoutine,
+                todaysSession: todaysSession,
+                isLoading: isLoadingWorkout,
+                onStartWorkout: onStartWorkout,
+              ),
+            ],
           ),
-          TodaysWorkoutCard(
-            todaysRoutine: todaysRoutine,
-            todaysSession: todaysSession,
-            isLoading: isLoadingWorkout,
+          // Quick actions grid
+          WorkoutQuickActionsGrid(
+            onMyRoutinesTap: onChangeWorkout,
+            onNewRoutinesTap: () {
+              // TODO: navigate to new routines
+            },
+            onQuickCreateTap: onQuickCreate,
           ),
-          const MetricsRow(monthlyWorkouts: 28, currentStreak: 5),
+          // Your month section with metrics and monthly goal progress
+          YourMonthSection(
+            workoutsCompleted: 3, //TODO: passar do provider
+            monthlyGoal: 20, //TODO: passar do provider
+            totalSeries: 45, //TODO: passar do provider
+            totalRoutines: 2, //TODO: passar do provider
+          ),
         ],
       ),
     );
   }
 
+  String _getWeekdayAbbr() {
+    const weekdays = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+    return weekdays[DateTime.now().weekday - 1];
+  }
+
   String _getMonthName() {
     const months = [
-      'janeiro',
-      'fevereiro',
-      'março',
-      'abril',
-      'maio',
-      'junho',
-      'julho',
-      'agosto',
-      'setembro',
-      'outubro',
-      'novembro',
-      'dezembro',
+      'JANEIRO',
+      'FEVEREIRO',
+      'MARÇO',
+      'ABRIL',
+      'MAIO',
+      'JUNHO',
+      'JULHO',
+      'AGOSTO',
+      'SETEMBRO',
+      'OUTUBRO',
+      'NOVEMBRO',
+      'DEZEMBRO',
     ];
     return months[DateTime.now().month - 1];
   }

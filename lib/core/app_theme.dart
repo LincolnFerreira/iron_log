@@ -9,7 +9,6 @@ class AppTheme {
         primary: AppColors.primaryLight,
         secondary: AppColors.blue80,
         surface: AppColors.surfaceLight,
-        background: AppColors.backgroundLight,
         error: AppColors.error,
       ),
 
@@ -26,12 +25,10 @@ class AppTheme {
 
   static ThemeData get dark {
     return ThemeData.dark().copyWith(
-      useMaterial3: true,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryDark,
         secondary: AppColors.blue30,
         surface: AppColors.surfaceDark,
-        background: AppColors.backgroundDark,
         error: AppColors.error,
       ),
 
@@ -72,92 +69,92 @@ class AppTheme {
     return TextTheme(
       displayLarge: TextStyle(
         fontSize: 57,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       displayMedium: TextStyle(
         fontSize: 45,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       displaySmall: TextStyle(
         fontSize: 36,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       headlineLarge: TextStyle(
         fontSize: 32,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       headlineMedium: TextStyle(
         fontSize: 28,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
 
         color: textColor,
       ),
       headlineSmall: TextStyle(
         fontSize: 24,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       titleLarge: TextStyle(
         fontSize: 22,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       titleMedium: TextStyle(
         fontSize: 18,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       titleSmall: TextStyle(
         fontSize: 14,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       bodyLarge: TextStyle(
         fontSize: 16,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       bodyMedium: TextStyle(
         fontSize: 14,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       bodySmall: TextStyle(
         fontSize: 12,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w400,
         color: textColor,
       ),
       labelLarge: TextStyle(
         fontSize: 14,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       labelMedium: TextStyle(
         fontSize: 12,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w500,
         color: textColor,
       ),
       labelSmall: TextStyle(
         fontSize: 11,
-        fontFamily: "Inter",
+        fontFamily: "Barlow",
         fontWeight: FontWeight.w500,
         color: textColor,
       ),

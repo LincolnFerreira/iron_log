@@ -1,17 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/routes/app_router.dart';
 import '../auth/auth.dart';
 import '../auth/utils/logout_utils.dart';
 import '../workout_day/workout_day.dart';
 import 'components/templates/home_template.dart';
 import 'state/home_provider.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> with RouteAware {
+  @override
+  void initState() {
+    super.initState();
+    // Carrega dados iniciais
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(homeProvider.notifier).refresh();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Registra no RouteObserver para receber didPopNext
+    final modal = ModalRoute.of(context);
+    if (modal != null) {
+      routeObserver.subscribe(this, modal);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Quando retornamos para a Home (uma rota acima foi fechada), recarrega o estado
+    ref.read(homeProvider.notifier).refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final homeState = ref.watch(homeProvider);
     final userProfile = ref.watch(userProfileProvider);

@@ -9,10 +9,7 @@ class WorkoutState {
     this.isLoading = false,
   });
 
-  WorkoutState copyWith({
-    String? currentWorkout,
-    bool? isLoading,
-  }) {
+  WorkoutState copyWith({String? currentWorkout, bool? isLoading}) {
     return WorkoutState(
       currentWorkout: currentWorkout ?? this.currentWorkout,
       isLoading: isLoading ?? this.isLoading,
@@ -35,6 +32,8 @@ class WorkoutNotifier extends StateNotifier<WorkoutState> {
   }
 }
 
-final workoutProvider = StateNotifierProvider<WorkoutNotifier, WorkoutState>((ref) {
+final workoutProvider = StateNotifierProvider<WorkoutNotifier, WorkoutState>((
+  ref,
+) {
   return WorkoutNotifier();
 });

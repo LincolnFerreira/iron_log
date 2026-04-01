@@ -25,3 +25,15 @@ final deleteSessionUseCaseProvider = Provider<DeleteSessionUseCase>((ref) {
   final repository = ref.watch(sessionRepositoryProviderImpl);
   return DeleteSessionUseCase(repository);
 });
+
+final updateSessionExercisesUseCaseProvider =
+    Provider<UpdateSessionExercisesUseCase>((ref) {
+      final repository = ref.watch(sessionRepositoryProviderImpl);
+      return UpdateSessionExercisesUseCase(repository);
+    });
+
+final removeExerciseFromSessionUseCaseProvider =
+    Provider<RemoveExerciseFromSessionUseCase>((ref) {
+      final repository = ref.watch(sessionRepositoryProviderImpl);
+      return RemoveExerciseFromSessionUseCase(repository);
+    });

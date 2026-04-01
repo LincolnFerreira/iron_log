@@ -35,14 +35,7 @@ class _ReorderableSessionListState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: sessions.isEmpty ? _buildEmptyState() : _buildSessionsList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateSessionDialog(),
-        child: const Icon(Icons.add),
-        tooltip: 'Adicionar Sessão',
-      ),
-    );
+    return sessions.isEmpty ? _buildEmptyState() : _buildSessionsList();
   }
 
   Widget _buildSessionsList() {
@@ -373,86 +366,11 @@ class _ReorderableSessionListState
   }
 
   void _showCreateSessionDialog() {
-    final nameController = TextEditingController();
-    final musclesController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Nova Sessão'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nome da Sessão',
-                hintText: 'Ex: Push, Pull, Pernas',
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: musclesController,
-              decoration: const InputDecoration(
-                labelText: 'Grupos Musculares (opcional)',
-                hintText: 'Ex: peito, ombros, tríceps',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty) {
-                _createSession(nameController.text, musclesController.text);
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Criar'),
-          ),
-        ],
-      ),
+    // Navegar para a página de criar nova sessão
+    context.push(
+      '/routines/${widget.routine.id}/sessions/new',
+      extra: widget.routine,
     );
-  }
-
-  void _createSession(String name, String musclesText) async {
-    final muscles = musclesText.isNotEmpty
-        ? musclesText.split(',').map((m) => m.trim()).toList()
-        : <String>[];
-
-    final newOrder = sessions.isEmpty ? 1 : sessions.length + 1;
-
-    final sessionNotifier = ref.read(sessionNotifierProvider.notifier);
-    final newSession = await sessionNotifier.createSession(
-      routineId: widget.routine.id,
-      name: name,
-      order: newOrder,
-      muscles: muscles,
-    );
-
-    if (newSession != null) {
-      setState(() {
-        sessions.add(newSession);
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Sessão "${newSession.name}" criada com sucesso!'),
-        ),
-      );
-    } else {
-      final sessionState = ref.read(sessionNotifierProvider);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(sessionState.error ?? 'Erro ao criar sessão'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 
   void _navigateToSessionDetail(Session session) {

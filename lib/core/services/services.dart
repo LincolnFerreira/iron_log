@@ -1,5 +1,6 @@
 /// Exportações dos serviços HTTP e de autenticação
 /// Organizado seguindo princípios SOLID
+library;
 
 // Serviços principais
 export 'auth_service.dart';

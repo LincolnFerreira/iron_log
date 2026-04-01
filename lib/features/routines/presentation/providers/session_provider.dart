@@ -37,11 +37,15 @@ class SessionNotifier extends StateNotifier<SessionState> {
   final CreateSessionUseCase _createSessionUseCase;
   final UpdateSessionUseCase _updateSessionUseCase;
   final DeleteSessionUseCase _deleteSessionUseCase;
+  final UpdateSessionExercisesUseCase _updateSessionExercisesUseCase;
+  final RemoveExerciseFromSessionUseCase _removeExerciseFromSessionUseCase;
 
   SessionNotifier(
     this._createSessionUseCase,
     this._updateSessionUseCase,
     this._deleteSessionUseCase,
+    this._updateSessionExercisesUseCase,
+    this._removeExerciseFromSessionUseCase,
   ) : super(const SessionState());
 
   Future<Session?> createSession({
@@ -109,6 +113,42 @@ class SessionNotifier extends StateNotifier<SessionState> {
     }
   }
 
+  Future<bool> updateSessionExercises(
+    String sessionId,
+    List<Map<String, dynamic>> exercises,
+  ) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _updateSessionExercisesUseCase.execute(sessionId, exercises);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Erro ao atualizar exercícios da sessão: $e',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> removeExerciseFromSession(
+    String sessionId,
+    String exerciseId,
+  ) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      await _removeExerciseFromSessionUseCase.execute(sessionId, exerciseId);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Erro ao remover exercício da sessão: $e',
+      );
+      return false;
+    }
+  }
+
   void clearError() {
     state = state.copyWith(clearError: true);
   }
@@ -124,10 +164,18 @@ final sessionNotifierProvider =
       final createSessionUseCase = ref.watch(createSessionUseCaseProvider);
       final updateSessionUseCase = ref.watch(updateSessionUseCaseProvider);
       final deleteSessionUseCase = ref.watch(deleteSessionUseCaseProvider);
+      final updateSessionExercisesUseCase = ref.watch(
+        updateSessionExercisesUseCaseProvider,
+      );
+      final removeExerciseFromSessionUseCase = ref.watch(
+        removeExerciseFromSessionUseCaseProvider,
+      );
 
       return SessionNotifier(
         createSessionUseCase,
         updateSessionUseCase,
         deleteSessionUseCase,
+        updateSessionExercisesUseCase,
+        removeExerciseFromSessionUseCase,
       );
     });

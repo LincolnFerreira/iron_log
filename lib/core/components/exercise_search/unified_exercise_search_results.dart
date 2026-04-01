@@ -16,26 +16,24 @@ class UnifiedExerciseSearchResults extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchQuery = ref.watch(unifiedExerciseSearchQueryProvider);
-    final searchResults = ref.watch(unifiedExerciseSearchResultsProvider);
-    final isLoading = ref.watch(unifiedExerciseSearchLoadingProvider);
+    final searchState = ref.watch(exerciseSearchProvider);
 
-    if (searchQuery.isEmpty) {
+    if (searchState.query.isEmpty) {
       return _buildEmptyState();
     }
 
-    if (isLoading) {
+    if (searchState.isLoading) {
       return _buildLoadingState();
     }
 
-    if (searchResults.isEmpty) {
-      return _buildNoResultsState(searchQuery);
+    if (searchState.results.isEmpty) {
+      return _buildNoResultsState(searchState.query);
     }
 
     return ListView.builder(
-      itemCount: searchResults.length,
+      itemCount: searchState.results.length,
       itemBuilder: (context, index) {
-        final exercise = searchResults[index];
+        final exercise = searchState.results[index];
 
         if (exerciseCardBuilder != null) {
           return exerciseCardBuilder!(
