@@ -14,8 +14,14 @@ import 'session_section_title.dart';
 class SessionDetailContent extends ConsumerStatefulWidget {
   final Routine routine;
   final Session? session;
+  final TextEditingController sessionNameController;
 
-  const SessionDetailContent({super.key, required this.routine, this.session});
+  const SessionDetailContent({
+    super.key,
+    required this.routine,
+    this.session,
+    required this.sessionNameController,
+  });
 
   @override
   ConsumerState<SessionDetailContent> createState() =>
@@ -23,16 +29,12 @@ class SessionDetailContent extends ConsumerStatefulWidget {
 }
 
 class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
-  late TextEditingController _sessionNameController;
   late TextEditingController _musclesController;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _sessionNameController = TextEditingController(
-      text: widget.session?.name ?? '',
-    );
     _musclesController = TextEditingController(
       text: widget.session?.muscles.join(', ') ?? '',
     );
@@ -46,8 +48,6 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
       );
 
       if (widget.session != null && widget.session!.exercises.isNotEmpty) {
-        // Converte os SessionExercise salvos para SearchExercise e inicializa
-        // os providers base + newly (clearAll já está embutido no init).
         final searchExercises = widget.session!.exercises.map((se) {
           return SearchExercise(
             id: se.exerciseId,
@@ -63,7 +63,6 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
         notifier.initWithSessionExercises(searchExercises);
       } else {
-        // Sessão nova ou sem exercícios — só limpar
         notifier.clearAll();
       }
     });
@@ -71,7 +70,6 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
   @override
   void dispose() {
-    _sessionNameController.dispose();
     _musclesController.dispose();
     super.dispose();
   }
@@ -86,13 +84,18 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
         // Conteúdo scrollável
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
             children: [
               // Nome da Sessão
               const SessionSectionTitle('NOME DA SESSÃO'),
               const SizedBox(height: 8),
               TextField(
-                controller: _sessionNameController,
+                controller: widget.sessionNameController,
                 decoration: InputDecoration(
                   hintText: 'Ex: Peito e Tríceps',
                   border: OutlineInputBorder(
@@ -187,64 +190,66 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
                 },
               ),
               const SizedBox(height: 24),
-            ],
-          ),
-        ),
 
-        // Botão fixo no final
-        Container(
-          color: hasSelectedExercises ? AppColors.blue100 : AppColors.gray20,
-          width: double.infinity,
-          height: 80,
-          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: hasSelectedExercises
-                  ? () {
-                      setState(() {
-                        _isSaving = true;
-                      });
-                      _onSave();
-                    }
-                  : null,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: _isSaving
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.save_rounded,
-                            color: hasSelectedExercises
-                                ? Colors.white
-                                : AppColors.gray50,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Salvar Sessão',
-                            style: Theme.of(context).textTheme.labelLarge
-                                ?.copyWith(
+              // Botão de salvar agora faz parte do conteúdo e rola com a tela
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Center(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: hasSelectedExercises
+                            ? AppColors.blue100
+                            : AppColors.gray20,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      onPressed: hasSelectedExercises
+                          ? () {
+                              setState(() {
+                                _isSaving = true;
+                              });
+                              _onSave();
+                            }
+                          : null,
+                      child: _isSaving
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.save_rounded,
                                   color: hasSelectedExercises
                                       ? Colors.white
                                       : AppColors.gray50,
-                                  fontWeight: FontWeight.w600,
                                 ),
-                          ),
-                        ],
-                      ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Salvar Sessão',
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: hasSelectedExercises
+                                            ? Colors.white
+                                            : AppColors.gray50,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ],
@@ -252,7 +257,7 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
   }
 
   Future<void> _onSave() async {
-    final sessionName = _sessionNameController.text.trim();
+    final sessionName = widget.sessionNameController.text.trim();
     final muscles = _musclesController.text
         .split(',')
         .map((m) => m.trim())
