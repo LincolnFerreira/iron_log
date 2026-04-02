@@ -137,7 +137,7 @@ class WorkoutDataMapper {
       return reps.toString();
     }
 
-    return '10-12';
+    return '-';
   }
 
   static String _mapWeight(Map<String, dynamic> config) {

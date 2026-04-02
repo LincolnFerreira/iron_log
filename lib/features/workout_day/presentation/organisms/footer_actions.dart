@@ -8,6 +8,7 @@ class FooterActions extends StatefulWidget {
   final VoidCallback? onSaveTrain;
   final bool workoutStarted;
   final bool isLoading;
+  final bool isManual;
   final int seriesDone;
   final double volumeKg;
   final int completionPercent;
@@ -20,6 +21,7 @@ class FooterActions extends StatefulWidget {
     this.onSaveTrain,
     this.workoutStarted = false,
     this.isLoading = false,
+    this.isManual = false,
     this.seriesDone = 0,
     this.volumeKg = 0.0,
     this.completionPercent = 0,
@@ -116,7 +118,7 @@ class _FooterActionsState extends State<FooterActions> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.workoutStarted)
+          if (widget.workoutStarted && !widget.isManual)
             WorkoutStatsBar(
               seriesDone: widget.seriesDone,
               volumeKg: widget.volumeKg,
@@ -124,7 +126,21 @@ class _FooterActionsState extends State<FooterActions> {
             ),
           Padding(
             padding: const EdgeInsets.all(20),
-            child: widget.workoutStarted
+            child: widget.isManual
+                ? ElevatedButton.icon(
+                    onPressed: widget.isLoading ? null : widget.onFinishWorkout,
+                    icon: const Icon(Icons.save_alt),
+                    label: const Text('Salvar Treino'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  )
+                : widget.workoutStarted
                 ? Row(
                     children: [
                       // Botão Finalizar Treino (maior, flex 3)

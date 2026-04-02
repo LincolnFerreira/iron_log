@@ -14,6 +14,7 @@ import 'package:iron_log/features/routines/presentation/pages/session_edit_page.
 import 'package:iron_log/features/routines/presentation/pages/session_detail_page.dart';
 import 'package:iron_log/features/workout_creation/presentation/pages/quick_workout_creation_page.dart';
 import 'package:iron_log/features/settings/presentation/pages/settings_page.dart';
+import 'package:iron_log/features/workout_history/presentation/pages/workout_history_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -146,6 +147,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           key: state.pageKey,
           child: const QuickWorkoutCreationPage(),
         ),
+      ),
+      GoRoute(
+        path: '/history',
+        pageBuilder: (context, state) =>
+            AppPage(key: state.pageKey, child: const WorkoutHistoryPage()),
       ),
       GoRoute(
         path: '/settings',

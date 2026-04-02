@@ -99,10 +99,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
           icon: Icon(Icons.fitness_center),
           label: 'Treinos',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.show_chart),
-          label: 'Progresso',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Histórico'),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Config'),
       ],
     );
@@ -116,8 +113,8 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       case 1: // Treinos
         context.push('/routines');
         break;
-      case 2: // Progresso
-        // TODO: Implementar página de progresso
+      case 2: // Histórico
+        context.push('/history');
         break;
       case 3: // Config
         context.push('/settings');

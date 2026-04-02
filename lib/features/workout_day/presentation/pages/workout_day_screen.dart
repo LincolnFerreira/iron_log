@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../routines/domain/entities/search_exercise.dart';
+import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/exercise_tag.dart';
 import '../../domain/entities/exercise_summary.dart';
 import '../../domain/entities/serie_log.dart';
@@ -16,14 +17,20 @@ import '../providers/workout_timer_provider.dart';
 import './workout_summary_screen.dart';
 
 class WorkoutDayScreen extends ConsumerStatefulWidget {
-  final String? routineId; // rotina atual para contexto
-  final String? sessionId; // sessão específica que será treinada
-  final String? subtitle; // ex: 'Segunda-feira • PPL: Push'
+  final String? routineId;
+  final String? sessionId;
+  final String? subtitle;
+
+  /// Quando não nulo, indica que é um registro de treino passado.
+  /// A data escolhida pelo usuário é usada como startedAt.
+  final DateTime? manualDate;
+
   const WorkoutDayScreen({
     super.key,
     this.routineId,
     this.sessionId,
     this.subtitle,
+    this.manualDate,
   });
 
   @override
@@ -120,14 +127,17 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 subtitle: exercises.isEmpty
                     ? 'Nenhum exercício'
                     : '${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
+                manualDate: widget.manualDate,
               ),
               loading: () => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: 'Carregando...',
+                manualDate: widget.manualDate,
               ),
               error: (_, __) => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: 'Erro ao carregar',
+                manualDate: widget.manualDate,
               ),
             ),
             const SizedBox(height: 24),
@@ -215,6 +225,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       bottomNavigationBar: exercisesAsync.when(
         data: (exercises) => exercises.isNotEmpty
             ? FooterActions(
+                isManual: widget.manualDate != null,
                 seriesDone: _calculateSeriesDone(exercises),
                 volumeKg: _calculateVolume(exercises),
                 completionPercent: _calculateCompletion(exercises),
@@ -239,40 +250,70 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         .read(workoutDayExercisesProvider.notifier)
                         .saveSessionExercises(widget.sessionId!);
 
-                    if (mounted) {
-                      // Cria um WorkoutSummary com os dados atuais
-                      final currentExercises = exercisesAsync.value ?? [];
-                      final timerStartTime = ref.read(workoutTimerProvider);
+                    if (!mounted) return;
 
-                      // Calcula a duração do treino
-                      final duration = timerStartTime != null
-                          ? DateTime.now().difference(timerStartTime)
-                          : const Duration(seconds: 0);
+                    final currentExercises = exercisesAsync.value ?? [];
+                    final timerStartTime = ref.read(workoutTimerProvider);
+                    final now = DateTime.now();
 
-                      final workoutSummary = WorkoutSummary(
-                        sessionName: widget.subtitle ?? 'Treino',
-                        date: DateTime.now(),
-                        duration: duration,
-                        exercises: _buildExerciseSummaries(currentExercises),
-                        totalSeries: _calculateSeriesDone(currentExercises),
-                        completedSeries: _calculateSeriesDone(currentExercises),
-                        totalVolume: _calculateVolume(currentExercises),
-                        isFirstWorkout:
-                            false, // TODO: Verificar se é primeiro treino
-                        previousWorkouts:
-                            [], // TODO: Carregar histórico real do backend
-                      );
+                    // Para treino manual, pede duração ao usuário
+                    Duration duration;
+                    DateTime startedAt;
+                    DateTime endedAt;
 
-                      if (mounted) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => WorkoutSummaryScreen(
-                              workoutSummary: workoutSummary,
-                            ),
-                          ),
+                    if (widget.manualDate != null) {
+                      final picked = await _pickDuration(context);
+                      if (!mounted) return;
+                      if (picked == null) return; // usuário cancelou
+                      duration = picked;
+                      startedAt = widget.manualDate!;
+                      endedAt = startedAt.add(duration);
+                    } else {
+                      startedAt = timerStartTime ?? now;
+                      endedAt = now;
+                      duration = endedAt.difference(startedAt);
+                    }
+
+                    // Persiste no backend
+                    if (widget.routineId != null &&
+                        widget.routineId!.isNotEmpty) {
+                      try {
+                        await WorkoutLogService().saveWorkout(
+                          exercises: currentExercises,
+                          routineId: widget.routineId!,
+                          startedAt: startedAt,
+                          endedAt: endedAt,
+                          isManual: widget.manualDate != null,
                         );
+                      } catch (e) {
+                        if (kDebugMode) {
+                          print('Aviso: falha ao salvar treino no backend: $e');
+                        }
+                        // Não bloqueia a navegação para o resumo
                       }
                     }
+
+                    if (!mounted) return;
+
+                    final workoutSummary = WorkoutSummary(
+                      sessionName: widget.subtitle ?? 'Treino',
+                      date: widget.manualDate ?? now,
+                      duration: duration,
+                      exercises: _buildExerciseSummaries(currentExercises),
+                      totalSeries: _calculateSeriesDone(currentExercises),
+                      completedSeries: _calculateSeriesDone(currentExercises),
+                      totalVolume: _calculateVolume(currentExercises),
+                      isFirstWorkout: false,
+                      previousWorkouts: [],
+                    );
+
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => WorkoutSummaryScreen(
+                          workoutSummary: workoutSummary,
+                        ),
+                      ),
+                    );
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -333,7 +374,63 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     setState(() {
       _workoutStarted = true;
     });
-    ref.read(workoutTimerProvider.notifier).startTimer();
+    // Treino manual não usa o timer em tempo real
+    if (widget.manualDate == null) {
+      ref.read(workoutTimerProvider.notifier).startTimer();
+    }
+  }
+
+  /// Exibe um dialog para o usuário informar a duração estimada do treino.
+  /// Retorna null se o usuário cancelar.
+  Future<Duration?> _pickDuration(BuildContext context) async {
+    final hoursCtrl = TextEditingController(text: '1');
+    final minutesCtrl = TextEditingController(text: '0');
+
+    return showDialog<Duration>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Duração do treino'),
+        content: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: hoursCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Horas',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                controller: minutesCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Minutos',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final h = int.tryParse(hoursCtrl.text) ?? 0;
+              final m = int.tryParse(minutesCtrl.text) ?? 0;
+              Navigator.pop(ctx, Duration(hours: h, minutes: m));
+            },
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAddExerciseBottomSheet() {

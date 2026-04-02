@@ -4,6 +4,7 @@ import 'package:iron_log/features/workout_day/presentation/molecules/series_sele
 import '../atoms/custom_badge.dart';
 import '../molecules/series_table.dart';
 import '../../domain/entities/workout_exercise.dart';
+import '../../domain/entities/weight_unit.dart';
 import '../providers/workout_day_provider.dart';
 
 class ExerciseCard extends ConsumerStatefulWidget {
@@ -30,6 +31,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   late String _weight;
   late int _rir;
   late int _restTime;
+  late WeightUnit _weightUnit;
   SeriesType? _selectedSeriesType;
 
   @override
@@ -40,6 +42,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     _weight = widget.exercise.weight;
     _rir = widget.exercise.rir;
     _restTime = widget.exercise.restTime;
+    _weightUnit = widget.exercise.weightUnit;
   }
 
   @override
@@ -127,9 +130,16 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           ),
           const SizedBox(height: 4),
           //TODO: verificar no back-end pq aqui não está vindo o nome dos musculos e sim um id, pra isso vamos precisar verificar bem provavelmente talvez um log no back-end pra ver o que está passando aqui
-          Text(
-            widget.exercise.muscles,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.exercise.muscles,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                ),
+              ),
+              _buildWeightUnitToggle(ref),
+            ],
           ),
           const SizedBox(height: 8),
 
@@ -158,6 +168,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
             count: _series,
             weight: _weight,
             reps: _reps,
+            weightUnit: _weightUnit.label,
             onToggleDone: (index, done) {
               // TODO: persistir estado por série no provider/backend quando necessário
               if (mounted) {
@@ -182,6 +193,63 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
             label: const Text('Adicionar série'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWeightUnitToggle(WidgetRef ref) {
+    final unit = _weightUnit;
+    return GestureDetector(
+      onTap: () {
+        final newUnit = unit == WeightUnit.kg ? WeightUnit.lbs : WeightUnit.kg;
+        setState(() => _weightUnit = newUnit);
+        ref
+            .read(workoutDayExercisesProvider.notifier)
+            .updateExercise(
+              widget.exercise.id,
+              widget.exercise.copyWith(weightUnit: newUnit),
+            );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'kg',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: unit == WeightUnit.kg
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+                color: unit == WeightUnit.kg
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey.shade400,
+              ),
+            ),
+            Text(
+              ' / ',
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
+            ),
+            Text(
+              'lbs',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: unit == WeightUnit.lbs
+                    ? FontWeight.w600
+                    : FontWeight.normal,
+                color: unit == WeightUnit.lbs
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey.shade400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -7,6 +7,8 @@ class WorkoutDayHeader extends ConsumerWidget {
   final VoidCallback? onMorePressed;
   final String title;
   final String? subtitle;
+  /// Quando não nulo, exibe badge de "treino passado" e omite o timer.
+  final DateTime? manualDate;
 
   const WorkoutDayHeader({
     super.key,
@@ -14,6 +16,7 @@ class WorkoutDayHeader extends ConsumerWidget {
     this.onMorePressed,
     this.title = 'Exercícios do Dia',
     this.subtitle,
+    this.manualDate,
   });
 
   @override
@@ -60,7 +63,27 @@ class WorkoutDayHeader extends ConsumerWidget {
                   ),
                 ],
                 const SizedBox(height: 4),
-                const WorkoutTimer(),
+                if (manualDate != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                  'Treino de ${manualDate!.day.toString().padLeft(2, '0')}/${manualDate!.month.toString().padLeft(2, '0')}/${manualDate!.year}',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onTertiaryContainer,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  const WorkoutTimer(),
+                ],
               ],
             ),
           ),

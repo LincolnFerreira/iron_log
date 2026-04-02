@@ -1,4 +1,5 @@
 import 'exercise_tag.dart';
+import 'weight_unit.dart';
 
 class WorkoutExercise {
   final String id;
@@ -11,6 +12,7 @@ class WorkoutExercise {
   final String weight;
   final int rir;
   final int restTime;
+  final WeightUnit weightUnit;
 
   const WorkoutExercise({
     required this.id,
@@ -23,6 +25,7 @@ class WorkoutExercise {
     required this.weight,
     required this.rir,
     required this.restTime,
+    this.weightUnit = WeightUnit.kg,
   });
 
   factory WorkoutExercise.fromJson(Map<String, dynamic> json) {
@@ -33,10 +36,11 @@ class WorkoutExercise {
       muscles: json['muscles']?.toString() ?? '',
       variation: json['variation']?.toString() ?? 'Traditional',
       series: json['series'] ?? 3,
-      reps: json['reps']?.toString() ?? '10-12',
+      reps: json['reps']?.toString() ?? '-',
       weight: json['weight']?.toString() ?? '0kg',
       rir: json['rir'] ?? 2,
       restTime: json['restTime'] ?? 120,
+      weightUnit: WeightUnit.fromString(json['weightUnit']?.toString() ?? 'kg'),
     );
   }
 
@@ -52,6 +56,7 @@ class WorkoutExercise {
       'weight': weight,
       'rir': rir,
       'restTime': restTime,
+      'weightUnit': weightUnit.label,
     };
   }
 
@@ -66,6 +71,7 @@ class WorkoutExercise {
     String? weight,
     int? rir,
     int? restTime,
+    WeightUnit? weightUnit,
   }) {
     return WorkoutExercise(
       id: id ?? this.id,
@@ -78,6 +84,7 @@ class WorkoutExercise {
       weight: weight ?? this.weight,
       rir: rir ?? this.rir,
       restTime: restTime ?? this.restTime,
+      weightUnit: weightUnit ?? this.weightUnit,
     );
   }
 

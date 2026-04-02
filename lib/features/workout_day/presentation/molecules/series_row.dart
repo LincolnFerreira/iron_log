@@ -7,12 +7,20 @@ class SeriesRow extends StatefulWidget {
   final SeriesEntry entry;
   final ValueChanged<SeriesEntry> onChanged;
   final ValueChanged<bool> onToggleDone;
+  final String weightUnit;
+  final ValueNotifier<int>? activateWeightToken;
+  final VoidCallback? onRepsDone;
+  final bool isLastRow;
 
   const SeriesRow({
     super.key,
     required this.entry,
     required this.onChanged,
     required this.onToggleDone,
+    this.weightUnit = 'kg',
+    this.activateWeightToken,
+    this.onRepsDone,
+    this.isLastRow = false,
   });
 
   @override
@@ -36,13 +44,23 @@ class _SeriesRowState extends State<SeriesRow> {
     );
     _editingWeight = false;
     _editingReps = false;
+    widget.activateWeightToken?.addListener(_onActivateWeight);
   }
 
   @override
   void dispose() {
+    widget.activateWeightToken?.removeListener(_onActivateWeight);
     _weightController.dispose();
     _repController.dispose();
     super.dispose();
+  }
+
+  void _onActivateWeight() {
+    _weightController.text = _cleanValue(widget.entry.weight);
+    setState(() {
+      _editingWeight = true;
+      _editingReps = false;
+    });
   }
 
   void _updateEntry(SeriesEntry updated) {
@@ -51,12 +69,16 @@ class _SeriesRowState extends State<SeriesRow> {
 
   void _handleWeightSubmitted(String val) {
     _updateEntry(widget.entry.copyWith(weight: _cleanValue(val)));
-    setState(() => _editingWeight = false);
+    setState(() {
+      _editingWeight = false;
+      _editingReps = true; // avança automaticamente para reps
+    });
   }
 
   void _handleRepsSubmitted(String val) {
     _updateEntry(widget.entry.copyWith(reps: _cleanValue(val)));
     setState(() => _editingReps = false);
+    widget.onRepsDone?.call(); // sinaliza para próxima série
   }
 
   void _handleTypeChanged(int? type) {
@@ -70,7 +92,7 @@ class _SeriesRowState extends State<SeriesRow> {
     widget.onToggleDone(newDone);
   }
 
-  /// Extract only the first sequence of digits from a value (ignores ranges like "10-12")
+  /// Extract only the first sequence of digits from a value (ignores ranges like "-")
   String _cleanValue(String value) {
     final digits = RegExp(r'\d+').firstMatch(value);
     return digits?.group(0) ?? '0';
@@ -86,12 +108,12 @@ class _SeriesRowState extends State<SeriesRow> {
         children: [
           // Série label + Tipo select (side by side) - matches flex: 3 from header
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Row(
-              spacing: 6,
+              spacing: 2,
               children: [
                 Flexible(
-                  flex: 1,
+                  flex: 2,
                   child: SizedBox(
                     height: 32,
                     child: DropdownButtonFormField<int>(
@@ -128,7 +150,6 @@ class _SeriesRowState extends State<SeriesRow> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  flex: 2,
                   child: Text(
                     'Série ${widget.entry.index + 1}',
                     overflow: TextOverflow.ellipsis,
@@ -152,6 +173,7 @@ class _SeriesRowState extends State<SeriesRow> {
                     controller: _weightController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textInputAction: TextInputAction.next,
                     autofocus: true,
                     onSubmitted: _handleWeightSubmitted,
                     decoration: const InputDecoration(
@@ -165,7 +187,7 @@ class _SeriesRowState extends State<SeriesRow> {
                   )
                 : GestureDetector(
                     onTap: () {
-                      _weightController.text = widget.entry.weight;
+                      _weightController.text = _cleanValue(widget.entry.weight);
                       setState(() => _editingWeight = true);
                     },
                     child: Container(
@@ -176,9 +198,22 @@ class _SeriesRowState extends State<SeriesRow> {
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.transparent),
                       ),
-                      child: Text(
-                        _cleanValue(widget.entry.weight),
-                        style: TextStyle(color: Colors.grey.shade800),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _cleanValue(widget.entry.weight),
+                            style: TextStyle(color: Colors.grey.shade800),
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            widget.weightUnit,
+                            style: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -193,6 +228,9 @@ class _SeriesRowState extends State<SeriesRow> {
                     controller: _repController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textInputAction: widget.isLastRow
+                        ? TextInputAction.done
+                        : TextInputAction.next,
                     autofocus: true,
                     onSubmitted: _handleRepsSubmitted,
                     decoration: const InputDecoration(

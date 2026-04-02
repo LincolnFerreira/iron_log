@@ -9,6 +9,7 @@ class SeriesTable extends StatefulWidget {
   final String weight;
   final String reps;
   final void Function(int index, bool done)? onToggleDone;
+  final String weightUnit;
 
   const SeriesTable({
     super.key,
@@ -16,6 +17,7 @@ class SeriesTable extends StatefulWidget {
     required this.weight,
     required this.reps,
     this.onToggleDone,
+    this.weightUnit = 'kg',
   });
 
   @override
@@ -24,6 +26,7 @@ class SeriesTable extends StatefulWidget {
 
 class _SeriesTableState extends State<SeriesTable> {
   late List<SeriesEntry> _entries;
+  late List<ValueNotifier<int>> _activateWeightTokens;
 
   @override
   void initState() {
@@ -36,12 +39,27 @@ class _SeriesTableState extends State<SeriesTable> {
       widget.count,
       (i) => SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
     );
+    _activateWeightTokens = List.generate(
+      widget.count,
+      (_) => ValueNotifier(0),
+    );
+  }
+
+  @override
+  void dispose() {
+    for (final token in _activateWeightTokens) {
+      token.dispose();
+    }
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(covariant SeriesTable oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.count != widget.count) {
+      for (final token in _activateWeightTokens) {
+        token.dispose();
+      }
       _initializeEntries();
     }
   }
@@ -82,7 +100,7 @@ class _SeriesTableState extends State<SeriesTable> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'PESO (KG)',
+                  'PESO (${widget.weightUnit.toUpperCase()})',
                   style: Theme.of(
                     context,
                   ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
@@ -114,11 +132,18 @@ class _SeriesTableState extends State<SeriesTable> {
         ..._entries.asMap().entries.map((entry) {
           final index = entry.key;
           final seriesEntry = entry.value;
+          final isLast = index == _entries.length - 1;
           return SeriesRow(
             key: ValueKey(index),
             entry: seriesEntry,
             onChanged: (updated) => _handleEntryChanged(index, updated),
             onToggleDone: (done) => _handleToggleDone(index, done),
+            weightUnit: widget.weightUnit,
+            activateWeightToken: _activateWeightTokens[index],
+            isLastRow: isLast,
+            onRepsDone: isLast
+                ? null
+                : () => _activateWeightTokens[index + 1].value++,
           );
         }),
 

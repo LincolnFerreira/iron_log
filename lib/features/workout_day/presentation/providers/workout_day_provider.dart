@@ -4,6 +4,7 @@ import '../../../../core/services/http_service.dart';
 import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/mappers/workout_data_mapper.dart';
 import '../../domain/entities/workout_exercise.dart';
+import '../../domain/entities/weight_unit.dart';
 
 // Provider para gerenciar os exercícios do workout day
 final workoutDayExercisesProvider =
