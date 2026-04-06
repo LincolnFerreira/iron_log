@@ -90,7 +90,13 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
     try {
       final routines = await _getRoutinesUseCase.execute();
       print('✅ Rotinas carregadas: ${routines.length}');
-      state = state.copyWith(routines: routines, isLoading: false);
+      // Ativa sempre em primeiro, demais mantêm ordem original (createdAt desc).
+      final sorted = [...routines]..sort((a, b) {
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return 0;
+        });
+      state = state.copyWith(routines: sorted, isLoading: false);
     } catch (e) {
       print('❌ Erro ao carregar rotinas: $e');
       state = state.copyWith(

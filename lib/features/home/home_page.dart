@@ -7,6 +7,7 @@ import '../auth/utils/logout_utils.dart';
 import '../workout_day/workout_day.dart';
 import 'components/templates/home_template.dart';
 import 'state/home_provider.dart';
+import 'state/workout_calendar_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -52,6 +53,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     final authState = ref.watch(authStateProvider);
     final homeState = ref.watch(homeProvider);
     final userProfile = ref.watch(userProfileProvider);
+    final streak = ref.watch(workoutStreakProvider);
 
     // Determina o nome do usuário com fallbacks apropriados
     final userName = userProfile.when(
@@ -79,6 +81,10 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         onRefresh: () => ref.read(homeProvider.notifier).refresh(),
         onAvatarTap: () => _showUserMenu(context, ref),
         metrics: homeState.metrics,
+        routineSessions: homeState.todaysRoutine?.sessions ?? [],
+        onSelectSession: (session) =>
+            ref.read(homeProvider.notifier).selectSession(session),
+        streak: streak,
       ),
       bottomNavigationBar: _buildBottomNavBar(context),
     );
@@ -139,7 +145,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   }
 
   void _changeWorkout(BuildContext context) {
-    // Implementar troca de treino
+    context.push('/routines');
   }
 
   void _quickCreateWorkout(BuildContext context) {

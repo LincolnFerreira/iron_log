@@ -9,6 +9,7 @@ class RoutineModel extends Routine {
     required super.createdAt,
     required super.updatedAt,
     required super.sessions,
+    super.isActive,
   });
 
   factory RoutineModel.fromJson(Map<String, dynamic> json) {
@@ -17,6 +18,7 @@ class RoutineModel extends Routine {
       name: json['name']?.toString() ?? '',
       division: json['division']?.toString(),
       isTemplate: json['isTemplate'] as bool? ?? false,
+      isActive: json['isActive'] as bool? ?? false,
       createdAt:
           DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),

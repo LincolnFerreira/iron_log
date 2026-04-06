@@ -32,18 +32,17 @@ class ExerciseBrowseList extends ConsumerWidget {
           ),
         ),
       ),
-      data: (groups) => ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: groups.length,
-        itemBuilder: (context, index) {
-          final group = groups[index];
-          return ExerciseMuscleGroupTile(
-            muscle: group.muscle,
-            exercises: group.exercises,
-            onExerciseSelected: onExerciseSelected,
-          );
-        },
+      data: (groups) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: groups
+            .map(
+              (group) => ExerciseMuscleGroupTile(
+                muscle: group.muscle,
+                exercises: group.exercises,
+                onExerciseSelected: onExerciseSelected,
+              ),
+            )
+            .toList(),
       ),
     );
   }
@@ -67,39 +66,46 @@ class ExerciseMuscleGroupTile extends ConsumerWidget {
     final selectedIds = ref.watch(sessionAllExerciseIdsProvider);
     final theme = Theme.of(context);
 
-    return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
-      childrenPadding: EdgeInsets.zero,
-      title: Text(
-        muscle,
-        style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSecondaryLight,
-          letterSpacing: 0.5,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.fitness_center,
+                  size: 16,
+                  color: AppColors.primaryLight,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                muscle,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondaryLight,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      leading: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(8),
+        ...exercises.map(
+          (ex) => ExerciseBrowseItem(
+            exercise: ex,
+            isSelected: selectedIds.contains(ex.id),
+            onTap: () => onExerciseSelected?.call(ex),
+          ),
         ),
-        child: Icon(
-          Icons.fitness_center,
-          size: 16,
-          color: AppColors.primaryLight,
-        ),
-      ),
-      children: exercises
-          .map(
-            (ex) => ExerciseBrowseItem(
-              exercise: ex,
-              isSelected: selectedIds.contains(ex.id),
-              onTap: () => onExerciseSelected?.call(ex),
-            ),
-          )
-          .toList(),
+      ],
     );
   }
 }

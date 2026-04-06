@@ -3,6 +3,7 @@ class Routine {
   final String name;
   final String? division;
   final bool isTemplate;
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
   final List<Session> sessions;
@@ -12,6 +13,7 @@ class Routine {
     required this.name,
     this.division,
     required this.isTemplate,
+    this.isActive = false,
     required this.createdAt,
     required this.updatedAt,
     required this.sessions,
@@ -23,6 +25,7 @@ class Routine {
       name: json['name']?.toString() ?? '',
       division: json['division']?.toString(),
       isTemplate: json['isTemplate'] as bool? ?? false,
+      isActive: json['isActive'] as bool? ?? false,
       createdAt:
           DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
@@ -43,6 +46,7 @@ class Routine {
       'name': name,
       'division': division,
       'isTemplate': isTemplate,
+      'isActive': isActive,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'sessions': sessions.map((e) => e.toJson()).toList(),

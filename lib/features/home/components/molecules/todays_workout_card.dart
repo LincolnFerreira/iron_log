@@ -9,6 +9,9 @@ class TodaysWorkoutCard extends StatelessWidget {
   final Session? todaysSession;
   final bool isLoading;
   final VoidCallback? onStartWorkout;
+  final VoidCallback? onNoWorkoutTap;
+  final List<Session> sessions;
+  final void Function(Session)? onSelectSession;
 
   const TodaysWorkoutCard({
     super.key,
@@ -16,6 +19,9 @@ class TodaysWorkoutCard extends StatelessWidget {
     this.todaysSession,
     this.isLoading = false,
     this.onStartWorkout,
+    this.onNoWorkoutTap,
+    this.sessions = const [],
+    this.onSelectSession,
   });
 
   @override
@@ -25,13 +31,15 @@ class TodaysWorkoutCard extends StatelessWidget {
     }
 
     if (todaysRoutine == null || todaysSession == null) {
-      return const NoWorkoutCard();
+      return NoWorkoutCard(onTap: onNoWorkoutTap);
     }
 
     return ActiveWorkoutCard(
       routine: todaysRoutine!,
       session: todaysSession!,
+      sessions: sessions,
       onStartWorkout: onStartWorkout,
+      onSelectSession: onSelectSession,
     );
   }
 }

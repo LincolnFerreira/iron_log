@@ -19,7 +19,7 @@ class ExerciseDetailBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final block = Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
@@ -58,7 +58,7 @@ class ExerciseDetailBlock extends StatelessWidget {
                     ),
                     // Lado direito: Peso x Reps
                     Text(
-                      '${exercise.series.isNotEmpty ? '${exercise.series.first.weight}kg × ${exercise.series.first.reps} reps' : '-kg × - reps'}',
+                      exercise.series.isNotEmpty ? '${exercise.series.first.weight}kg × ${exercise.series.first.reps} reps' : '-kg × - reps',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,

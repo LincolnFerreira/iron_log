@@ -45,6 +45,10 @@ class ApiEndpoints {
   static const String workouts = '/workout';
   static String workoutById(String id) => '/workout/$id';
   static String workoutsByUser(String userId) => '/workout/user/$userId';
+  static String workoutCalendar({int days = 14}) => '/workout/calendar?days=$days';
+
+  // Rest Day endpoints
+  static const String restDay = '/rest-day';
 }
 
 /// Configuração de parâmetros de query padrão

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/routes/app_router.dart';
+import 'package:iron_log/core/services/auth_service.dart';
+import 'package:iron_log/features/home/state/home_provider.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_update.dart';
 import '../bloc/routine_provider.dart';
+import '../components/molecules/routine_card.dart';
 
 class RoutinesPage extends ConsumerStatefulWidget {
   const RoutinesPage({super.key});
@@ -130,47 +134,14 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
       itemCount: state.routines.length,
       itemBuilder: (context, index) {
         final routine = state.routines[index];
-        return _buildRoutineCard(context, routine);
+        return RoutineCard(
+          routine: routine,
+          onTap: () => _navigateToRoutineDetail(context, routine),
+          onSetActive: () => _setActiveRoutine(context, ref, routine),
+          onEdit: () => _showEditRoutineDialog(context, ref, routine),
+          onDelete: () => _showDeleteConfirmation(context, ref, routine),
+        );
       },
-    );
-  }
-
-  Widget _buildRoutineCard(BuildContext context, Routine routine) {
-    final theme = Theme.of(context);
-    final exerciseNames = routine.sessions
-        .expand((s) => s.exercises)
-        .map((e) => e.exercise.name)
-        .toList();
-    final description = exerciseNames.join(', ');
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-
-      child: ListTile(
-        minVerticalPadding: 30,
-        title: Text(
-          routine.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-
-        subtitle: Text(
-          description,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.bodySmall,
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) =>
-              _handleMenuAction(context, ref, routine, value),
-          itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('Editar')),
-            const PopupMenuItem(value: 'delete', child: Text('Excluir')),
-          ],
-        ),
-        onTap: () => _navigateToRoutineDetail(context, routine),
-      ),
     );
   }
 
@@ -241,6 +212,9 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                             : divisionController.text.trim(),
                       );
 
+                  // Nova rotina é auto-ativada no backend — sincroniza Home.
+                  ref.read(homeProvider.notifier).refresh();
+
                   Navigator.of(context).pop();
 
                   // Try to find the created routine by name in current state
@@ -273,19 +247,32 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
     );
   }
 
-  void _handleMenuAction(
+  Future<void> _setActiveRoutine(
     BuildContext context,
     WidgetRef ref,
     Routine routine,
-    String action,
-  ) {
-    switch (action) {
-      case 'edit':
-        _showEditRoutineDialog(context, ref, routine);
-        break;
-      case 'delete':
-        _showDeleteConfirmation(context, ref, routine);
-        break;
+  ) async {
+    try {
+      await AuthService().patch(
+        ApiEndpoints.userActiveRoutine(routine.id),
+      );
+      // Reload so isActive reflects correctly in all cards.
+      if (!context.mounted) return;
+      await ref.read(routineNotifierProvider.notifier).loadRoutines();
+      // Also refresh home so today's session reflects the new active routine.
+      ref.read(homeProvider.notifier).refresh();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('"${routine.name}" definida como rotina ativa')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao definir rotina ativa: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 

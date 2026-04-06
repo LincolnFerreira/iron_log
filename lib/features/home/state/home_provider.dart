@@ -92,8 +92,12 @@ class HomeNotifier extends StateNotifier<HomeState> {
           return;
         }
 
-        // Pega a primeira rotina (poderia ter lógica para escolher a ativa)
-        final todaysRoutine = routines.first;
+        // Prefere a rotina marcada como ativa; caso nenhuma esteja,
+        // usa a primeira como fallback (comportamento anterior).
+        final todaysRoutine = routines.firstWhere(
+          (r) => r.isActive,
+          orElse: () => routines.first,
+        );
 
         // Determina qual sessão fazer hoje baseado no dia da semana
         final todaysSession = _getTodaysSession(todaysRoutine);
@@ -130,6 +134,11 @@ class HomeNotifier extends StateNotifier<HomeState> {
     final sortedSessions = routine.sessions
       ..sort((a, b) => a.order.compareTo(b.order));
     return sortedSessions[sessionIndex];
+  }
+
+  /// Troca a sessão que será iniciada, sem chamar a API.
+  void selectSession(Session session) {
+    state = state.copyWith(todaysSession: session);
   }
 
   Future<void> refresh() async {

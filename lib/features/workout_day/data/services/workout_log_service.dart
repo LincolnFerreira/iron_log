@@ -65,4 +65,25 @@ class WorkoutLogService {
         'restSeconds': List.filled(sets, exercise.restTime),
     };
   }
+
+  /// Atualiza (substitui as séries de) um treino já registrado.
+  ///
+  /// Corresponde ao endpoint PATCH /workout/:id.
+  /// O backend deleta os SerieLog existentes e recria a partir de [exercises].
+  Future<void> updateWorkout({
+    required String workoutId,
+    required List<WorkoutExercise> exercises,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    String? notes,
+  }) async {
+    final payload = {
+      'date': startedAt.toIso8601String(),
+      'endedAt': endedAt.toIso8601String(),
+      if (notes != null) 'notes': notes,
+      'exercises': exercises.map((e) => _exerciseToDto(e)).toList(),
+    };
+
+    await _auth.patch(ApiEndpoints.workoutById(workoutId), data: payload);
+  }
 }

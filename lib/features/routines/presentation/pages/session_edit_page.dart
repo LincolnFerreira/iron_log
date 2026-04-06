@@ -7,8 +7,8 @@ import '../../domain/entities/routine.dart';
 import '../bloc/routine_provider.dart';
 import '../widgets/reorderable_session_list.dart';
 import '../widgets/session_section_title.dart';
-import 'package:iron_log/features/workout_day/presentation/organisms/exercise_card.dart';
-import '../providers/routine_history_provider.dart';
+import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
+import '../providers/routine_last_workout_provider.dart';
 
 class SessionEditPage extends ConsumerStatefulWidget {
   final Routine routine;
@@ -21,6 +21,8 @@ class SessionEditPage extends ConsumerStatefulWidget {
 
 class _SessionEditPageState extends ConsumerState<SessionEditPage>
     with RouteAware {
+  Future<void> Function()? _saveSessions;
+  bool _isSaving = false;
   @override
   void initState() {
     super.initState();
@@ -54,16 +56,39 @@ class _SessionEditPageState extends ConsumerState<SessionEditPage>
   Widget build(BuildContext context) {
     final routineState = ref.watch(routineNotifierProvider);
     final routine = routineState.selectedRoutine ?? widget.routine;
-    final historyAsync = ref.watch(routineHistoryProvider(routine.id));
+    final lastWorkoutAsync = ref.watch(routineLastWorkoutProvider(routine.id));
 
     return Scaffold(
       appBar: AppBar(
         elevation: 1,
-        title: PageHeaderTitle(title: 'Rotina', subtitle: routine.name),
+        title: PageHeaderTitle(title: 'Sessões', subtitle: routine.name),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          _isSaving
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.save_rounded),
+                  tooltip: 'Salvar',
+                  onPressed: () async {
+                    setState(() => _isSaving = true);
+                    await _saveSessions?.call();
+                    if (mounted) {
+                      setState(() => _isSaving = false);
+                      context.pop();
+                    }
+                  },
+                ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -74,7 +99,12 @@ class _SessionEditPageState extends ConsumerState<SessionEditPage>
       ),
       body: Column(
         children: [
-          Expanded(child: ReorderableSessionList(routine: routine)),
+          Expanded(
+            child: ReorderableSessionList(
+              routine: routine,
+              onSaveCallback: (fn) => _saveSessions = fn,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -93,42 +123,20 @@ class _SessionEditPageState extends ConsumerState<SessionEditPage>
                   ],
                 ),
                 const SizedBox(height: 8),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final height = (constraints.maxHeight * 0.28).clamp(
-                      120.0,
-                      220.0,
-                    );
-                    return SizedBox(
-                      height: height,
-                      child: historyAsync.when(
-                        data: (exercises) {
-                          if (exercises.isEmpty) {
-                            return const Center(
-                              child: Text('Nenhum histórico disponível'),
-                            );
-                          }
-                          return ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: exercises.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              final ex = exercises[index];
-                              return SizedBox(
-                                width: 300,
-                                child: ExerciseCard(exercise: ex),
-                              );
-                            },
-                          );
-                        },
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (e, st) => const Center(
-                          child: Text('Erro ao carregar histórico'),
+                lastWorkoutAsync.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const SizedBox.shrink(),
+                  data: (workout) {
+                    if (workout == null) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Text('Nenhum treino registrado ainda'),
                         ),
-                      ),
-                    );
+                      );
+                    }
+                    return WorkoutHistoryCard(workout: workout);
                   },
                 ),
               ],

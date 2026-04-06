@@ -56,17 +56,30 @@ class _SelectedExercisesSectionState
         ),
         const SizedBox(height: 12),
 
-        // Lista vertical — sem scroll próprio, flui junto com a página
-        for (int index = 0; index < selectedExercises.length; index++) ...[
-          if (index > 0) const SizedBox(height: 8),
-          SelectedExerciseCard(
-            key: ValueKey(selectedExercises[index].id),
-            exercise: _convertToSessionExercise(selectedExercises[index]),
-            onDelete: () => _removeExercise(selectedExercises[index]),
-            index: index,
-            totalCount: selectedExercises.length,
-          ),
-        ],
+        // Lista com drag & drop — sem scroll próprio, flui junto com a página
+        ReorderableListView(
+          buildDefaultDragHandles: false,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          onReorder: (oldIndex, newIndex) => ref
+              .read(sessionExerciseSelectionNotifierProvider.notifier)
+              .reorderExercises(oldIndex, newIndex),
+          children: [
+            for (int index = 0; index < selectedExercises.length; index++)
+              Padding(
+                key: ValueKey(selectedExercises[index].id),
+                padding: index > 0
+                    ? const EdgeInsets.only(top: 8)
+                    : EdgeInsets.zero,
+                child: SelectedExerciseCard(
+                  exercise: _convertToSessionExercise(selectedExercises[index]),
+                  onDelete: () => _removeExercise(selectedExercises[index]),
+                  index: index,
+                  totalCount: selectedExercises.length,
+                ),
+              ),
+          ],
+        ),
       ],
     );
   }

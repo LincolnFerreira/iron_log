@@ -92,6 +92,18 @@ class SessionExerciseSelectionNotifier extends StateNotifier<void> {
       addExercise(exercise);
     }
   }
+
+  /// Reordena os exercícios selecionados (drag & drop).
+  void reorderExercises(int oldIndex, int newIndex) {
+    final all = ref.read(sessionAllExercisesProvider);
+    final updated = List<SearchExercise>.from(all);
+    if (oldIndex < newIndex) newIndex -= 1;
+    final item = updated.removeAt(oldIndex);
+    updated.insert(newIndex, item);
+    // Consolida tudo na lista base e limpa os novos
+    ref.read(sessionBaseExercisesProvider.notifier).state = updated;
+    ref.read(sessionNewlySelectedProvider.notifier).state = [];
+  }
 }
 
 final sessionExerciseSelectionNotifierProvider =

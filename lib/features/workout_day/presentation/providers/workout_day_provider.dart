@@ -4,7 +4,6 @@ import '../../../../core/services/http_service.dart';
 import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/mappers/workout_data_mapper.dart';
 import '../../domain/entities/workout_exercise.dart';
-import '../../domain/entities/weight_unit.dart';
 
 // Provider para gerenciar os exercícios do workout day
 final workoutDayExercisesProvider =
@@ -204,6 +203,49 @@ class WorkoutDayExercisesNotifier
   Future<void> reloadSession(String sessionId) async {
     _isLoading = false; // Reset loading flag
     await loadSession(sessionId);
+  }
+
+  /// Carrega um treino já registrado pelo seu ID (modo edição).
+  ///
+  /// Chama GET /workout/:workoutId, converte a lista plana de SerieLog em
+  /// [WorkoutExercise] via [WorkoutDataMapper.fromSerieLogList], e popula o
+  /// estado para que a tela de treino exiba os dados pré-preenchidos.
+  Future<void> loadExistingWorkout(String workoutId) async {
+    if (_isLoading) return;
+    _isLoading = true;
+    state = const AsyncValue.loading();
+
+    try {
+      if (kDebugMode) {
+        print('🔍 Carregando treino existente para edição: $workoutId');
+      }
+
+      final url = ApiEndpoints.workoutById(workoutId);
+      final response = await _httpService.get(url);
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        final seriesRaw = data['series'] as List<dynamic>? ?? [];
+        final exercises = WorkoutDataMapper.fromSerieLogList(seriesRaw);
+        state = AsyncValue.data(exercises);
+
+        if (kDebugMode) {
+          print('✅ Treino carregado para edição: ${exercises.length} exercícios');
+        }
+      } else {
+        state = AsyncValue.error(
+          'Erro ao carregar treino',
+          StackTrace.current,
+        );
+      }
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      if (kDebugMode) {
+        print('❌ Erro ao carregar treino para edição: $e');
+      }
+    } finally {
+      _isLoading = false;
+    }
   }
 
   // Atualiza um exercício específico

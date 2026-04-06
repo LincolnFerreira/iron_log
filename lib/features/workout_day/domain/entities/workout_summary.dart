@@ -157,19 +157,80 @@ class WorkoutSummary {
   }
 }
 
+/// Exercício resumido para exibição no histórico
+class WorkoutHistoryExercise {
+  final String exerciseName;
+  final int seriesCount;
+  final int completedSeries;
+
+  const WorkoutHistoryExercise({
+    required this.exerciseName,
+    required this.seriesCount,
+    this.completedSeries = 0,
+  });
+
+  factory WorkoutHistoryExercise.fromJson(Map<String, dynamic> json) {
+    final allSeries = (json['series'] as List<dynamic>?) ?? [];
+    final doneSeries = allSeries
+        .where((s) => s['status'] == 'COMPLETED')
+        .length;
+    final exercise = json['exercise'] as Map<String, dynamic>?;
+    final name =
+        exercise?['name']?.toString() ??
+        json['name']?.toString() ??
+        'Exercício';
+    return WorkoutHistoryExercise(
+      exerciseName: name,
+      seriesCount: allSeries.length,
+      completedSeries: doneSeries,
+    );
+  }
+}
+
 /// Representa um treino anterior no histórico
 class WorkoutHistory {
+  final String id;
   final String routineName; // ex: "Peito & Tríceps"
+  final String? sessionName;
   final DateTime date;
   final Duration duration;
   final int seriesCount;
+  final int completedSeries;
+  final int totalSeries;
+  final double totalVolume;
+  final bool hasPR;
+  final List<WorkoutHistoryExercise> exercises;
 
   const WorkoutHistory({
+    this.id = '',
     required this.routineName,
+    this.sessionName,
     required this.date,
     required this.duration,
     required this.seriesCount,
+    this.completedSeries = 0,
+    this.totalSeries = 0,
+    this.totalVolume = 0,
+    this.hasPR = false,
+    this.exercises = const [],
   });
+
+  /// Percentual de conclusão (0-100)
+  int get completionPercent {
+    final total = totalSeries > 0 ? totalSeries : seriesCount;
+    if (total == 0) return 0;
+    final done = completedSeries > 0 ? completedSeries : seriesCount;
+    return ((done / total) * 100).clamp(0, 100).toInt();
+  }
+
+  /// Volume formatado: "8.6t" ou "8640kg"
+  String get volumeFormatted {
+    if (totalVolume <= 0) return '—';
+    if (totalVolume >= 1000) {
+      return '${(totalVolume / 1000).toStringAsFixed(1)}t';
+    }
+    return '${totalVolume.toStringAsFixed(0)}kg';
+  }
 
   /// Formatação da data: "Ter, 28 Fev"
   String get dateFormatted {
@@ -188,17 +249,44 @@ class WorkoutHistory {
       'Dez',
     ];
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-
     final dayName = dayNames[date.weekday % 7];
     final monthName = monthNames[date.month - 1];
-
     return '$dayName, ${date.day} $monthName';
+  }
+
+  /// Data longa para o modal: "Quinta, 3 de Abril de 2026"
+  String get dateLong {
+    const monthNames = [
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
+    ];
+    const dayNames = [
+      'Domingo',
+      'Segunda',
+      'Terça',
+      'Quarta',
+      'Quinta',
+      'Sexta',
+      'Sábado',
+    ];
+    final dayName = dayNames[date.weekday % 7];
+    final monthName = monthNames[date.month - 1];
+    return '$dayName, ${date.day} de $monthName de ${date.year}';
   }
 
   /// Formatação da duração: "45m" ou "1h 25m"
   String get durationFormatted {
     final minutes = duration.inMinutes;
-
     if (minutes >= 60) {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
@@ -209,8 +297,26 @@ class WorkoutHistory {
   }
 
   factory WorkoutHistory.fromJson(Map<String, dynamic> json) {
+    final exercisesList =
+        (json['exercises'] as List<dynamic>?)
+            ?.map(
+              (e) => WorkoutHistoryExercise.fromJson(e as Map<String, dynamic>),
+            )
+            .toList() ??
+        [];
+    final allSeries = exercisesList.fold<int>(
+      0,
+      (acc, e) => acc + e.seriesCount,
+    );
+    final doneSeries = exercisesList.fold<int>(
+      0,
+      (acc, e) => acc + e.completedSeries,
+    );
+
     return WorkoutHistory(
+      id: json['id']?.toString() ?? '',
       routineName: json['routineName'] ?? '',
+      sessionName: json['sessionName']?.toString(),
       date: json['date'] != null
           ? DateTime.parse(json['date'])
           : DateTime.now(),
@@ -218,16 +324,27 @@ class WorkoutHistory {
         seconds:
             json['durationSeconds'] ?? json['duration']?.inSeconds as int? ?? 0,
       ),
-      seriesCount: json['seriesCount'] ?? 0,
+      seriesCount: json['seriesCount'] ?? allSeries,
+      completedSeries: json['completedSeries'] ?? doneSeries,
+      totalSeries: json['totalSeries'] ?? allSeries,
+      totalVolume: (json['totalVolume'] as num?)?.toDouble() ?? 0.0,
+      hasPR: json['hasPR'] as bool? ?? false,
+      exercises: exercisesList,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'routineName': routineName,
+      'sessionName': sessionName,
       'date': date.toIso8601String(),
       'durationSeconds': duration.inSeconds,
       'seriesCount': seriesCount,
+      'completedSeries': completedSeries,
+      'totalSeries': totalSeries,
+      'totalVolume': totalVolume,
+      'hasPR': hasPR,
     };
   }
 }

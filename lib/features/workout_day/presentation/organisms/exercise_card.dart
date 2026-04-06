@@ -37,7 +37,9 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   @override
   void initState() {
     super.initState();
-    _series = 0; // Começa sem séries; usuário adiciona ao realizar
+    // No modo edição (exercise.series > 0) pré-popula as linhas;
+    // no modo normal começa sem séries e o usuário adiciona ao realizar.
+    _series = widget.exercise.series;
     _reps = widget.exercise.reps;
     _weight = widget.exercise.weight;
     _rir = widget.exercise.rir;

@@ -30,6 +30,60 @@ class WorkoutDataMapper {
         .toList();
   }
 
+  /// Mapeia uma lista plana de SerieLog (resposta do GET /workout/:id) para
+  /// [WorkoutExercise]. Agrupa as séries pelo exerciseId, usando o primeiro
+  /// item do grupo como referência para reps/weight/rir/rest.
+  static List<WorkoutExercise> fromSerieLogList(List<dynamic> seriesRaw) {
+    // Usa LinkedHashMap para preservar ordem de inserção (ordem original da API).
+    final grouped = <String, List<Map<String, dynamic>>>{};
+    final exerciseMeta = <String, Map<String, dynamic>>{};
+
+    for (final raw in seriesRaw) {
+      final serie = raw as Map<String, dynamic>;
+      final exerciseId = serie['exerciseId']?.toString() ?? '';
+      if (exerciseId.isEmpty) continue;
+
+      grouped.putIfAbsent(exerciseId, () => []).add(serie);
+
+      // Captura metadata do exercício apenas uma vez por grupo.
+      exerciseMeta.putIfAbsent(exerciseId, () {
+        final exercise = serie['exercise'] as Map<String, dynamic>? ?? {};
+        return {
+          'id': exerciseId,
+          'name': exercise['name']?.toString() ?? '',
+          'category': exercise['category']?.toString() ?? '',
+          'primaryMuscle': exercise['primaryMuscle']?.toString() ?? '',
+          'tags': exercise['tags'] as List<dynamic>? ?? <dynamic>[],
+        };
+      });
+    }
+
+    return grouped.entries.map((entry) {
+      final exerciseId = entry.key;
+      final series = entry.value;
+      final meta = exerciseMeta[exerciseId] ?? <String, dynamic>{};
+
+      final firstSerie = series.first;
+      final weightKg = (firstSerie['weightKg'] as num?)?.toDouble() ?? 0.0;
+      final reps = firstSerie['reps'] as int? ?? 0;
+      final rir = firstSerie['rir'] as int? ?? 0;
+      final restSeconds = firstSerie['restSeconds'] as int? ?? 0;
+
+      return WorkoutExercise(
+        id: exerciseId,
+        name: meta['name']?.toString() ?? '',
+        tag: _mapExerciseTag(meta),
+        muscles: meta['primaryMuscle']?.toString() ?? 'Não especificado',
+        variation: 'Traditional',
+        series: series.length,
+        reps: reps > 0 ? reps.toString() : '-',
+        weight: weightKg > 0 ? '${weightKg}kg' : '0kg',
+        rir: rir,
+        restTime: restSeconds,
+      );
+    }).toList();
+  }
+
   // Métodos privados para mapeamento específico de cada campo
 
   static ExerciseTag _mapExerciseTag(Map<String, dynamic> exercise) {

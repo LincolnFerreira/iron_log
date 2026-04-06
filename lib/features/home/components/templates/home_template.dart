@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
 
 import '../molecules/greeting_header.dart';
 import '../molecules/active_sequence_card.dart';
+import '../molecules/mini_calendar_strip.dart';
 import '../molecules/todays_workout_card.dart';
 import '../organisms/workout_quick_actions_grid.dart';
 import '../organisms/your_month_section.dart';
@@ -22,6 +24,9 @@ class HomeTemplate extends StatelessWidget {
   final bool isLoadingWorkout;
   final String? error;
   final HomeMetrics? metrics;
+  final List<Session> routineSessions;
+  final void Function(Session)? onSelectSession;
+  final int streak;
 
   const HomeTemplate({
     super.key,
@@ -38,6 +43,9 @@ class HomeTemplate extends StatelessWidget {
     this.isLoadingWorkout = false,
     this.error,
     this.metrics,
+    this.routineSessions = const [],
+    this.onSelectSession,
+    this.streak = 0,
   });
 
   @override
@@ -60,7 +68,9 @@ class HomeTemplate extends StatelessWidget {
               imageUrl: imageUrl,
               onAvatarTap: onAvatarTap,
             ),
-            const ActiveSequenceCard(streak: 5), //TODO: passar do provider
+            ActiveSequenceCard(streak: streak),
+            // Mini calendário — últimos 14 dias (bloco consistência)
+            const MiniCalendarStrip(),
             Column(
               spacing: 8,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,15 +85,16 @@ class HomeTemplate extends StatelessWidget {
                   todaysSession: todaysSession,
                   isLoading: isLoadingWorkout,
                   onStartWorkout: onStartWorkout,
+                  onNoWorkoutTap: onChangeWorkout,
+                  sessions: routineSessions,
+                  onSelectSession: onSelectSession,
                 ),
               ],
             ),
             // Quick actions grid
             WorkoutQuickActionsGrid(
               onMyRoutinesTap: onChangeWorkout,
-              onNewRoutinesTap: () {
-                // TODO: navigate to new routines
-              },
+              onNewRoutinesTap: () => context.push('/routines'),
               onQuickCreateTap: onQuickCreate,
             ),
             // Your month section with metrics and monthly goal progress
@@ -93,6 +104,7 @@ class HomeTemplate extends StatelessWidget {
               totalSeries: metrics?.totalSeries ?? 0,
               totalRoutines: metrics?.totalRoutines ?? 0,
             ),
+
           ],
         ),
       ),

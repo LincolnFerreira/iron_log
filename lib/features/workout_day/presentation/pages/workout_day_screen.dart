@@ -25,12 +25,17 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
   /// A data escolhida pelo usuário é usada como startedAt.
   final DateTime? manualDate;
 
+  /// Quando não nulo, a tela entra em modo de edição:
+  /// carrega o treino existente e ao finalizar faz PATCH em vez de POST.
+  final String? workoutId;
+
   const WorkoutDayScreen({
     super.key,
     this.routineId,
     this.sessionId,
     this.subtitle,
     this.manualDate,
+    this.workoutId,
   });
 
   @override
@@ -43,13 +48,16 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   @override
   void initState() {
     super.initState();
-    // Carrega a sessão específica se o ID for fornecido
-    if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
+        // Modo edição: carrega treino existente pelo ID do WorkoutSession.
+        _loadExistingWorkout();
+      } else if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
+        // Modo normal: carrega exercícios da sessão do plano de treino.
         _loadSession();
-      });
-    }
+      }
+    });
   }
 
   @override
@@ -74,7 +82,10 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Auto-reload quando retornar para a tela (ex: de "organize suas sessões")
-    if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
+    // Só aplica no modo de sessão normal — no modo edição não recarregamos.
+    if (widget.workoutId == null &&
+        widget.sessionId != null &&
+        widget.sessionId!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _reloadSessionIfNeeded();
@@ -93,6 +104,20 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       // O erro já é tratado pelo AsyncValue no provider
       if (kDebugMode) {
         print('Erro ao carregar sessão: $e');
+      }
+    }
+  }
+
+  Future<void> _loadExistingWorkout() async {
+    if (widget.workoutId == null) return;
+
+    try {
+      await ref
+          .read(workoutDayExercisesProvider.notifier)
+          .loadExistingWorkout(widget.workoutId!);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erro ao carregar treino para edição: $e');
       }
     }
   }
@@ -232,6 +257,57 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 workoutStarted: _workoutStarted,
                 onStartWorkout: _handleStartWorkout,
                 onFinishWorkout: () async {
+                  // ── MODO EDIÇÃO: PATCH no treino existente ─────────────
+                  if (widget.workoutId != null &&
+                      widget.workoutId!.isNotEmpty) {
+                    try {
+                      final currentExercises = exercisesAsync.value ?? [];
+                      final timerStartTime = ref.read(workoutTimerProvider);
+                      final now = DateTime.now();
+
+                      DateTime startedAt;
+                      DateTime endedAt;
+
+                      if (widget.manualDate != null) {
+                        final picked = await _pickDuration(context);
+                        if (!mounted) return;
+                        if (picked == null) return;
+                        startedAt = widget.manualDate!;
+                        endedAt = startedAt.add(picked);
+                      } else {
+                        startedAt = timerStartTime ?? now;
+                        endedAt = now;
+                      }
+
+                      await WorkoutLogService().updateWorkout(
+                        workoutId: widget.workoutId!,
+                        exercises: currentExercises,
+                        startedAt: startedAt,
+                        endedAt: endedAt,
+                      );
+
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Treino atualizado com sucesso!'),
+                        ),
+                      );
+                      Navigator.of(context).pop();
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Erro ao atualizar treino: $e'),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.error,
+                          ),
+                        );
+                      }
+                    }
+                    return;
+                  }
+
+                  // ── MODO NORMAL: POST novo treino ──────────────────────
                   if (widget.sessionId == null || widget.sessionId!.isEmpty) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(

@@ -39,15 +39,12 @@ class SessionCard extends StatelessWidget {
           children: [
             // Drag handle - só mostra se for draggable
             if (isDraggable)
-              ReorderableDragStartListener(
-                index: 0, // será sobrescrito pelo ReorderableListView
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Icon(
-                    Icons.drag_indicator,
-                    color: theme.colorScheme.primary.withOpacity(0.7),
-                    size: 24,
-                  ),
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Icon(
+                  Icons.drag_indicator,
+                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  size: 24,
                 ),
               )
             else
