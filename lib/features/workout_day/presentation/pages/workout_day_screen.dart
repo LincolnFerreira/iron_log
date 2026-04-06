@@ -44,10 +44,14 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
 
 class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   bool _workoutStarted = false;
+  /// Data mutável do treino — inicializada com widget.manualDate e pode ser
+  /// alterada pelo usuário via date picker no header.
+  DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
+    _selectedDate = widget.manualDate;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
@@ -137,6 +141,40 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     }
   }
 
+  /// Abre o date picker para o usuário alterar a data do treino.
+  /// Em modo edição (workoutId != null), salva automaticamente no backend.
+  Future<void> _changeDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now(),
+      helpText: 'Data do treino',
+    );
+    if (picked == null || !mounted) return;
+
+    setState(() => _selectedDate = picked);
+
+    // Em modo edição: auto-save da nova data no backend
+    if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
+      try {
+        await WorkoutLogService().patchDate(widget.workoutId!, picked);
+      } catch (e) {
+        if (kDebugMode) {
+          print('Aviso: falha ao atualizar data no backend: $e');
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Não foi possível salvar a nova data.'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final exercisesAsync = ref.watch(workoutDayExercisesProvider);
@@ -152,17 +190,20 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 subtitle: exercises.isEmpty
                     ? 'Nenhum exercício'
                     : '${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
-                manualDate: widget.manualDate,
+                manualDate: _selectedDate,
+                onDateTap: _selectedDate != null ? _changeDate : null,
               ),
               loading: () => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: 'Carregando...',
-                manualDate: widget.manualDate,
+                manualDate: _selectedDate,
+                onDateTap: _selectedDate != null ? _changeDate : null,
               ),
               error: (_, __) => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: 'Erro ao carregar',
-                manualDate: widget.manualDate,
+                manualDate: _selectedDate,
+                onDateTap: _selectedDate != null ? _changeDate : null,
               ),
             ),
             const SizedBox(height: 24),
@@ -250,7 +291,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       bottomNavigationBar: exercisesAsync.when(
         data: (exercises) => exercises.isNotEmpty
             ? FooterActions(
-                isManual: widget.manualDate != null,
+                isManual: _selectedDate != null,
                 seriesDone: _calculateSeriesDone(exercises),
                 volumeKg: _calculateVolume(exercises),
                 completionPercent: _calculateCompletion(exercises),
@@ -268,11 +309,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                       DateTime startedAt;
                       DateTime endedAt;
 
-                      if (widget.manualDate != null) {
+                      if (_selectedDate != null) {
                         final picked = await _pickDuration(context);
                         if (!mounted) return;
                         if (picked == null) return;
-                        startedAt = widget.manualDate!;
+                        startedAt = _selectedDate!;
                         endedAt = startedAt.add(picked);
                       } else {
                         startedAt = timerStartTime ?? now;
@@ -338,18 +379,18 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     DateTime startedAt;
                     DateTime endedAt;
 
-                    if (widget.manualDate != null) {
+                    if (_selectedDate != null) {
                       final picked = await _pickDuration(context);
                       if (!mounted) return;
                       if (picked == null) return; // usuário cancelou
                       duration = picked;
-                      startedAt = widget.manualDate!;
+                      startedAt = _selectedDate!;
                       endedAt = startedAt.add(duration);
                     } else {
                       startedAt = timerStartTime ?? now;
                       endedAt = now;
                       duration = endedAt.difference(startedAt);
-                    }
+                    }    
 
                     // Persiste no backend
                     if (widget.routineId != null &&
@@ -360,7 +401,8 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                           routineId: widget.routineId!,
                           startedAt: startedAt,
                           endedAt: endedAt,
-                          isManual: widget.manualDate != null,
+                          isManual: _selectedDate != null,
+                          sessionId: widget.sessionId,
                         );
                       } catch (e) {
                         if (kDebugMode) {
@@ -374,7 +416,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
 
                     final workoutSummary = WorkoutSummary(
                       sessionName: widget.subtitle ?? 'Treino',
-                      date: widget.manualDate ?? now,
+                      date: _selectedDate ?? now,
                       duration: duration,
                       exercises: _buildExerciseSummaries(currentExercises),
                       totalSeries: _calculateSeriesDone(currentExercises),
@@ -452,7 +494,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       _workoutStarted = true;
     });
     // Treino manual não usa o timer em tempo real
-    if (widget.manualDate == null) {
+    if (_selectedDate == null) {
       ref.read(workoutTimerProvider.notifier).startTimer();
     }
   }

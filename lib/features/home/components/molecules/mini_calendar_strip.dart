@@ -17,9 +17,9 @@ class MiniCalendarStrip extends ConsumerStatefulWidget {
 }
 
 class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
-  static const int _days = 14;
-  // ~42px per item → ~8 visible on a 360px screen, rest scrollable
-  static const double _itemWidth = 42.0;
+  static const int _days = 15;
+  // item width increased for better touch target and readability
+  static const double _itemWidth = 56.0;
 
   final ScrollController _scrollController = ScrollController();
 
@@ -29,7 +29,14 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
     // Scroll to the end (today) after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        // center the `today` item (index 7 in a 15-days window)
+        final todayIndex = 7; // 7 days before + today + 7 after
+        final viewportWidth = _scrollController.position.viewportDimension;
+        final targetOffset = _itemWidth * todayIndex - (viewportWidth - _itemWidth) / 2;
+        final min = _scrollController.position.minScrollExtent;
+        final max = _scrollController.position.maxScrollExtent;
+        final clamped = targetOffset.clamp(min, max);
+        _scrollController.jumpTo(clamped as double);
       }
     });
   }
@@ -44,7 +51,9 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   Future<void> _onDayTap(DateTime date, bool hasWorkout, bool isRestDay) async {
-    // Only allow toggling rest on past/today days without a workout
+    final today = DateTime.now();
+    // Disallow taps on future days or when there's already a workout
+    if (date.isAfter(DateTime(today.year, today.month, today.day))) return;
     if (hasWorkout) return;
     final isoDate = _isoDate(date);
     final label = isRestDay ? 'Remover descanso?' : 'Marcar como descanso?';
@@ -70,7 +79,7 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
     const dayLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
     return SizedBox(
-      height: 64,
+      height: 84,
       child: ListView.builder(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
@@ -78,10 +87,11 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
         itemExtent: _itemWidth,
         physics: const BouncingScrollPhysics(),
         itemBuilder: (context, i) {
-          final dayOffset = (_days - 1) - i;
-          final date = today.subtract(Duration(days: dayOffset));
+          // show 7 days before today, today in the middle, 7 days after
+          final startDate = today.subtract(const Duration(days: 7));
+          final date = startDate.add(Duration(days: i));
           final isoDate = _isoDate(date);
-          final isToday = dayOffset == 0;
+          final isToday = date.year == today.year && date.month == today.month && date.day == today.day;
           final hasWorkout = workoutDates.contains(isoDate);
           final isRest = restDates.contains(isoDate);
 
@@ -111,13 +121,13 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: labelColor,
                     fontWeight: FontWeight.w600,
-                    fontSize: 10,
+                    fontSize: 12,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Container(
-                  width: 28,
-                  height: 28,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: circleColor,
                     shape: BoxShape.circle,
@@ -136,7 +146,7 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: numColor,
                         fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
-                        fontSize: 11,
+                        fontSize: 13,
                       ),
                     ),
                   ),

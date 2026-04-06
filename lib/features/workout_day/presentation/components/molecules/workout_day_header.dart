@@ -9,6 +9,8 @@ class WorkoutDayHeader extends ConsumerWidget {
   final String? subtitle;
   /// Quando não nulo, exibe badge de "treino passado" e omite o timer.
   final DateTime? manualDate;
+  /// Quando não nulo e manualDate != null, torna o badge de data clicável.
+  final VoidCallback? onDateTap;
 
   const WorkoutDayHeader({
     super.key,
@@ -17,6 +19,7 @@ class WorkoutDayHeader extends ConsumerWidget {
     this.title = 'Exercícios do Dia',
     this.subtitle,
     this.manualDate,
+    this.onDateTap,
   });
 
   @override
@@ -64,20 +67,36 @@ class WorkoutDayHeader extends ConsumerWidget {
                 ],
                 const SizedBox(height: 4),
                 if (manualDate != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                  'Treino de ${manualDate!.day.toString().padLeft(2, '0')}/${manualDate!.month.toString().padLeft(2, '0')}/${manualDate!.year}',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onTertiaryContainer,
-                        fontWeight: FontWeight.w600,
+                  GestureDetector(
+                    onTap: onDateTap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.tertiaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Treino de ${manualDate!.day.toString().padLeft(2, '0')}/${manualDate!.month.toString().padLeft(2, '0')}/${manualDate!.year}',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onTertiaryContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (onDateTap != null) ...[  
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.edit_calendar_outlined,
+                              size: 12,
+                              color: Theme.of(context).colorScheme.onTertiaryContainer,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),

@@ -29,6 +29,7 @@ class WorkoutLogService {
     required DateTime endedAt,
     bool isManual = false,
     String? notes,
+    String? sessionId,
   }) async {
     final payload = {
       'routineId': routineId,
@@ -36,6 +37,7 @@ class WorkoutLogService {
       'endedAt': endedAt.toIso8601String(),
       'isManual': isManual,
       if (notes != null) 'notes': notes,
+      if (sessionId != null) 'sessionId': sessionId,
       'exercises': exercises.map((e) => _exerciseToDto(e)).toList(),
     };
 
@@ -85,5 +87,14 @@ class WorkoutLogService {
     };
 
     await _auth.patch(ApiEndpoints.workoutById(workoutId), data: payload);
+  }
+
+  /// Atualiza apenas a data (startedAt) de um treino já registrado.
+  /// Usado para auto-save quando o usuário troca a data no modo edição.
+  Future<void> patchDate(String workoutId, DateTime newDate) async {
+    await _auth.patch(
+      ApiEndpoints.workoutById(workoutId),
+      data: {'date': newDate.toIso8601String()},
+    );
   }
 }

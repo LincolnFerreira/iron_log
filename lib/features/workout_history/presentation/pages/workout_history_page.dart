@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/features/home/components/organisms/session_picker_sheet.dart';
 import 'package:iron_log/features/home/state/home_provider.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
 import 'package:iron_log/features/workout_day/presentation/pages/workout_day_screen.dart';
 import 'package:iron_log/features/workout_history/presentation/components/atoms/history_month_header.dart';
@@ -88,7 +90,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.invalidate(workoutHistoryProvider);
+      ref.refresh(workoutHistoryProvider);
     });
     WidgetsBinding.instance.addObserver(this);
   }
@@ -108,7 +110,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
   }
 
   @override
-  void didPopNext() => ref.invalidate(workoutHistoryProvider);
+  void didPopNext() => ref.refresh(workoutHistoryProvider);
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -169,7 +171,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
           }
 
           return RefreshIndicator(
-            onRefresh: () async => ref.invalidate(workoutHistoryProvider),
+            onRefresh: () => ref.refresh(workoutHistoryProvider),
             child: CustomScrollView(
               slivers: [
                 _buildAppBar(context, filtered.length, filter),
@@ -262,11 +264,27 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
     if (picked == null || !context.mounted) return;
 
     final homeState = ref.read(homeProvider);
-    final routineId = homeState.todaysRoutine?.id;
-    final sessionId = homeState.todaysSession?.id;
+    final routine = homeState.todaysRoutine;
+    final routineId = routine?.id;
+
+    // Quando a rotina tem mais de uma sessão, pede ao usuário escolher qual fez
+    Session? selectedSession = homeState.todaysSession;
+    if (routine != null && routine.sessions.length > 1) {
+      selectedSession = await SessionPickerSheet.show(
+        context,
+        sessions: routine.sessions,
+        currentSession: homeState.todaysSession,
+        // noop: neste fluxo a sessão é capturada pelo Future retornado pelo show();
+        // não altera o estado global da Home
+        onSelectSession: (_) {},
+      );
+      if (selectedSession == null || !context.mounted) return;
+    }
+
+    final sessionId = selectedSession?.id;
     final subtitle =
-        homeState.todaysSession != null && homeState.todaysRoutine != null
-        ? '${homeState.todaysSession!.name} - ${homeState.todaysRoutine!.name}'
+        selectedSession != null && routine != null
+        ? '${selectedSession.name} - ${routine.name}'
         : '${picked.day.toString().padLeft(2, '0')}/'
               '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
 

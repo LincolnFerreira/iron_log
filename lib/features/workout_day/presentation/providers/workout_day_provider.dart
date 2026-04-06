@@ -225,6 +225,18 @@ class WorkoutDayExercisesNotifier
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+
+        if (kDebugMode) {
+          print('📦 Workout raw data:');
+          print('   id         : ${data['id']}');
+          print('   startedAt  : ${data['startedAt']}');
+          print('   endedAt    : ${data['endedAt']}');
+          print('   isManual   : ${data['isManual']}');
+          print('   routineId  : ${data['routine']?['id']}');
+          print('   routineName: ${data['routine']?['name']}');
+          print('   series cnt : ${(data['series'] as List?)?.length ?? 0}');
+        }
+
         final seriesRaw = data['series'] as List<dynamic>? ?? [];
         final exercises = WorkoutDataMapper.fromSerieLogList(seriesRaw);
         state = AsyncValue.data(exercises);

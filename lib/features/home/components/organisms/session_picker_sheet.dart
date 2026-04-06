@@ -14,13 +14,13 @@ class SessionPickerSheet extends StatelessWidget {
     this.currentSession,
   });
 
-  static void show(
+  static Future<Session?> show(
     BuildContext context, {
     required List<Session> sessions,
     Session? currentSession,
     required void Function(Session) onSelectSession,
   }) {
-    showModalBottomSheet(
+    return showModalBottomSheet<Session>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -65,7 +65,7 @@ class SessionPickerSheet extends StatelessWidget {
               isSelected: session.id == currentSession?.id,
               onTap: () {
                 onSelectSession(session);
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(session);
               },
             ),
           ),
