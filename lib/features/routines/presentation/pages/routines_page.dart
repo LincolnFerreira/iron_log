@@ -253,9 +253,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
     Routine routine,
   ) async {
     try {
-      await AuthService().patch(
-        ApiEndpoints.userActiveRoutine(routine.id),
-      );
+      await AuthService().patch(ApiEndpoints.userActiveRoutine(routine.id));
       // Reload so isActive reflects correctly in all cards.
       if (!context.mounted) return;
       await ref.read(routineNotifierProvider.notifier).loadRoutines();

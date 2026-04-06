@@ -44,100 +44,100 @@ class RoutineCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Name
-                        Text(
-                          routine.name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        // Active chip — própria linha, logo abaixo do nome
-                        if (routine.isActive) ...[
-                          const SizedBox(height: 5),
-                          _ActiveChip(colorScheme: colorScheme),
-                        ],
-                        if (routine.division != null &&
-                            routine.division!.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            routine.division!,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 4),
-                        Text(
-                          description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        // Session count chips
-                        if (routine.sessions.isNotEmpty)
-                          _SessionCountRow(
-                            routine: routine,
-                            colorScheme: colorScheme,
-                          ),
-                      ],
-                    ),
-                  ),
-                  // Popup menu
-                  PopupMenuButton<_RoutineAction>(
-                    onSelected: (action) {
-                      switch (action) {
-                        case _RoutineAction.setActive:
-                          onSetActive?.call();
-                        case _RoutineAction.edit:
-                          onEdit?.call();
-                        case _RoutineAction.delete:
-                          onDelete?.call();
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      if (!routine.isActive)
-                        const PopupMenuItem(
-                          value: _RoutineAction.setActive,
-                          child: Row(
-                            children: [
-                              Icon(Icons.check_circle_outline, size: 18),
-                              SizedBox(width: 8),
-                              Text('Definir como ativa'),
-                            ],
-                          ),
-                        ),
-                      const PopupMenuItem(
-                        value: _RoutineAction.edit,
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit_outlined, size: 18),
-                            SizedBox(width: 8),
-                            Text('Editar'),
-                          ],
-                        ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name
+                    Text(
+                      routine.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      const PopupMenuItem(
-                        value: _RoutineAction.delete,
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete_outline, size: 18),
-                            SizedBox(width: 8),
-                            Text('Excluir'),
-                          ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    // Active chip — própria linha, logo abaixo do nome
+                    if (routine.isActive) ...[
+                      const SizedBox(height: 5),
+                      _ActiveChip(colorScheme: colorScheme),
+                    ],
+                    if (routine.division != null &&
+                        routine.division!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        routine.division!,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Session count chips
+                    if (routine.sessions.isNotEmpty)
+                      _SessionCountRow(
+                        routine: routine,
+                        colorScheme: colorScheme,
+                      ),
+                  ],
+                ),
+              ),
+              // Popup menu
+              PopupMenuButton<_RoutineAction>(
+                onSelected: (action) {
+                  switch (action) {
+                    case _RoutineAction.setActive:
+                      onSetActive?.call();
+                    case _RoutineAction.edit:
+                      onEdit?.call();
+                    case _RoutineAction.delete:
+                      onDelete?.call();
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (!routine.isActive)
+                    const PopupMenuItem(
+                      value: _RoutineAction.setActive,
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle_outline, size: 18),
+                          SizedBox(width: 8),
+                          Text('Definir como ativa'),
+                        ],
+                      ),
+                    ),
+                  const PopupMenuItem(
+                    value: _RoutineAction.edit,
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_outlined, size: 18),
+                        SizedBox(width: 8),
+                        Text('Editar'),
+                      ],
+                    ),
                   ),
+                  const PopupMenuItem(
+                    value: _RoutineAction.delete,
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, size: 18),
+                        SizedBox(width: 8),
+                        Text('Excluir'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

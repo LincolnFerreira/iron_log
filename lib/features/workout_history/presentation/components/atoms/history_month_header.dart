@@ -32,9 +32,9 @@ class HistoryMonthHeader extends StatelessWidget {
         children: [
           Text(
             monthLabel,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(width: 8),
           Text(

@@ -9,11 +9,7 @@ class WorkoutDetailSheet extends StatelessWidget {
   /// Se nulo, o botão não é exibido.
   final VoidCallback? onEdit;
 
-  const WorkoutDetailSheet({
-    super.key,
-    required this.workout,
-    this.onEdit,
-  });
+  const WorkoutDetailSheet({super.key, required this.workout, this.onEdit});
 
   static void show(
     BuildContext context,
@@ -43,8 +39,7 @@ class WorkoutDetailSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) {
         return ClipRRect(
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           child: Scaffold(
             backgroundColor: colorScheme.surface,
             body: CustomScrollView(
@@ -109,8 +104,7 @@ class WorkoutDetailSheet extends StatelessWidget {
                               Text(
                                 workout.sessionName!,
                                 style: textTheme.bodySmall?.copyWith(
-                                  color:
-                                      colorScheme.onSurface.withOpacity(0.6),
+                                  color: colorScheme.onSurface.withOpacity(0.6),
                                 ),
                               ),
                             ],
@@ -162,8 +156,8 @@ class WorkoutDetailSheet extends StatelessWidget {
                               color: workout.completionPercent == 100
                                   ? const Color(0xFF4CAF50)
                                   : workout.completionPercent >= 70
-                                      ? const Color(0xFFFFC107)
-                                      : const Color(0xFFFF7043),
+                                  ? const Color(0xFFFFC107)
+                                  : const Color(0xFFFF7043),
                             ),
                           ],
                         ),
@@ -191,9 +185,8 @@ class WorkoutDetailSheet extends StatelessWidget {
                 // Exercise blocks
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => _ExerciseBlock(
-                      exercise: workout.exercises[index],
-                    ),
+                    (context, index) =>
+                        _ExerciseBlock(exercise: workout.exercises[index]),
                     childCount: workout.exercises.length,
                   ),
                 ),

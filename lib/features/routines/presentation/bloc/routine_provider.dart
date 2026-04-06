@@ -91,7 +91,8 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
       final routines = await _getRoutinesUseCase.execute();
       print('✅ Rotinas carregadas: ${routines.length}');
       // Ativa sempre em primeiro, demais mantêm ordem original (createdAt desc).
-      final sorted = [...routines]..sort((a, b) {
+      final sorted = [...routines]
+        ..sort((a, b) {
           if (a.isActive && !b.isActive) return -1;
           if (!a.isActive && b.isActive) return 1;
           return 0;

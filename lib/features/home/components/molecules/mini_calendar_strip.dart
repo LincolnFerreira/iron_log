@@ -88,10 +88,10 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
           final Color circleColor = isToday
               ? AppColors.primaryLight
               : hasWorkout
-                  ? AppColors.success
-                  : isRest
-                      ? AppColors.warning
-                      : Colors.transparent;
+              ? AppColors.success
+              : isRest
+              ? AppColors.warning
+              : Colors.transparent;
 
           final Color labelColor = isToday
               ? AppColors.primaryLight
@@ -123,8 +123,9 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
                     shape: BoxShape.circle,
                     border: !isToday && !hasWorkout && !isRest
                         ? Border.all(
-                            color: theme.colorScheme.outline
-                                .withValues(alpha: 0.15),
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.15,
+                            ),
                             width: 1,
                           )
                         : null,
@@ -134,8 +135,7 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
                       '${date.day}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: numColor,
-                        fontWeight:
-                            isToday ? FontWeight.w800 : FontWeight.w500,
+                        fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
                         fontSize: 11,
                       ),
                     ),
@@ -160,8 +160,18 @@ class _RestDaySheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     const months = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
     final dateStr = '${date.day} de ${months[date.month - 1]}';
 
@@ -181,8 +191,9 @@ class _RestDaySheet extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             label,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 6),
           Text(dateStr, style: theme.textTheme.bodyMedium),
@@ -209,4 +220,3 @@ class _RestDaySheet extends StatelessWidget {
     );
   }
 }
-

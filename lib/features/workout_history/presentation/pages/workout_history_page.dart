@@ -27,10 +27,7 @@ class _HistoryGroup {
 }
 
 // ── Helper ──────────────────────────────────────────────────────────────────
-List<WorkoutHistory> _applyFilter(
-  List<WorkoutHistory> all,
-  String filter,
-) {
+List<WorkoutHistory> _applyFilter(List<WorkoutHistory> all, String filter) {
   final now = DateTime.now();
   return all.where((w) {
     if (filter == 'week') {
@@ -46,8 +43,18 @@ List<WorkoutHistory> _applyFilter(
 
 List<_HistoryGroup> _groupByMonth(List<WorkoutHistory> workouts) {
   const monthNames = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro',
   ];
 
   final Map<String, List<WorkoutHistory>> map = {};
@@ -105,7 +112,8 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) ref.invalidate(workoutHistoryProvider);
+    if (state == AppLifecycleState.resumed)
+      ref.invalidate(workoutHistoryProvider);
   }
 
   @override
@@ -167,46 +175,39 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
                 _buildAppBar(context, filtered.length, filter),
                 // Filter tabs (non-sticky — avoids SliverPersistentHeader
                 // layout issues with floating SliverAppBar)
-                const SliverToBoxAdapter(
-                  child: HistoryFilterTabs(),
-                ),
+                const SliverToBoxAdapter(child: HistoryFilterTabs()),
                 if (flatItems.isEmpty)
-                  SliverFillRemaining(
-                    child: _EmptyState(filter: filter),
-                  )
+                  SliverFillRemaining(child: _EmptyState(filter: filter))
                 else
                   SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = flatItems[index];
-                        if (item is _HistoryGroup) {
-                          return HistoryMonthHeader(
-                            monthLabel: item.monthLabel,
-                            workoutCount: item.workoutCount,
-                            totalVolume: item.totalVolume,
-                          );
-                        }
-                        final workout = item as WorkoutHistory;
-                        return WorkoutHistoryCard(
-                          workout: workout,
-                          onTap: () => WorkoutDetailSheet.show(
-                            context,
-                            workout,
-                            onEdit: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => WorkoutDayScreen(
-                                  workoutId: workout.id,
-                                  subtitle:
-                                      workout.sessionName ?? workout.routineName,
-                                  manualDate: workout.date,
-                                ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final item = flatItems[index];
+                      if (item is _HistoryGroup) {
+                        return HistoryMonthHeader(
+                          monthLabel: item.monthLabel,
+                          workoutCount: item.workoutCount,
+                          totalVolume: item.totalVolume,
+                        );
+                      }
+                      final workout = item as WorkoutHistory;
+                      return WorkoutHistoryCard(
+                        workout: workout,
+                        onTap: () => WorkoutDetailSheet.show(
+                          context,
+                          workout,
+                          onEdit: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => WorkoutDayScreen(
+                                workoutId: workout.id,
+                                subtitle:
+                                    workout.sessionName ?? workout.routineName,
+                                manualDate: workout.date,
                               ),
                             ),
                           ),
-                        );
-                      },
-                      childCount: flatItems.length,
-                    ),
+                        ),
+                      );
+                    }, childCount: flatItems.length),
                   ),
                 // Bottom padding for FAB
                 const SliverToBoxAdapter(child: SizedBox(height: 96)),
@@ -223,11 +224,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
     );
   }
 
-  SliverAppBar _buildAppBar(
-    BuildContext context,
-    int? count,
-    String filter,
-  ) {
+  SliverAppBar _buildAppBar(BuildContext context, int? count, String filter) {
     return SliverAppBar(
       floating: true,
       snap: true,
@@ -241,10 +238,9 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
               child: Text(
                 '$count treino${count != 1 ? 's' : ''}',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withOpacity(0.5),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.5),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -254,10 +250,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
     );
   }
 
-  Future<void> _registerPastWorkout(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _registerPastWorkout(BuildContext context, WidgetRef ref) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now().subtract(const Duration(days: 1)),
@@ -275,7 +268,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
         homeState.todaysSession != null && homeState.todaysRoutine != null
         ? '${homeState.todaysSession!.name} - ${homeState.todaysRoutine!.name}'
         : '${picked.day.toString().padLeft(2, '0')}/'
-            '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+              '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -321,10 +314,9 @@ class _EmptyState extends StatelessWidget {
               child: Text(
                 'Use o botão abaixo para registrar um treino passado.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withOpacity(0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.6),
                 ),
                 textAlign: TextAlign.center,
               ),

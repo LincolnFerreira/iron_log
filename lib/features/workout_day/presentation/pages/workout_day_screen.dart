@@ -298,8 +298,9 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Erro ao atualizar treino: $e'),
-                            backgroundColor:
-                                Theme.of(context).colorScheme.error,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
                           ),
                         );
                       }

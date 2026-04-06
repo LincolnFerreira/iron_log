@@ -5,8 +5,10 @@ import 'workout_calendar_provider.dart';
 
 /// Calls POST /rest-day with a given ISO date and invalidates the calendar.
 /// Returns true if the day is now active (marked), false if removed (toggled off).
-final restDayToggleProvider =
-    FutureProvider.family<bool, String>((ref, isoDate) async {
+final restDayToggleProvider = FutureProvider.family<bool, String>((
+  ref,
+  isoDate,
+) async {
   final auth = AuthService();
   final response = await auth.post(
     ApiEndpoints.restDay,

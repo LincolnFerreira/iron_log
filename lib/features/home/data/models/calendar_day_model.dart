@@ -6,9 +6,9 @@ class CalendarDay {
   const CalendarDay({required this.date, required this.durationSeconds});
 
   factory CalendarDay.fromJson(Map<String, dynamic> json) => CalendarDay(
-        date: DateTime.parse(json['date'] as String),
-        durationSeconds: (json['durationSeconds'] as num?)?.toInt() ?? 0,
-      );
+    date: DateTime.parse(json['date'] as String),
+    durationSeconds: (json['durationSeconds'] as num?)?.toInt() ?? 0,
+  );
 }
 
 /// Full calendar response from GET /workout/calendar

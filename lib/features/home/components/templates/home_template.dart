@@ -104,7 +104,6 @@ class HomeTemplate extends StatelessWidget {
               totalSeries: metrics?.totalSeries ?? 0,
               totalRoutines: metrics?.totalRoutines ?? 0,
             ),
-
           ],
         ),
       ),

@@ -130,7 +130,9 @@ class _SessionSelectCard extends StatelessWidget {
                         Text(
                           session.muscles.join(' · '),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(0.55),
+                            color: theme.colorScheme.onSurface.withOpacity(
+                              0.55,
+                            ),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

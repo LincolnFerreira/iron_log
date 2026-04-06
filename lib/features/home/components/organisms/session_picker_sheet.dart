@@ -128,8 +128,9 @@ class _SessionPickerItem extends StatelessWidget {
           session.name,
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w700,
-            color:
-                isSelected ? AppColors.primaryLight : theme.colorScheme.onSurface,
+            color: isSelected
+                ? AppColors.primaryLight
+                : theme.colorScheme.onSurface,
           ),
         ),
         subtitle: session.muscles.isNotEmpty
@@ -143,11 +144,16 @@ class _SessionPickerItem extends StatelessWidget {
               )
             : null,
         trailing: isSelected
-            ? Icon(Icons.check_circle_rounded,
-                size: 22, color: AppColors.primaryLight)
-            : Icon(Icons.radio_button_unchecked_rounded,
+            ? Icon(
+                Icons.check_circle_rounded,
                 size: 22,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.25)),
+                color: AppColors.primaryLight,
+              )
+            : Icon(
+                Icons.radio_button_unchecked_rounded,
+                size: 22,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
+              ),
       ),
     );
   }

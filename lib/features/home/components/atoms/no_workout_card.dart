@@ -24,7 +24,9 @@ class NoWorkoutCard extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.fitness_center_outlined,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.4),
                   size: 24,
                 ),
               ),
@@ -43,7 +45,9 @@ class NoWorkoutCard extends StatelessWidget {
                     Text(
                       'Você ainda não criou uma rotina de treinos',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
                   ],
@@ -54,7 +58,9 @@ class NoWorkoutCard extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.4),
                 ),
               ],
             ],

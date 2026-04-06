@@ -22,9 +22,7 @@ class WorkoutHistoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: colorScheme.outline.withOpacity(0.12),
-          ),
+          border: Border.all(color: colorScheme.outline.withOpacity(0.12)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,8 +30,10 @@ class WorkoutHistoryCard extends StatelessWidget {
             // PR badge
             if (workout.hasPR) ...[
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 3,
+                ),
                 decoration: BoxDecoration(
                   color: colorScheme.primary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(100),
@@ -108,7 +108,8 @@ class WorkoutHistoryCard extends StatelessWidget {
             Row(
               children: [
                 _MiniStat(
-                  value: '${workout.completedSeries > 0 ? workout.completedSeries : workout.seriesCount}',
+                  value:
+                      '${workout.completedSeries > 0 ? workout.completedSeries : workout.seriesCount}',
                   label: 'Séries',
                   color: const Color(0xFFFFC107),
                 ),
@@ -131,8 +132,8 @@ class WorkoutHistoryCard extends StatelessWidget {
                   color: workout.completionPercent == 100
                       ? const Color(0xFF4CAF50)
                       : workout.completionPercent >= 70
-                          ? const Color(0xFFFFC107)
-                          : const Color(0xFFFF7043),
+                      ? const Color(0xFFFFC107)
+                      : const Color(0xFFFF7043),
                 ),
               ],
             ),
@@ -168,18 +169,16 @@ class _ExerciseChips extends StatelessWidget {
             ),
             child: Text(
               e.exerciseName,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                fontSize: 11,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(fontSize: 11),
             ),
           ),
         ),
         if (overflow > 0)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(6)),
             child: Text(
               '+$overflow',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(

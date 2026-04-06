@@ -230,13 +230,12 @@ class WorkoutDayExercisesNotifier
         state = AsyncValue.data(exercises);
 
         if (kDebugMode) {
-          print('✅ Treino carregado para edição: ${exercises.length} exercícios');
+          print(
+            '✅ Treino carregado para edição: ${exercises.length} exercícios',
+          );
         }
       } else {
-        state = AsyncValue.error(
-          'Erro ao carregar treino',
-          StackTrace.current,
-        );
+        state = AsyncValue.error('Erro ao carregar treino', StackTrace.current);
       }
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);

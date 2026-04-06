@@ -4,8 +4,9 @@ import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
 
 /// Provider que busca o histórico de treinos do usuário logado.
-final workoutHistoryProvider =
-    FutureProvider<List<WorkoutHistory>>((ref) async {
+final workoutHistoryProvider = FutureProvider<List<WorkoutHistory>>((
+  ref,
+) async {
   final auth = AuthService();
   final response = await auth.get(ApiEndpoints.workouts);
   final list = (response.data as List<dynamic>? ?? []);
@@ -19,15 +20,16 @@ final workoutHistoryProvider =
     final startedAt = map['startedAt'] != null
         ? DateTime.parse(map['startedAt'])
         : DateTime.now();
-    final endedAt =
-        map['endedAt'] != null ? DateTime.parse(map['endedAt']) : null;
-    final duration =
-        endedAt != null ? endedAt.difference(startedAt) : Duration.zero;
+    final endedAt = map['endedAt'] != null
+        ? DateTime.parse(map['endedAt'])
+        : null;
+    final duration = endedAt != null
+        ? endedAt.difference(startedAt)
+        : Duration.zero;
 
     // The API returns a flat 'series' array, each with a nested 'exercise'.
     // There is no 'status' field — saved series are implicitly completed.
-    final allSeriesRaw =
-        (map['series'] as List<dynamic>?) ?? [];
+    final allSeriesRaw = (map['series'] as List<dynamic>?) ?? [];
 
     // Extract sessionName from the first serie that carries sessionExercise.session
     // (populated by the backend findByUser include added for the edit flow).
