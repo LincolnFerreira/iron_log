@@ -1,5 +1,6 @@
 class Routine {
   final String id;
+  final String userId;
   final String name;
   final String? division;
   final bool isTemplate;
@@ -8,8 +9,14 @@ class Routine {
   final DateTime updatedAt;
   final List<Session> sessions;
 
+  /// Offline-first fields
+  final int? version;
+  final bool? pendingSync;
+  final DateTime? syncedAt;
+
   const Routine({
     required this.id,
+    required this.userId,
     required this.name,
     this.division,
     required this.isTemplate,
@@ -17,11 +24,15 @@ class Routine {
     required this.createdAt,
     required this.updatedAt,
     required this.sessions,
+    this.version,
+    this.pendingSync,
+    this.syncedAt,
   });
 
   factory Routine.fromJson(Map<String, dynamic> json) {
     return Routine(
       id: json['id']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       division: json['division']?.toString(),
       isTemplate: json['isTemplate'] as bool? ?? false,
@@ -37,16 +48,25 @@ class Routine {
               ?.map((e) => Session.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      version: json['version'] as int?,
+      pendingSync: json['pendingSync'] as bool?,
+      syncedAt: json['syncedAt'] != null
+          ? DateTime.tryParse(json['syncedAt']?.toString() ?? '')
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'userId': userId,
       'name': name,
       'division': division,
       'isTemplate': isTemplate,
       'isActive': isActive,
+      'version': version,
+      'pendingSync': pendingSync,
+      'syncedAt': syncedAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'sessions': sessions.map((e) => e.toJson()).toList(),

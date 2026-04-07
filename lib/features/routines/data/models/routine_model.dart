@@ -3,6 +3,7 @@ import '../../domain/entities/routine.dart';
 class RoutineModel extends Routine {
   const RoutineModel({
     required super.id,
+    required super.userId,
     required super.name,
     super.division,
     required super.isTemplate,
@@ -10,15 +11,24 @@ class RoutineModel extends Routine {
     required super.updatedAt,
     required super.sessions,
     super.isActive,
+    super.version,
+    super.pendingSync,
+    super.syncedAt,
   });
 
   factory RoutineModel.fromJson(Map<String, dynamic> json) {
     return RoutineModel(
       id: json['id']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       division: json['division']?.toString(),
       isTemplate: json['isTemplate'] as bool? ?? false,
       isActive: json['isActive'] as bool? ?? false,
+      version: json['version'] as int?,
+      pendingSync: json['pendingSync'] as bool?,
+      syncedAt: json['syncedAt'] != null
+          ? DateTime.tryParse(json['syncedAt']?.toString() ?? '')
+          : null,
       createdAt:
           DateTime.tryParse(json['createdAt']?.toString() ?? '') ??
           DateTime.now(),
@@ -37,9 +47,13 @@ class RoutineModel extends Routine {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'userId': userId,
       'name': name,
       'division': division,
       'isTemplate': isTemplate,
+      'version': version,
+      'pendingSync': pendingSync,
+      'syncedAt': syncedAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'sessions': sessions.map((e) => (e as SessionModel).toJson()).toList(),
