@@ -6,8 +6,12 @@ import '../../domain/repositories/routine_repository.dart';
 import '../../domain/usecases/routine_usecases.dart';
 
 // Providers
+// This provider must be overridden by routineProvidersOverrides in main.dart
 final routineRepositoryProvider = Provider<RoutineRepository>((ref) {
-  throw UnimplementedError('RoutineRepository not provided');
+  throw UnimplementedError(
+    'RoutineRepository provider must be overridden in ProviderScope. '
+    'Make sure routineProvidersOverrides are applied in main.dart',
+  );
 });
 
 final getRoutinesUseCaseProvider = Provider<GetRoutinesUseCase>((ref) {

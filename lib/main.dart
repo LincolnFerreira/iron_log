@@ -15,10 +15,9 @@ Future<void> main() async {
   AuthService().initialize();
 
   runApp(
-    // Adicione o ProviderScope com overrides para as features
     ProviderScope(
       overrides: [
-        // Overrides para a feature de rotinas
+        // Overrides para a feature de rotinas (deve ser aplicado ANTES de MyApp)
         ...routineProvidersOverrides,
       ],
       child: const MyApp(),
