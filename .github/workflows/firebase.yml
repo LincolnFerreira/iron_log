@@ -23,6 +23,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Set version
+        run: |
+          VERSION_NAME=$(grep '^version:' pubspec.yaml | cut -d '+' -f 1 | sed 's/version: //')
+          BUILD_NUMBER=${{ github.run_number }}
+          sed -i "s/^version: .*/version: $VERSION_NAME+$BUILD_NUMBER/" pubspec.yaml        
+
       # 4. Testes (opcional mas recomendado)
       - name: Run tests
         run: flutter test || true

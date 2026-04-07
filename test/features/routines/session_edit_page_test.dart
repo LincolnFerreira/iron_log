@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/features/routines/presentation/pages/session_edit_page.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import '../../helpers/test_providers_setup.dart';
 
 void main() {
   testWidgets('SessionEditPage shows routine title and history', (
@@ -20,6 +21,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: getTestProviderOverrides(),
         child: MaterialApp(home: SessionEditPage(routine: routine)),
       ),
     );
