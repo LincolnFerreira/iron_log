@@ -10,8 +10,10 @@ class SeriesTable extends StatefulWidget {
   final String reps;
   final void Function(int index, bool done)? onToggleDone;
   final String weightUnit;
+
   /// Called with the full updated entries list whenever any row changes.
   final void Function(List<SeriesEntry> entries)? onEntriesChanged;
+
   /// Optional pre-populated entries (e.g. loaded from a previous workout).
   final List<SeriesEntry>? initialEntries;
 
@@ -47,11 +49,9 @@ class _SeriesTableState extends State<SeriesTable> {
       _entries = List<SeriesEntry>.from(initial);
       if (_entries.length < widget.count) {
         for (var i = _entries.length; i < widget.count; i++) {
-          _entries.add(SeriesEntry(
-            index: i,
-            weight: widget.weight,
-            reps: widget.reps,
-          ));
+          _entries.add(
+            SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
+          );
         }
       } else if (_entries.length > widget.count) {
         _entries = _entries.sublist(0, widget.count);
@@ -85,7 +85,10 @@ class _SeriesTableState extends State<SeriesTable> {
       }
       // Preserve existing entries and extend/trim based on new count.
       final previous = List<SeriesEntry>.from(_entries);
-      _activateWeightTokens = List.generate(widget.count, (_) => ValueNotifier(0));
+      _activateWeightTokens = List.generate(
+        widget.count,
+        (_) => ValueNotifier(0),
+      );
       if (widget.count > previous.length) {
         _entries = [
           ...previous,

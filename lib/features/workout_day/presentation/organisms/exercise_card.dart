@@ -35,6 +35,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   late int _restTime;
   late WeightUnit _weightUnit;
   SeriesType? _selectedSeriesType;
+
   /// Tracks the live per-series data reported by SeriesTable via onEntriesChanged.
   List<SeriesEntry> _currentEntries = const [];
 

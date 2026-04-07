@@ -171,13 +171,18 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
 
           if (kDebugMode) {
             print('📅 Data alterada: $picked');
-            print('⏱️ Novo endedAt calculado: $newEndedAt (duração: ${originalDuration.inMinutes}min)');
+            print(
+              '⏱️ Novo endedAt calculado: $newEndedAt (duração: ${originalDuration.inMinutes}min)',
+            );
           }
         }
 
         // Envia a atualização com nova data e endedAt preservado
-        await WorkoutLogService()
-            .patchDate(widget.workoutId!, picked, newEndedAt: newEndedAt);
+        await WorkoutLogService().patchDate(
+          widget.workoutId!,
+          picked,
+          newEndedAt: newEndedAt,
+        );
       } catch (e) {
         if (kDebugMode) {
           print('Aviso: falha ao atualizar data no backend: $e');

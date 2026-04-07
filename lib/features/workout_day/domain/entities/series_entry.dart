@@ -1,7 +1,8 @@
 /// Represents a single series (set) entry as typed by the user during a workout.
 class SeriesEntry {
   final int index;
-  int type; // 0: Aquec. (Warm-up), 1: Prep. (Feeder), 2: Trab (Top Set), 3: Falha (Back-Off)
+  int
+  type; // 0: Aquec. (Warm-up), 1: Prep. (Feeder), 2: Trab (Top Set), 3: Falha (Back-Off)
   String weight;
   String reps;
   bool done;

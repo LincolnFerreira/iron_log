@@ -251,10 +251,13 @@ class WorkoutDayExercisesNotifier
             final startedAt = DateTime.parse(startedAtStr);
             final endedAt = DateTime.parse(endedAtStr);
             final originalDuration = endedAt.difference(startedAt);
-            _ref!.read(workoutOriginalDurationProvider.notifier).state = originalDuration;
-            
+            _ref.read(workoutOriginalDurationProvider.notifier).state =
+                originalDuration;
+
             if (kDebugMode) {
-              print('⏱️ Duração original extraída: ${originalDuration.inMinutes} min');
+              print(
+                '⏱️ Duração original extraída: ${originalDuration.inMinutes} min',
+              );
             }
           } catch (e) {
             if (kDebugMode) {

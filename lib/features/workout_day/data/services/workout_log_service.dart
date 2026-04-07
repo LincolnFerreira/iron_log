@@ -51,10 +51,14 @@ class WorkoutLogService {
     return data['workoutId'] as String;
   }
 
-  Map<String, dynamic> _exerciseToDto(WorkoutExercise exercise,
-      {int order = 1}) {
+  Map<String, dynamic> _exerciseToDto(
+    WorkoutExercise exercise, {
+    int order = 1,
+  }) {
     final entries = exercise.entries;
-    final sets = entries.isNotEmpty ? entries.length : (exercise.series > 0 ? exercise.series : 1);
+    final sets = entries.isNotEmpty
+        ? entries.length
+        : (exercise.series > 0 ? exercise.series : 1);
 
     final List<int> repsList;
     final List<double> weightList;
@@ -140,16 +144,17 @@ class WorkoutLogService {
   /// Usado para auto-save quando o usuário troca a data no modo edição.
   ///
   /// Se [newEndedAt] for fornecido, também atualiza o endedAt para preservar a duração.
-  Future<void> patchDate(String workoutId, DateTime newDate, {DateTime? newEndedAt}) async {
+  Future<void> patchDate(
+    String workoutId,
+    DateTime newDate, {
+    DateTime? newEndedAt,
+  }) async {
     final payload = {'date': newDate.toIso8601String()};
-    
+
     if (newEndedAt != null) {
       payload['endedAt'] = newEndedAt.toIso8601String();
     }
 
-    await _auth.patch(
-      ApiEndpoints.workoutById(workoutId),
-      data: payload,
-    );
+    await _auth.patch(ApiEndpoints.workoutById(workoutId), data: payload);
   }
 }

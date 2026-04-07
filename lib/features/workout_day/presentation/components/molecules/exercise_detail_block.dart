@@ -59,7 +59,9 @@ class ExerciseDetailBlock extends StatelessWidget {
                     ),
                     // Lado direito: Peso x Reps
                     Text(
-                      exercise.series.isNotEmpty ? '${exercise.series.first.weight}kg × ${exercise.series.first.reps} reps' : '-kg × - reps',
+                      exercise.series.isNotEmpty
+                          ? '${exercise.series.first.weight}kg × ${exercise.series.first.reps} reps'
+                          : '-kg × - reps',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,

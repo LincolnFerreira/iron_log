@@ -17,10 +17,12 @@ class WorkoutExercise {
   final int rir;
   final int restTime;
   final WeightUnit weightUnit;
+
   /// Per-series data as typed by the user. When non-empty, this is the
   /// source of truth for the API payload. [reps] and [weight] are used
   /// only as defaults when initialising new rows.
   final List<SeriesEntry> entries;
+
   /// Optional observation the user may add for this exercise.
   final String? notes;
 
