@@ -15,17 +15,23 @@ class MockRoutineRepository implements RoutineRepository {
     bool isTemplate = false,
     List<SessionCreation>? sessions,
   }) async {
-    throw UnimplementedError('MockRoutineRepository.createRoutine not implemented');
+    throw UnimplementedError(
+      'MockRoutineRepository.createRoutine not implemented',
+    );
   }
 
   @override
   Future<void> deleteRoutine(String id) async {
-    throw UnimplementedError('MockRoutineRepository.deleteRoutine not implemented');
+    throw UnimplementedError(
+      'MockRoutineRepository.deleteRoutine not implemented',
+    );
   }
 
   @override
   Future<Routine> getRoutine(String id) async {
-    throw UnimplementedError('MockRoutineRepository.getRoutine not implemented');
+    throw UnimplementedError(
+      'MockRoutineRepository.getRoutine not implemented',
+    );
   }
 
   @override
@@ -35,7 +41,9 @@ class MockRoutineRepository implements RoutineRepository {
 
   @override
   Future<Routine> updateRoutine(String id, RoutineUpdate updates) async {
-    throw UnimplementedError('MockRoutineRepository.updateRoutine not implemented');
+    throw UnimplementedError(
+      'MockRoutineRepository.updateRoutine not implemented',
+    );
   }
 }
 
@@ -54,14 +62,14 @@ List<Override> getTestProviderOverrides() {
   // Create a test HttpService that's properly initialized
   final testHttpService = HttpService();
   testHttpService.initialize();
-  
+
   return [
     // Override httpServiceProvider to return our initialized test instance
     httpServiceProvider.overrideWithValue(testHttpService),
-    
+
     // Override routineRepositoryProvider to use the proper implementation chain
     routineRepositoryOverride,
-    
+
     // Apply all routine provider overrides
     ...routineProvidersOverrides,
   ];
