@@ -44,6 +44,7 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
 
 class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   bool _workoutStarted = false;
+
   /// Data mutável do treino — inicializada com widget.manualDate e pode ser
   /// alterada pelo usuário via date picker no header.
   DateTime? _selectedDate;
@@ -143,6 +144,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
 
   /// Abre o date picker para o usuário alterar a data do treino.
   /// Em modo edição (workoutId != null), salva automaticamente no backend.
+  /// Preserva a duração original do treino ao mudar de data.
   Future<void> _changeDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -158,7 +160,24 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     // Em modo edição: auto-save da nova data no backend
     if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
       try {
-        await WorkoutLogService().patchDate(widget.workoutId!, picked);
+        // Lê a duração original do provider
+        final originalDuration = ref.read(workoutOriginalDurationProvider);
+
+        // Se temos duração original, calcula o novo endedAt preservando a duração
+        DateTime? newEndedAt;
+        if (originalDuration != null) {
+          // Preserva o horário original somando a duração à nova data
+          newEndedAt = picked.add(originalDuration);
+
+          if (kDebugMode) {
+            print('📅 Data alterada: $picked');
+            print('⏱️ Novo endedAt calculado: $newEndedAt (duração: ${originalDuration.inMinutes}min)');
+          }
+        }
+
+        // Envia a atualização com nova data e endedAt preservado
+        await WorkoutLogService()
+            .patchDate(widget.workoutId!, picked, newEndedAt: newEndedAt);
       } catch (e) {
         if (kDebugMode) {
           print('Aviso: falha ao atualizar data no backend: $e');
@@ -390,7 +409,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                       startedAt = timerStartTime ?? now;
                       endedAt = now;
                       duration = endedAt.difference(startedAt);
-                    }    
+                    }
 
                     // Persiste no backend
                     if (widget.routineId != null &&

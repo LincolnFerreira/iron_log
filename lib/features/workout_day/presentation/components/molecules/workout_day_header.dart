@@ -7,8 +7,10 @@ class WorkoutDayHeader extends ConsumerWidget {
   final VoidCallback? onMorePressed;
   final String title;
   final String? subtitle;
+
   /// Quando não nulo, exibe badge de "treino passado" e omite o timer.
   final DateTime? manualDate;
+
   /// Quando não nulo e manualDate != null, torna o badge de data clicável.
   final VoidCallback? onDateTap;
 
@@ -83,17 +85,22 @@ class WorkoutDayHeader extends ConsumerWidget {
                         children: [
                           Text(
                             'Treino de ${manualDate!.day.toString().padLeft(2, '0')}/${manualDate!.month.toString().padLeft(2, '0')}/${manualDate!.year}',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onTertiaryContainer,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onTertiaryContainer,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
-                          if (onDateTap != null) ...[  
+                          if (onDateTap != null) ...[
                             const SizedBox(width: 4),
                             Icon(
                               Icons.edit_calendar_outlined,
                               size: 12,
-                              color: Theme.of(context).colorScheme.onTertiaryContainer,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onTertiaryContainer,
                             ),
                           ],
                         ],

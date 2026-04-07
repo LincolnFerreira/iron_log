@@ -1,5 +1,9 @@
 import 'exercise_tag.dart';
+import 'series_entry.dart';
 import 'weight_unit.dart';
+
+// Sentinel used in copyWith to distinguish "not provided" from explicit null.
+const _notSet = Object();
 
 class WorkoutExercise {
   final String id;
@@ -13,6 +17,12 @@ class WorkoutExercise {
   final int rir;
   final int restTime;
   final WeightUnit weightUnit;
+  /// Per-series data as typed by the user. When non-empty, this is the
+  /// source of truth for the API payload. [reps] and [weight] are used
+  /// only as defaults when initialising new rows.
+  final List<SeriesEntry> entries;
+  /// Optional observation the user may add for this exercise.
+  final String? notes;
 
   const WorkoutExercise({
     required this.id,
@@ -26,6 +36,8 @@ class WorkoutExercise {
     required this.rir,
     required this.restTime,
     this.weightUnit = WeightUnit.kg,
+    this.entries = const [],
+    this.notes,
   });
 
   factory WorkoutExercise.fromJson(Map<String, dynamic> json) {
@@ -41,6 +53,7 @@ class WorkoutExercise {
       rir: json['rir'] ?? 2,
       restTime: json['restTime'] ?? 120,
       weightUnit: WeightUnit.fromString(json['weightUnit']?.toString() ?? 'kg'),
+      notes: json['notes']?.toString(),
     );
   }
 
@@ -57,6 +70,7 @@ class WorkoutExercise {
       'rir': rir,
       'restTime': restTime,
       'weightUnit': weightUnit.label,
+      if (notes != null) 'notes': notes,
     };
   }
 
@@ -72,6 +86,8 @@ class WorkoutExercise {
     int? rir,
     int? restTime,
     WeightUnit? weightUnit,
+    List<SeriesEntry>? entries,
+    Object? notes = _notSet,
   }) {
     return WorkoutExercise(
       id: id ?? this.id,
@@ -85,6 +101,8 @@ class WorkoutExercise {
       rir: rir ?? this.rir,
       restTime: restTime ?? this.restTime,
       weightUnit: weightUnit ?? this.weightUnit,
+      entries: entries ?? this.entries,
+      notes: notes == _notSet ? this.notes : notes as String?,
     );
   }
 

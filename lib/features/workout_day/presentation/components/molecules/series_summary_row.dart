@@ -3,12 +3,13 @@ import 'package:iron_log/features/workout_day/domain/entities/serie_log.dart';
 import '../atoms/type_badge.dart';
 import '../atoms/status_icon.dart';
 
-/// Uma linha de série dentro de um exercício
-class SerieRow extends StatelessWidget {
+/// A summary row displaying a completed series in workout history/summary screens.
+/// Read-only display of series data with animated transitions and visual status indicators.
+class SeriesSummaryRow extends StatelessWidget {
   final SerieLog serie;
   final bool animated;
 
-  const SerieRow({super.key, required this.serie, this.animated = true});
+  const SeriesSummaryRow({super.key, required this.serie, this.animated = true});
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 import '../molecules/exercise_search_bar.dart';
 
@@ -25,7 +26,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
     if (addedExercises.any((e) => e.id == exercise.id)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${exercise.name} já foi adicionado'),
+          content: Text('${exercise.name.toTitleCase()} já foi adicionado'),
           duration: const Duration(seconds: 2),
           backgroundColor: Colors.orange,
         ),
@@ -44,7 +45,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
     // Mostra feedback
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${exercise.name} adicionado'),
+        content: Text('${exercise.name.toTitleCase()} adicionado'),
         duration: const Duration(seconds: 2),
         backgroundColor: Colors.green,
       ),
@@ -165,7 +166,7 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            exercise.name,
+                                            exercise.name.toTitleCase(),
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium

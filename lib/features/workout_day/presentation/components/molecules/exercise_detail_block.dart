@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_summary.dart';
-import './serie_row.dart';
+import './series_summary_row.dart';
 
 /// Bloco de detalhes de um exercício com todas suas séries
 class ExerciseDetailBlock extends StatelessWidget {
@@ -36,7 +37,7 @@ class ExerciseDetailBlock extends StatelessWidget {
               children: [
                 // Linha 1: Título do exercício
                 Text(
-                  exercise.name,
+                  exercise.name.toTitleCase(),
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -87,7 +88,7 @@ class ExerciseDetailBlock extends StatelessWidget {
               final serie = entry.value;
               return Column(
                 children: [
-                  SerieRow(serie: serie, animated: animated),
+                  SeriesSummaryRow(serie: serie, animated: animated),
                   if (index < exercise.series.length - 1)
                     Divider(
                       height: 1,

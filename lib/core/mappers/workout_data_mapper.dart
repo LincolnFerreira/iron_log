@@ -1,3 +1,4 @@
+import '../../features/workout_day/domain/entities/series_entry.dart';
 import '../../features/workout_day/domain/entities/workout_exercise.dart';
 import '../../features/workout_day/domain/entities/exercise_tag.dart';
 
@@ -9,17 +10,20 @@ class WorkoutDataMapper {
     final exercise = exerciseData['exercise'] as Map<String, dynamic>? ?? {};
     final config = exerciseData['config'] as Map<String, dynamic>? ?? {};
 
+    final entries = _mapEntries(config);
+
     return WorkoutExercise(
       id: exercise['id']?.toString() ?? '',
       name: exercise['name']?.toString() ?? '',
       tag: _mapExerciseTag(exercise),
       muscles: _mapMuscles(exercise),
       variation: _mapVariation(config),
-      series: _mapSeries(config),
+      series: entries.isNotEmpty ? entries.length : _mapSeries(config),
       reps: _mapReps(config),
       weight: _mapWeight(config),
       rir: _mapRir(config),
       restTime: _mapRestTime(config),
+      entries: entries,
     );
   }
 
@@ -63,9 +67,25 @@ class WorkoutDataMapper {
       final series = entry.value;
       final meta = exerciseMeta[exerciseId] ?? <String, dynamic>{};
 
+      // Build per-series entries from the real stored SerieLog rows.
+      final entries = series.asMap().entries.map((e) {
+        final i = e.key;
+        final s = e.value;
+        final weightKg = (s['weightKg'] as num?)?.toDouble() ?? 0.0;
+        final reps = (s['reps'] as int?) ?? 0;
+        final label = s['label']?.toString() ?? 'Top Set';
+        return SeriesEntry(
+          index: i,
+          type: _labelToType(label),
+          weight: weightKg > 0 ? weightKg.toString() : '0',
+          reps: reps > 0 ? reps.toString() : '0',
+          done: true, // already executed
+        );
+      }).toList();
+
       final firstSerie = series.first;
-      final weightKg = (firstSerie['weightKg'] as num?)?.toDouble() ?? 0.0;
-      final reps = firstSerie['reps'] as int? ?? 0;
+      final firstWeight = (firstSerie['weightKg'] as num?)?.toDouble() ?? 0.0;
+      final firstReps = firstSerie['reps'] as int? ?? 0;
       final rir = firstSerie['rir'] as int? ?? 0;
       final restSeconds = firstSerie['restSeconds'] as int? ?? 0;
 
@@ -76,10 +96,11 @@ class WorkoutDataMapper {
         muscles: meta['primaryMuscle']?.toString() ?? 'Não especificado',
         variation: 'Traditional',
         series: series.length,
-        reps: reps > 0 ? reps.toString() : '-',
-        weight: weightKg > 0 ? '${weightKg}kg' : '0kg',
+        reps: firstReps > 0 ? firstReps.toString() : '-',
+        weight: firstWeight > 0 ? '${firstWeight}kg' : '0kg',
         rir: rir,
         restTime: restSeconds,
+        entries: entries,
       );
     }).toList();
   }
@@ -246,5 +267,49 @@ class WorkoutDataMapper {
     if (restTime is String) return int.tryParse(restTime) ?? 120;
 
     return 120; // 2 minutos padrão
+  }
+
+  /// Maps config['series'] array to a list of [SeriesEntry].
+  /// Returns an empty list when the config has no series array.
+  static List<SeriesEntry> _mapEntries(Map<String, dynamic> config) {
+    final seriesData = config['series'];
+    if (seriesData is! List || seriesData.isEmpty) return const [];
+
+    return seriesData.asMap().entries.map((e) {
+      final i = e.key;
+      final s = e.value as Map<String, dynamic>? ?? {};
+      final weight = s['weight'];
+      final reps = s['reps'];
+      final label = s['label']?.toString() ?? s['tag']?.toString() ?? 'Top Set';
+      return SeriesEntry(
+        index: i,
+        type: _labelToType(label),
+        weight: weight != null ? weight.toString() : '0',
+        reps: reps != null ? reps.toString() : '0',
+      );
+    }).toList();
+  }
+
+  /// Converts a backend label string to the integer type used by [SeriesEntry].
+  static int _labelToType(String label) {
+    switch (label.toLowerCase()) {
+      case 'warm-up':
+      case 'warmup':
+      case 'aquecimento':
+        return 0;
+      case 'feeder':
+      case 'prep':
+      case 'preparação':
+        return 1;
+      case 'back-off':
+      case 'backoff':
+      case 'back off':
+        return 3;
+      case 'top set':
+      case 'topset':
+      case 'trabalho':
+      default:
+        return 2;
+    }
   }
 }

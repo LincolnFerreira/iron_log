@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'series_entry.dart';
-import 'series_row.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'series_input_row.dart';
 
 /// A table displaying workout series with type, weight, reps, and completion status.
 /// Manages a list of SeriesEntry models and renders them as individual SeriesRow widgets.
@@ -10,6 +10,10 @@ class SeriesTable extends StatefulWidget {
   final String reps;
   final void Function(int index, bool done)? onToggleDone;
   final String weightUnit;
+  /// Called with the full updated entries list whenever any row changes.
+  final void Function(List<SeriesEntry> entries)? onEntriesChanged;
+  /// Optional pre-populated entries (e.g. loaded from a previous workout).
+  final List<SeriesEntry>? initialEntries;
 
   const SeriesTable({
     super.key,
@@ -18,6 +22,8 @@ class SeriesTable extends StatefulWidget {
     required this.reps,
     this.onToggleDone,
     this.weightUnit = 'kg',
+    this.onEntriesChanged,
+    this.initialEntries,
   });
 
   @override
@@ -35,10 +41,27 @@ class _SeriesTableState extends State<SeriesTable> {
   }
 
   void _initializeEntries() {
-    _entries = List.generate(
-      widget.count,
-      (i) => SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
-    );
+    final initial = widget.initialEntries;
+    if (initial != null && initial.isNotEmpty) {
+      // Use provided entries; append new default rows if count grew.
+      _entries = List<SeriesEntry>.from(initial);
+      if (_entries.length < widget.count) {
+        for (var i = _entries.length; i < widget.count; i++) {
+          _entries.add(SeriesEntry(
+            index: i,
+            weight: widget.weight,
+            reps: widget.reps,
+          ));
+        }
+      } else if (_entries.length > widget.count) {
+        _entries = _entries.sublist(0, widget.count);
+      }
+    } else {
+      _entries = List.generate(
+        widget.count,
+        (i) => SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
+      );
+    }
     _activateWeightTokens = List.generate(
       widget.count,
       (_) => ValueNotifier(0),
@@ -60,7 +83,18 @@ class _SeriesTableState extends State<SeriesTable> {
       for (final token in _activateWeightTokens) {
         token.dispose();
       }
-      _initializeEntries();
+      // Preserve existing entries and extend/trim based on new count.
+      final previous = List<SeriesEntry>.from(_entries);
+      _activateWeightTokens = List.generate(widget.count, (_) => ValueNotifier(0));
+      if (widget.count > previous.length) {
+        _entries = [
+          ...previous,
+          for (var i = previous.length; i < widget.count; i++)
+            SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
+        ];
+      } else {
+        _entries = previous.sublist(0, widget.count);
+      }
     }
   }
 
@@ -68,6 +102,7 @@ class _SeriesTableState extends State<SeriesTable> {
     setState(() {
       _entries[index] = updated;
     });
+    widget.onEntriesChanged?.call(List.unmodifiable(_entries));
   }
 
   void _handleToggleDone(int index, bool done) {
@@ -133,7 +168,7 @@ class _SeriesTableState extends State<SeriesTable> {
           final index = entry.key;
           final seriesEntry = entry.value;
           final isLast = index == _entries.length - 1;
-          return SeriesRow(
+          return SeriesInputRow(
             key: ValueKey(index),
             entry: seriesEntry,
             onChanged: (updated) => _handleEntryChanged(index, updated),

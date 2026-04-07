@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 
-/// A single row in the SeriesTable, managing its own editing state and controllers.
-class SeriesRow extends StatefulWidget {
+/// A single input row in the SeriesTable for editing series during workout.
+/// Manages its own editing state with TextControllers for weight and reps entry.
+class SeriesInputRow extends StatefulWidget {
   final SeriesEntry entry;
   final ValueChanged<SeriesEntry> onChanged;
   final ValueChanged<bool> onToggleDone;
@@ -12,7 +13,7 @@ class SeriesRow extends StatefulWidget {
   final VoidCallback? onRepsDone;
   final bool isLastRow;
 
-  const SeriesRow({
+  const SeriesInputRow({
     super.key,
     required this.entry,
     required this.onChanged,
@@ -24,10 +25,10 @@ class SeriesRow extends StatefulWidget {
   });
 
   @override
-  State<SeriesRow> createState() => _SeriesRowState();
+  State<SeriesInputRow> createState() => _SeriesInputRowState();
 }
 
-class _SeriesRowState extends State<SeriesRow> {
+class _SeriesInputRowState extends State<SeriesInputRow> {
   late TextEditingController _weightController;
   late TextEditingController _repController;
   late bool _editingWeight;
@@ -36,12 +37,8 @@ class _SeriesRowState extends State<SeriesRow> {
   @override
   void initState() {
     super.initState();
-    _weightController = TextEditingController(
-      text: _cleanValue(widget.entry.weight),
-    );
-    _repController = TextEditingController(
-      text: _cleanValue(widget.entry.reps),
-    );
+    _weightController = TextEditingController();
+    _repController = TextEditingController();
     _editingWeight = false;
     _editingReps = false;
     widget.activateWeightToken?.addListener(_onActivateWeight);
@@ -56,7 +53,7 @@ class _SeriesRowState extends State<SeriesRow> {
   }
 
   void _onActivateWeight() {
-    _weightController.text = _cleanValue(widget.entry.weight);
+    _weightController.clear();
     setState(() {
       _editingWeight = true;
       _editingReps = false;
@@ -101,7 +98,7 @@ class _SeriesRowState extends State<SeriesRow> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(color: Colors.grey.shade50),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -176,18 +173,19 @@ class _SeriesRowState extends State<SeriesRow> {
                     textInputAction: TextInputAction.next,
                     autofocus: true,
                     onSubmitted: _handleWeightSubmitted,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 8,
                       ),
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      hintText: _cleanValue(widget.entry.weight),
                     ),
                   )
                 : GestureDetector(
                     onTap: () {
-                      _weightController.text = _cleanValue(widget.entry.weight);
+                      _weightController.clear();
                       setState(() => _editingWeight = true);
                     },
                     child: Container(
@@ -233,18 +231,19 @@ class _SeriesRowState extends State<SeriesRow> {
                         : TextInputAction.next,
                     autofocus: true,
                     onSubmitted: _handleRepsSubmitted,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 8,
                       ),
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      hintText: widget.entry.reps,
                     ),
                   )
                 : GestureDetector(
                     onTap: () {
-                      _repController.text = widget.entry.reps;
+                      _repController.clear();
                       setState(() => _editingReps = true);
                     },
                     child: Container(

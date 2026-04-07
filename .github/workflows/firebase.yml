@@ -1,0 +1,41 @@
+name: Flutter CI + Firebase Distribution
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2. Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. Testes (opcional mas recomendado)
+      - name: Run tests
+        run: flutter test
+
+      # 5. Build APK
+      - name: Build APK
+        run: flutter build apk --release --dart-define=FLAVOR=prod
+
+      # 6. Upload Firebase
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          groups: beta
+          file: build/app/outputs/flutter-apk/app-release.apk

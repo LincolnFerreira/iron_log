@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/extensions/string_extensions.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/presentation/molecules/series_selector.dart';
 import '../atoms/custom_badge.dart';
 import '../molecules/series_table.dart';
@@ -33,18 +35,20 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   late int _restTime;
   late WeightUnit _weightUnit;
   SeriesType? _selectedSeriesType;
+  /// Tracks the live per-series data reported by SeriesTable via onEntriesChanged.
+  List<SeriesEntry> _currentEntries = const [];
 
   @override
   void initState() {
     super.initState();
-    // No modo edição (exercise.series > 0) pré-popula as linhas;
-    // no modo normal começa sem séries e o usuário adiciona ao realizar.
     _series = widget.exercise.series;
     _reps = widget.exercise.reps;
     _weight = widget.exercise.weight;
     _rir = widget.exercise.rir;
     _restTime = widget.exercise.restTime;
     _weightUnit = widget.exercise.weightUnit;
+    // Initialise from already-loaded entries (e.g. previous workout view).
+    _currentEntries = List<SeriesEntry>.from(widget.exercise.entries);
   }
 
   @override
@@ -84,7 +88,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               if (widget.index != null) const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  widget.exercise.name,
+                  widget.exercise.name.toTitleCase(),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -171,8 +175,12 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
             weight: _weight,
             reps: _reps,
             weightUnit: _weightUnit.label,
+            initialEntries: _currentEntries.isNotEmpty ? _currentEntries : null,
+            onEntriesChanged: (entries) {
+              _currentEntries = entries;
+              _updateExercise();
+            },
             onToggleDone: (index, done) {
-              // TODO: persistir estado por série no provider/backend quando necessário
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -294,7 +302,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Editar ${widget.exercise.name}',
+                    'Editar ${widget.exercise.name.toTitleCase()}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -426,7 +434,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tem certeza que deseja remover "${widget.exercise.name}" desta sessão?',
+              'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" desta sessão?',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
@@ -527,7 +535,8 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     }
   }
 
-  // Atualiza o exercício localmente e persiste via provider (opcionalmente)
+  // Atualiza o exercício localmente no provider com os valores actuais.
+  // Não persiste no backend aqui — isso acontece apenas ao finalizar o treino.
   void _updateExercise() {
     final updated = widget.exercise.copyWith(
       series: _series,
@@ -535,30 +544,12 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
       weight: _weight,
       rir: _rir,
       restTime: _restTime,
+      entries: List<SeriesEntry>.from(_currentEntries),
     );
 
-    // Atualiza estado local do provider
     ref
         .read(workoutDayExercisesProvider.notifier)
         .updateExercise(widget.exercise.id, updated);
-
-    // Se esta card pertence a uma sessão, tenta salvar no backend
-    if (widget.sessionId != null) {
-      // Não aguarda aqui para evitar bloquear a UI; o provider faz o trabalho
-      ref
-          .read(workoutDayExercisesProvider.notifier)
-          .saveSessionExercises(widget.sessionId!)
-          .catchError((e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Erro ao salvar exercício: $e'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          });
-    }
   }
 
   void _showRirHelp() {

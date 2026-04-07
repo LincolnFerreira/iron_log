@@ -5,6 +5,10 @@ import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/mappers/workout_data_mapper.dart';
 import '../../domain/entities/workout_exercise.dart';
 
+// Provider para armazenar a duração original de um treino em edição
+// Usado para preservar a duração ao mudar a data do treino
+final workoutOriginalDurationProvider = StateProvider<Duration?>((ref) => null);
+
 // Provider para gerenciar os exercícios do workout day
 final workoutDayExercisesProvider =
     StateNotifierProvider<
@@ -12,15 +16,17 @@ final workoutDayExercisesProvider =
       AsyncValue<List<WorkoutExercise>>
     >((ref) {
       final httpService = ref.read(httpServiceProvider);
-      return WorkoutDayExercisesNotifier(httpService);
+      return WorkoutDayExercisesNotifier(httpService, ref: ref);
     });
 
 class WorkoutDayExercisesNotifier
     extends StateNotifier<AsyncValue<List<WorkoutExercise>>> {
   final HttpService _httpService;
+  final Ref? _ref;
 
-  WorkoutDayExercisesNotifier(this._httpService)
-    : super(const AsyncValue.loading());
+  WorkoutDayExercisesNotifier(this._httpService, {required Ref? ref})
+    : _ref = ref,
+      super(const AsyncValue.loading());
 
   // Controle para evitar múltiplas chamadas simultâneas
   bool _isLoading = false;
@@ -235,6 +241,26 @@ class WorkoutDayExercisesNotifier
           print('   routineId  : ${data['routine']?['id']}');
           print('   routineName: ${data['routine']?['name']}');
           print('   series cnt : ${(data['series'] as List?)?.length ?? 0}');
+        }
+
+        // Calcula e armazena a duração original do treino
+        final startedAtStr = data['startedAt'] as String?;
+        final endedAtStr = data['endedAt'] as String?;
+        if (startedAtStr != null && endedAtStr != null && _ref != null) {
+          try {
+            final startedAt = DateTime.parse(startedAtStr);
+            final endedAt = DateTime.parse(endedAtStr);
+            final originalDuration = endedAt.difference(startedAt);
+            _ref!.read(workoutOriginalDurationProvider.notifier).state = originalDuration;
+            
+            if (kDebugMode) {
+              print('⏱️ Duração original extraída: ${originalDuration.inMinutes} min');
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('⚠️ Falha ao calcular duração: $e');
+            }
+          }
         }
 
         final seriesRaw = data['series'] as List<dynamic>? ?? [];

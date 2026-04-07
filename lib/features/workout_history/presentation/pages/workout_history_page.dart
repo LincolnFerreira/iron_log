@@ -90,7 +90,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.refresh(workoutHistoryProvider);
+      ref.invalidate(workoutHistoryProvider);
     });
     WidgetsBinding.instance.addObserver(this);
   }
@@ -110,7 +110,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
   }
 
   @override
-  void didPopNext() => ref.refresh(workoutHistoryProvider);
+  void didPopNext() => ref.invalidate(workoutHistoryProvider);
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -171,7 +171,9 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
           }
 
           return RefreshIndicator(
-            onRefresh: () => ref.refresh(workoutHistoryProvider),
+            onRefresh: () async {
+              ref.invalidate(workoutHistoryProvider);
+            },
             child: CustomScrollView(
               slivers: [
                 _buildAppBar(context, filtered.length, filter),
@@ -282,8 +284,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
     }
 
     final sessionId = selectedSession?.id;
-    final subtitle =
-        selectedSession != null && routine != null
+    final subtitle = selectedSession != null && routine != null
         ? '${selectedSession.name} - ${routine.name}'
         : '${picked.day.toString().padLeft(2, '0')}/'
               '${picked.month.toString().padLeft(2, '0')}/${picked.year}';

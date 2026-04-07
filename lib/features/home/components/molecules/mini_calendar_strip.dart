@@ -32,11 +32,12 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
         // center the `today` item (index 7 in a 15-days window)
         final todayIndex = 7; // 7 days before + today + 7 after
         final viewportWidth = _scrollController.position.viewportDimension;
-        final targetOffset = _itemWidth * todayIndex - (viewportWidth - _itemWidth) / 2;
+        final targetOffset =
+            _itemWidth * todayIndex - (viewportWidth - _itemWidth) / 2;
         final min = _scrollController.position.minScrollExtent;
         final max = _scrollController.position.maxScrollExtent;
         final clamped = targetOffset.clamp(min, max);
-        _scrollController.jumpTo(clamped as double);
+        _scrollController.jumpTo(clamped);
       }
     });
   }
@@ -91,7 +92,10 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
           final startDate = today.subtract(const Duration(days: 7));
           final date = startDate.add(Duration(days: i));
           final isoDate = _isoDate(date);
-          final isToday = date.year == today.year && date.month == today.month && date.day == today.day;
+          final isToday =
+              date.year == today.year &&
+              date.month == today.month &&
+              date.day == today.day;
           final hasWorkout = workoutDates.contains(isoDate);
           final isRest = restDates.contains(isoDate);
 
