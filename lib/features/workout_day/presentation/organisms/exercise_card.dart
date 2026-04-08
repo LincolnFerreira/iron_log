@@ -236,8 +236,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                 u.label,
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight:
-                      unit == u ? FontWeight.w600 : FontWeight.normal,
+                  fontWeight: unit == u ? FontWeight.w600 : FontWeight.normal,
                   color: unit == u
                       ? Theme.of(context).colorScheme.primary
                       : Colors.grey.shade400,
@@ -246,8 +245,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               if (u != WeightUnit.values.last)
                 Text(
                   ' / ',
-                  style:
-                      TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
                 ),
             ];
           }).toList(),
