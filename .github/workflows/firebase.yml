@@ -33,11 +33,24 @@ jobs:
       - name: Run tests
         run: flutter test || true
 
-      # 5. Build APK
+      # 5. Restore keystore & signing config
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/upload-keystore.jks
+
+      - name: Create key.properties
+        run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=../upload-keystore.jks
+          EOF
+
+      # 6. Build APK
       - name: Build APK
         run: flutter build apk --release --dart-define=FLAVOR=prod
 
-      # 6. Upload Firebase
+      # 7. Upload Firebase
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:

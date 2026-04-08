@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "222174717889-dkjagugqvls06k85uhn9b3bsmlvcdums.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.iron_log",
+            "certificate_hash": "40bad4c2ac573666683164eeb4bc3dd624af6cfa"
+          }
+        },
+        {
           "client_id": "222174717889-qifdna3fi97olrhm6f21k1a5fmttl0ul.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
