@@ -212,7 +212,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     final unit = _weightUnit;
     return GestureDetector(
       onTap: () {
-        final newUnit = unit == WeightUnit.kg ? WeightUnit.lbs : WeightUnit.kg;
+        final newUnit = unit.next;
         setState(() => _weightUnit = newUnit);
         ref
             .read(workoutDayExercisesProvider.notifier)
@@ -230,36 +230,27 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'kg',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: unit == WeightUnit.kg
-                    ? FontWeight.w600
-                    : FontWeight.normal,
-                color: unit == WeightUnit.kg
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey.shade400,
+          children: WeightUnit.values.expand((u) {
+            return [
+              Text(
+                u.label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight:
+                      unit == u ? FontWeight.w600 : FontWeight.normal,
+                  color: unit == u
+                      ? Theme.of(context).colorScheme.primary
+                      : Colors.grey.shade400,
+                ),
               ),
-            ),
-            Text(
-              ' / ',
-              style: TextStyle(color: Colors.grey.shade400, fontSize: 11),
-            ),
-            Text(
-              'lbs',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: unit == WeightUnit.lbs
-                    ? FontWeight.w600
-                    : FontWeight.normal,
-                color: unit == WeightUnit.lbs
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey.shade400,
-              ),
-            ),
-          ],
+              if (u != WeightUnit.values.last)
+                Text(
+                  ' / ',
+                  style:
+                      TextStyle(color: Colors.grey.shade400, fontSize: 11),
+                ),
+            ];
+          }).toList(),
         ),
       ),
     );
