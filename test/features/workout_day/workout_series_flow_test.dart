@@ -38,20 +38,19 @@ WorkoutExercise _makeExercise({
   String reps = '10',
   int series = 4,
   int rir = 2,
-}) =>
-    WorkoutExercise(
-      id: 'cmnghuw8k0001l0v0pvcijzl0',
-      name: 'Supino neutro maquina',
-      tag: ExerciseTag.multi,
-      muscles: 'Peito',
-      variation: 'Traditional',
-      series: entries.isEmpty ? series : entries.length,
-      reps: reps,
-      weight: weight,
-      rir: rir,
-      restTime: 0,
-      entries: entries,
-    );
+}) => WorkoutExercise(
+  id: 'cmnghuw8k0001l0v0pvcijzl0',
+  name: 'Supino neutro maquina',
+  tag: ExerciseTag.multi,
+  muscles: 'Peito',
+  variation: 'Traditional',
+  series: entries.isEmpty ? series : entries.length,
+  reps: reps,
+  weight: weight,
+  rir: rir,
+  restTime: 0,
+  entries: entries,
+);
 
 // ─── Testes ───────────────────────────────────────────────────────────────────
 
@@ -70,11 +69,14 @@ void main() {
       expect(_cleanValue('100kg'), '100');
     });
 
-    test('✓ string vazia retorna "0" — _cleanValue é pura, fallback fica no handler', () {
-      // _cleanValue não conhece o peso anterior da entry.
-      // Retornar "0" para vazio é correto aqui; o handler é quem deve usar entryWeight.
-      expect(_cleanValue(''), '0');
-    });
+    test(
+      '✓ string vazia retorna "0" — _cleanValue é pura, fallback fica no handler',
+      () {
+        // _cleanValue não conhece o peso anterior da entry.
+        // Retornar "0" para vazio é correto aqui; o handler é quem deve usar entryWeight.
+        expect(_cleanValue(''), '0');
+      },
+    );
 
     test('✗ decimal deve ser preservado: "82.5" → "82.5"', () {
       // VERMELHO: retorna '82' (r'\d+' para no ponto).
@@ -104,29 +106,35 @@ void main() {
       expect(updated.weight, '100');
     });
 
-    test('✗ fluxo real — 4 séries, só a 1ª digitada: todas devem preservar "10"', () {
-      // Reproduz o payload do log (Supino neutro maquina):
-      //   atual:   weight: [10.0, 0.0, 0.0, 0.0]  ← bug
-      //   correto: weight: [10.0, 10.0, 10.0, 10.0]
-      //
-      // Usuário digita '10' na série 0.
-      // Séries 1-3: auto-avanço via token → controller vazio → aperta Next.
-      // VERMELHO: _handleWeightSubmitted('', '10') = '0'.
-      // VERDE após fix: handler preserva '10'.
-      final entries = List.generate(
-        4,
-        (i) => SeriesEntry(index: i, weight: '10', reps: '10'),
-      );
-      final submits = ['10', '', '', '']; // '' = usuário não redigitou
-
-      final result = entries.asMap().entries.map((e) {
-        return e.value.copyWith(
-          weight: _handleWeightSubmitted(submits[e.key], e.value.weight),
+    test(
+      '✗ fluxo real — 4 séries, só a 1ª digitada: todas devem preservar "10"',
+      () {
+        // Reproduz o payload do log (Supino neutro maquina):
+        //   atual:   weight: [10.0, 0.0, 0.0, 0.0]  ← bug
+        //   correto: weight: [10.0, 10.0, 10.0, 10.0]
+        //
+        // Usuário digita '10' na série 0.
+        // Séries 1-3: auto-avanço via token → controller vazio → aperta Next.
+        // VERMELHO: _handleWeightSubmitted('', '10') = '0'.
+        // VERDE após fix: handler preserva '10'.
+        final entries = List.generate(
+          4,
+          (i) => SeriesEntry(index: i, weight: '10', reps: '10'),
         );
-      }).toList();
+        final submits = ['10', '', '', '']; // '' = usuário não redigitou
 
-      expect(result.map((e) => e.weight).toList(), equals(['10', '10', '10', '10']));
-    });
+        final result = entries.asMap().entries.map((e) {
+          return e.value.copyWith(
+            weight: _handleWeightSubmitted(submits[e.key], e.value.weight),
+          );
+        }).toList();
+
+        expect(
+          result.map((e) => e.weight).toList(),
+          equals(['10', '10', '10', '10']),
+        );
+      },
+    );
   });
 
   // ── Camada 2→3: entries → payload DTO ────────────────────────────────────
@@ -135,12 +143,14 @@ void main() {
     test('✓ o serviço mapeia entries com pesos distintos corretamente', () {
       // O serviço em si está correto — o bug está na UI que produz as entries.
       final dto = service.exerciseToDtoForTesting(
-        _makeExercise(entries: [
-          SeriesEntry(index: 0, weight: '10', reps: '10'),
-          SeriesEntry(index: 1, weight: '20', reps: '10'),
-          SeriesEntry(index: 2, weight: '30', reps: '10'),
-          SeriesEntry(index: 3, weight: '40', reps: '10'),
-        ]),
+        _makeExercise(
+          entries: [
+            SeriesEntry(index: 0, weight: '10', reps: '10'),
+            SeriesEntry(index: 1, weight: '20', reps: '10'),
+            SeriesEntry(index: 2, weight: '30', reps: '10'),
+            SeriesEntry(index: 3, weight: '40', reps: '10'),
+          ],
+        ),
       );
       expect(dto['weight'], equals([10.0, 20.0, 30.0, 40.0]));
       expect(dto['reps'], equals([10, 10, 10, 10]));
@@ -156,40 +166,55 @@ void main() {
       expect(dto['reps'], equals([10, 10, 10]));
     });
 
-    test('✗ ponta a ponta: 4 séries auto-avançando → backend deve receber [10,10,10,10]', () {
-      // Encadeia Camada 1→2→3 com o fluxo real do usuário.
-      // VERMELHO: _handleWeightSubmitted('', '10') = '0' nas séries 1-3
-      //           → DTO envia [10.0, 0.0, 0.0, 0.0].
-      // VERDE após fix: handler preserva '10' → DTO envia [10.0,10.0,10.0,10.0].
-      final entries = List.generate(
-        4,
-        (i) => SeriesEntry(index: i, weight: '10', reps: '10'),
-      );
-      final submits = ['10', '', '', '']; // '' = auto-avanço, usuário não redigitou
-
-      final afterUI = entries.asMap().entries.map((e) {
-        return e.value.copyWith(
-          weight: _handleWeightSubmitted(submits[e.key], e.value.weight),
+    test(
+      '✗ ponta a ponta: 4 séries auto-avançando → backend deve receber [10,10,10,10]',
+      () {
+        // Encadeia Camada 1→2→3 com o fluxo real do usuário.
+        // VERMELHO: _handleWeightSubmitted('', '10') = '0' nas séries 1-3
+        //           → DTO envia [10.0, 0.0, 0.0, 0.0].
+        // VERDE após fix: handler preserva '10' → DTO envia [10.0,10.0,10.0,10.0].
+        final entries = List.generate(
+          4,
+          (i) => SeriesEntry(index: i, weight: '10', reps: '10'),
         );
-      }).toList();
+        final submits = [
+          '10',
+          '',
+          '',
+          '',
+        ]; // '' = auto-avanço, usuário não redigitou
 
-      final dto = service.exerciseToDtoForTesting(_makeExercise(entries: afterUI));
+        final afterUI = entries.asMap().entries.map((e) {
+          return e.value.copyWith(
+            weight: _handleWeightSubmitted(submits[e.key], e.value.weight),
+          );
+        }).toList();
 
-      expect(dto['weight'], equals([10.0, 10.0, 10.0, 10.0]));
-    });
+        final dto = service.exerciseToDtoForTesting(
+          _makeExercise(entries: afterUI),
+        );
 
-    test('✗ decimal ponta a ponta: "82.5" digitado deve chegar como 82.5 no backend', () {
-      // VERMELHO: _cleanValue('82.5') = '82' → entry.weight = '82'
-      //           → _parseWeight('82') = 82.0 (serviço correto, mas recebeu valor truncado)
-      // VERDE após fix: _cleanValue('82.5') = '82.5' → dto['weight'] = [82.5].
-      final entry = SeriesEntry(
-        index: 0,
-        weight: _cleanValue('82.5'), // simula o que a UI salva na entry
-        reps: '8',
-      );
-      final dto = service.exerciseToDtoForTesting(_makeExercise(entries: [entry]));
+        expect(dto['weight'], equals([10.0, 10.0, 10.0, 10.0]));
+      },
+    );
 
-      expect(dto['weight'], equals([82.5]));
-    });
+    test(
+      '✗ decimal ponta a ponta: "82.5" digitado deve chegar como 82.5 no backend',
+      () {
+        // VERMELHO: _cleanValue('82.5') = '82' → entry.weight = '82'
+        //           → _parseWeight('82') = 82.0 (serviço correto, mas recebeu valor truncado)
+        // VERDE após fix: _cleanValue('82.5') = '82.5' → dto['weight'] = [82.5].
+        final entry = SeriesEntry(
+          index: 0,
+          weight: _cleanValue('82.5'), // simula o que a UI salva na entry
+          reps: '8',
+        );
+        final dto = service.exerciseToDtoForTesting(
+          _makeExercise(entries: [entry]),
+        );
+
+        expect(dto['weight'], equals([82.5]));
+      },
+    );
   });
 }

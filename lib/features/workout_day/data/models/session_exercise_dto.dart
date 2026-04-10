@@ -104,13 +104,15 @@ class SessionExerciseDto {
     final entries = series
         .asMap()
         .entries
-        .map((e) => SeriesEntry(
-              index: e.key,
-              type: _labelToType(e.value.label),
-              weight: (e.value.weight ?? 0).toString(),
-              reps: (e.value.reps ?? 0).toString(),
-              done: false,
-            ))
+        .map(
+          (e) => SeriesEntry(
+            index: e.key,
+            type: _labelToType(e.value.label),
+            weight: (e.value.weight ?? 0).toString(),
+            reps: (e.value.reps ?? 0).toString(),
+            done: false,
+          ),
+        )
         .toList();
 
     final firstSeries = series.isNotEmpty ? series.first : null;
@@ -123,7 +125,7 @@ class SessionExerciseDto {
       tag: exercise.toTag(),
       muscles: exercise.primaryMuscle ?? 'Não especificado',
       variation: config.variation ?? 'Traditional',
-      series: series.length > 0 ? series.length : 3,
+      series: series.isNotEmpty ? series.length : 3,
       reps: reps > 0 ? reps.toString() : '-',
       weight: weight > 0 ? '${weight}kg' : '0kg',
       rir: firstSeries?.rir ?? 0,

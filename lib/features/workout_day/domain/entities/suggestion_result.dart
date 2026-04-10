@@ -32,7 +32,9 @@ class SuggestionResult {
     return SuggestionResult(
       suggestedWeight: (json['suggestedWeight'] as num?)?.toDouble() ?? 0.0,
       suggestedReps: json['suggestedReps'] as int?,
-      action: SuggestionActionX.fromString(json['action'] as String? ?? 'maintain'),
+      action: SuggestionActionX.fromString(
+        json['action'] as String? ?? 'maintain',
+      ),
       explanation: json['explanation'] as String? ?? '',
     );
   }

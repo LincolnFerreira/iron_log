@@ -5,7 +5,9 @@ import '../../domain/entities/exercise_set_history.dart';
 
 final exerciseLastSetsProvider =
     FutureProvider.family<ExerciseSetHistory, String>((ref, exerciseId) async {
-  final http = ref.read(httpServiceProvider);
-  final response = await http.get(ApiEndpoints.exerciseLastSets(exerciseId));
-  return ExerciseSetHistory.fromJson(response.data as Map<String, dynamic>);
-});
+      final http = ref.read(httpServiceProvider);
+      final response = await http.get(
+        ApiEndpoints.exerciseLastSets(exerciseId),
+      );
+      return ExerciseSetHistory.fromJson(response.data as Map<String, dynamic>);
+    });

@@ -136,9 +136,7 @@ void showExerciseHistoryModal(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => ExerciseHistoryModal(
-      history: history,
-      exerciseName: exerciseName,
-    ),
+    builder: (_) =>
+        ExerciseHistoryModal(history: history, exerciseName: exerciseName),
   );
 }

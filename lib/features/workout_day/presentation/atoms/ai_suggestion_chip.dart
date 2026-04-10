@@ -4,11 +4,7 @@ class AiSuggestionChip extends StatelessWidget {
   final bool isLoading;
   final VoidCallback? onTap;
 
-  const AiSuggestionChip({
-    super.key,
-    this.isLoading = false,
-    this.onTap,
-  });
+  const AiSuggestionChip({super.key, this.isLoading = false, this.onTap});
 
   static const _purple = Color(0xFF7B1FA2);
   static const _lightPurple = Color(0xFFF3E5F5);
