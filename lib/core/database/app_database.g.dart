@@ -4197,10 +4197,10 @@ class $SerieLogsTable extends SerieLogs
     requiredDuringInsert: false,
   );
   static const VerificationMeta _weightKgMeta = const VerificationMeta(
-    'weightKg',
+    'weight',
   );
   @override
-  late final GeneratedColumn<double> weightKg = GeneratedColumn<double>(
+  late final GeneratedColumn<double> weight = GeneratedColumn<double>(
     'weight_kg',
     aliasedName,
     true,
@@ -4240,10 +4240,10 @@ class $SerieLogsTable extends SerieLogs
     requiredDuringInsert: false,
   );
   static const VerificationMeta _restSecMeta = const VerificationMeta(
-    'restSec',
+    'restTime',
   );
   @override
-  late final GeneratedColumn<int> restSec = GeneratedColumn<int>(
+  late final GeneratedColumn<int> restTime = GeneratedColumn<int>(
     'rest_sec',
     aliasedName,
     true,
@@ -4348,11 +4348,11 @@ class $SerieLogsTable extends SerieLogs
     setIndex,
     label,
     reps,
-    weightKg,
+    weight,
     weightUnit,
     rir,
     rirNote,
-    restSec,
+    restTime,
     cadence,
     isFailure,
     createdAt,
@@ -4433,7 +4433,7 @@ class $SerieLogsTable extends SerieLogs
     if (data.containsKey('weight_kg')) {
       context.handle(
         _weightKgMeta,
-        weightKg.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
+        weight.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
       );
     }
     if (data.containsKey('weight_unit')) {
@@ -4457,7 +4457,7 @@ class $SerieLogsTable extends SerieLogs
     if (data.containsKey('rest_sec')) {
       context.handle(
         _restSecMeta,
-        restSec.isAcceptableOrUnknown(data['rest_sec']!, _restSecMeta),
+        restTime.isAcceptableOrUnknown(data['rest_sec']!, _restSecMeta),
       );
     }
     if (data.containsKey('cadence')) {
@@ -4546,7 +4546,7 @@ class $SerieLogsTable extends SerieLogs
         DriftSqlType.int,
         data['${effectivePrefix}reps'],
       ),
-      weightKg: attachedDatabase.typeMapping.read(
+      weight: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}weight_kg'],
       ),
@@ -4562,7 +4562,7 @@ class $SerieLogsTable extends SerieLogs
         DriftSqlType.string,
         data['${effectivePrefix}rir_note'],
       ),
-      restSec: attachedDatabase.typeMapping.read(
+      restTime: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}rest_sec'],
       ),
@@ -4612,11 +4612,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
   final int setIndex;
   final String? label;
   final int? reps;
-  final double? weightKg;
+  final double? weight;
   final String weightUnit;
   final int? rir;
   final String? rirNote;
-  final int? restSec;
+  final int? restTime;
   final String? cadence;
   final bool isFailure;
   final DateTime createdAt;
@@ -4633,11 +4633,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     required this.setIndex,
     this.label,
     this.reps,
-    this.weightKg,
+    this.weight,
     required this.weightUnit,
     this.rir,
     this.rirNote,
-    this.restSec,
+    this.restTime,
     this.cadence,
     required this.isFailure,
     required this.createdAt,
@@ -4671,8 +4671,8 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     if (!nullToAbsent || reps != null) {
       map['reps'] = Variable<int>(reps);
     }
-    if (!nullToAbsent || weightKg != null) {
-      map['weight_kg'] = Variable<double>(weightKg);
+    if (!nullToAbsent || weight != null) {
+      map['weight_kg'] = Variable<double>(weight);
     }
     map['weight_unit'] = Variable<String>(weightUnit);
     if (!nullToAbsent || rir != null) {
@@ -4681,8 +4681,8 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     if (!nullToAbsent || rirNote != null) {
       map['rir_note'] = Variable<String>(rirNote);
     }
-    if (!nullToAbsent || restSec != null) {
-      map['rest_sec'] = Variable<int>(restSec);
+    if (!nullToAbsent || restTime != null) {
+      map['rest_sec'] = Variable<int>(restTime);
     }
     if (!nullToAbsent || cadence != null) {
       map['cadence'] = Variable<String>(cadence);
@@ -4717,17 +4717,17 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           ? const Value.absent()
           : Value(label),
       reps: reps == null && nullToAbsent ? const Value.absent() : Value(reps),
-      weightKg: weightKg == null && nullToAbsent
+      weight: weight == null && nullToAbsent
           ? const Value.absent()
-          : Value(weightKg),
+          : Value(weight),
       weightUnit: Value(weightUnit),
       rir: rir == null && nullToAbsent ? const Value.absent() : Value(rir),
       rirNote: rirNote == null && nullToAbsent
           ? const Value.absent()
           : Value(rirNote),
-      restSec: restSec == null && nullToAbsent
+      restTime: restTime == null && nullToAbsent
           ? const Value.absent()
-          : Value(restSec),
+          : Value(restTime),
       cadence: cadence == null && nullToAbsent
           ? const Value.absent()
           : Value(cadence),
@@ -4760,11 +4760,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       setIndex: serializer.fromJson<int>(json['setIndex']),
       label: serializer.fromJson<String?>(json['label']),
       reps: serializer.fromJson<int?>(json['reps']),
-      weightKg: serializer.fromJson<double?>(json['weightKg']),
+      weight: serializer.fromJson<double?>(json['weight']),
       weightUnit: serializer.fromJson<String>(json['weightUnit']),
       rir: serializer.fromJson<int?>(json['rir']),
       rirNote: serializer.fromJson<String?>(json['rirNote']),
-      restSec: serializer.fromJson<int?>(json['restSec']),
+      restTime: serializer.fromJson<int?>(json['restTime']),
       cadence: serializer.fromJson<String?>(json['cadence']),
       isFailure: serializer.fromJson<bool>(json['isFailure']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -4790,11 +4790,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       'setIndex': serializer.toJson<int>(setIndex),
       'label': serializer.toJson<String?>(label),
       'reps': serializer.toJson<int?>(reps),
-      'weightKg': serializer.toJson<double?>(weightKg),
+      'weight': serializer.toJson<double?>(weight),
       'weightUnit': serializer.toJson<String>(weightUnit),
       'rir': serializer.toJson<int?>(rir),
       'rirNote': serializer.toJson<String?>(rirNote),
-      'restSec': serializer.toJson<int?>(restSec),
+      'restTime': serializer.toJson<int?>(restTime),
       'cadence': serializer.toJson<String?>(cadence),
       'isFailure': serializer.toJson<bool>(isFailure),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -4814,11 +4814,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     int? setIndex,
     Value<String?> label = const Value.absent(),
     Value<int?> reps = const Value.absent(),
-    Value<double?> weightKg = const Value.absent(),
+    Value<double?> weight = const Value.absent(),
     String? weightUnit,
     Value<int?> rir = const Value.absent(),
     Value<String?> rirNote = const Value.absent(),
-    Value<int?> restSec = const Value.absent(),
+    Value<int?> restTime = const Value.absent(),
     Value<String?> cadence = const Value.absent(),
     bool? isFailure,
     DateTime? createdAt,
@@ -4839,11 +4839,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     setIndex: setIndex ?? this.setIndex,
     label: label.present ? label.value : this.label,
     reps: reps.present ? reps.value : this.reps,
-    weightKg: weightKg.present ? weightKg.value : this.weightKg,
+    weight: weight.present ? weight.value : this.weight,
     weightUnit: weightUnit ?? this.weightUnit,
     rir: rir.present ? rir.value : this.rir,
     rirNote: rirNote.present ? rirNote.value : this.rirNote,
-    restSec: restSec.present ? restSec.value : this.restSec,
+    restTime: restTime.present ? restTime.value : this.restTime,
     cadence: cadence.present ? cadence.value : this.cadence,
     isFailure: isFailure ?? this.isFailure,
     createdAt: createdAt ?? this.createdAt,
@@ -4868,13 +4868,13 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       setIndex: data.setIndex.present ? data.setIndex.value : this.setIndex,
       label: data.label.present ? data.label.value : this.label,
       reps: data.reps.present ? data.reps.value : this.reps,
-      weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
+      weight: data.weight.present ? data.weight.value : this.weight,
       weightUnit: data.weightUnit.present
           ? data.weightUnit.value
           : this.weightUnit,
       rir: data.rir.present ? data.rir.value : this.rir,
       rirNote: data.rirNote.present ? data.rirNote.value : this.rirNote,
-      restSec: data.restSec.present ? data.restSec.value : this.restSec,
+      restTime: data.restTime.present ? data.restTime.value : this.restTime,
       cadence: data.cadence.present ? data.cadence.value : this.cadence,
       isFailure: data.isFailure.present ? data.isFailure.value : this.isFailure,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -4898,11 +4898,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           ..write('setIndex: $setIndex, ')
           ..write('label: $label, ')
           ..write('reps: $reps, ')
-          ..write('weightKg: $weightKg, ')
+          ..write('weight: $weight, ')
           ..write('weightUnit: $weightUnit, ')
           ..write('rir: $rir, ')
           ..write('rirNote: $rirNote, ')
-          ..write('restSec: $restSec, ')
+          ..write('restTime: $restTime, ')
           ..write('cadence: $cadence, ')
           ..write('isFailure: $isFailure, ')
           ..write('createdAt: $createdAt, ')
@@ -4924,11 +4924,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     setIndex,
     label,
     reps,
-    weightKg,
+    weight,
     weightUnit,
     rir,
     rirNote,
-    restSec,
+    restTime,
     cadence,
     isFailure,
     createdAt,
@@ -4949,11 +4949,11 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           other.setIndex == this.setIndex &&
           other.label == this.label &&
           other.reps == this.reps &&
-          other.weightKg == this.weightKg &&
+          other.weight == this.weight &&
           other.weightUnit == this.weightUnit &&
           other.rir == this.rir &&
           other.rirNote == this.rirNote &&
-          other.restSec == this.restSec &&
+          other.restTime == this.restTime &&
           other.cadence == this.cadence &&
           other.isFailure == this.isFailure &&
           other.createdAt == this.createdAt &&
@@ -4972,11 +4972,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
   final Value<int> setIndex;
   final Value<String?> label;
   final Value<int?> reps;
-  final Value<double?> weightKg;
+  final Value<double?> weight;
   final Value<String> weightUnit;
   final Value<int?> rir;
   final Value<String?> rirNote;
-  final Value<int?> restSec;
+  final Value<int?> restTime;
   final Value<String?> cadence;
   final Value<bool> isFailure;
   final Value<DateTime> createdAt;
@@ -4994,11 +4994,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     this.setIndex = const Value.absent(),
     this.label = const Value.absent(),
     this.reps = const Value.absent(),
-    this.weightKg = const Value.absent(),
+    this.weight = const Value.absent(),
     this.weightUnit = const Value.absent(),
     this.rir = const Value.absent(),
     this.rirNote = const Value.absent(),
-    this.restSec = const Value.absent(),
+    this.restTime = const Value.absent(),
     this.cadence = const Value.absent(),
     this.isFailure = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -5017,11 +5017,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     required int setIndex,
     this.label = const Value.absent(),
     this.reps = const Value.absent(),
-    this.weightKg = const Value.absent(),
+    this.weight = const Value.absent(),
     this.weightUnit = const Value.absent(),
     this.rir = const Value.absent(),
     this.rirNote = const Value.absent(),
-    this.restSec = const Value.absent(),
+    this.restTime = const Value.absent(),
     this.cadence = const Value.absent(),
     this.isFailure = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -5042,11 +5042,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     Expression<int>? setIndex,
     Expression<String>? label,
     Expression<int>? reps,
-    Expression<double>? weightKg,
+    Expression<double>? weight,
     Expression<String>? weightUnit,
     Expression<int>? rir,
     Expression<String>? rirNote,
-    Expression<int>? restSec,
+    Expression<int>? restTime,
     Expression<String>? cadence,
     Expression<bool>? isFailure,
     Expression<DateTime>? createdAt,
@@ -5067,11 +5067,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       if (setIndex != null) 'set_index': setIndex,
       if (label != null) 'label': label,
       if (reps != null) 'reps': reps,
-      if (weightKg != null) 'weight_kg': weightKg,
+      if (weight != null) 'weight_kg': weight,
       if (weightUnit != null) 'weight_unit': weightUnit,
       if (rir != null) 'rir': rir,
       if (rirNote != null) 'rir_note': rirNote,
-      if (restSec != null) 'rest_sec': restSec,
+      if (restTime != null) 'rest_sec': restTime,
       if (cadence != null) 'cadence': cadence,
       if (isFailure != null) 'is_failure': isFailure,
       if (createdAt != null) 'created_at': createdAt,
@@ -5092,11 +5092,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     Value<int>? setIndex,
     Value<String?>? label,
     Value<int?>? reps,
-    Value<double?>? weightKg,
+    Value<double?>? weight,
     Value<String>? weightUnit,
     Value<int?>? rir,
     Value<String?>? rirNote,
-    Value<int?>? restSec,
+    Value<int?>? restTime,
     Value<String?>? cadence,
     Value<bool>? isFailure,
     Value<DateTime>? createdAt,
@@ -5117,11 +5117,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       setIndex: setIndex ?? this.setIndex,
       label: label ?? this.label,
       reps: reps ?? this.reps,
-      weightKg: weightKg ?? this.weightKg,
+      weight: weight ?? this.weight,
       weightUnit: weightUnit ?? this.weightUnit,
       rir: rir ?? this.rir,
       rirNote: rirNote ?? this.rirNote,
-      restSec: restSec ?? this.restSec,
+      restTime: restTime ?? this.restTime,
       cadence: cadence ?? this.cadence,
       isFailure: isFailure ?? this.isFailure,
       createdAt: createdAt ?? this.createdAt,
@@ -5164,8 +5164,8 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     if (reps.present) {
       map['reps'] = Variable<int>(reps.value);
     }
-    if (weightKg.present) {
-      map['weight_kg'] = Variable<double>(weightKg.value);
+    if (weight.present) {
+      map['weight_kg'] = Variable<double>(weight.value);
     }
     if (weightUnit.present) {
       map['weight_unit'] = Variable<String>(weightUnit.value);
@@ -5176,8 +5176,8 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     if (rirNote.present) {
       map['rir_note'] = Variable<String>(rirNote.value);
     }
-    if (restSec.present) {
-      map['rest_sec'] = Variable<int>(restSec.value);
+    if (restTime.present) {
+      map['rest_sec'] = Variable<int>(restTime.value);
     }
     if (cadence.present) {
       map['cadence'] = Variable<String>(cadence.value);
@@ -5217,11 +5217,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
           ..write('setIndex: $setIndex, ')
           ..write('label: $label, ')
           ..write('reps: $reps, ')
-          ..write('weightKg: $weightKg, ')
+          ..write('weight: $weight, ')
           ..write('weightUnit: $weightUnit, ')
           ..write('rir: $rir, ')
           ..write('rirNote: $rirNote, ')
-          ..write('restSec: $restSec, ')
+          ..write('restTime: $restTime, ')
           ..write('cadence: $cadence, ')
           ..write('isFailure: $isFailure, ')
           ..write('createdAt: $createdAt, ')
@@ -7733,11 +7733,11 @@ typedef $$SerieLogsTableCreateCompanionBuilder =
       required int setIndex,
       Value<String?> label,
       Value<int?> reps,
-      Value<double?> weightKg,
+      Value<double?> weight,
       Value<String> weightUnit,
       Value<int?> rir,
       Value<String?> rirNote,
-      Value<int?> restSec,
+      Value<int?> restTime,
       Value<String?> cadence,
       Value<bool> isFailure,
       Value<DateTime> createdAt,
@@ -7757,11 +7757,11 @@ typedef $$SerieLogsTableUpdateCompanionBuilder =
       Value<int> setIndex,
       Value<String?> label,
       Value<int?> reps,
-      Value<double?> weightKg,
+      Value<double?> weight,
       Value<String> weightUnit,
       Value<int?> rir,
       Value<String?> rirNote,
-      Value<int?> restSec,
+      Value<int?> restTime,
       Value<String?> cadence,
       Value<bool> isFailure,
       Value<DateTime> createdAt,
@@ -7821,8 +7821,8 @@ class $$SerieLogsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get weightKg => $composableBuilder(
-    column: $table.weightKg,
+  ColumnFilters<double> get weight => $composableBuilder(
+    column: $table.weight,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7841,8 +7841,8 @@ class $$SerieLogsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get restSec => $composableBuilder(
-    column: $table.restSec,
+  ColumnFilters<int> get restTime => $composableBuilder(
+    column: $table.restTime,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7931,8 +7931,8 @@ class $$SerieLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get weightKg => $composableBuilder(
-    column: $table.weightKg,
+  ColumnOrderings<double> get weight => $composableBuilder(
+    column: $table.weight,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -7951,8 +7951,8 @@ class $$SerieLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get restSec => $composableBuilder(
-    column: $table.restSec,
+  ColumnOrderings<int> get restTime => $composableBuilder(
+    column: $table.restTime,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -8031,8 +8031,8 @@ class $$SerieLogsTableAnnotationComposer
   GeneratedColumn<int> get reps =>
       $composableBuilder(column: $table.reps, builder: (column) => column);
 
-  GeneratedColumn<double> get weightKg =>
-      $composableBuilder(column: $table.weightKg, builder: (column) => column);
+  GeneratedColumn<double> get weight =>
+      $composableBuilder(column: $table.weight, builder: (column) => column);
 
   GeneratedColumn<String> get weightUnit => $composableBuilder(
     column: $table.weightUnit,
@@ -8045,8 +8045,8 @@ class $$SerieLogsTableAnnotationComposer
   GeneratedColumn<String> get rirNote =>
       $composableBuilder(column: $table.rirNote, builder: (column) => column);
 
-  GeneratedColumn<int> get restSec =>
-      $composableBuilder(column: $table.restSec, builder: (column) => column);
+  GeneratedColumn<int> get restTime =>
+      $composableBuilder(column: $table.restTime, builder: (column) => column);
 
   GeneratedColumn<String> get cadence =>
       $composableBuilder(column: $table.cadence, builder: (column) => column);
@@ -8108,11 +8108,11 @@ class $$SerieLogsTableTableManager
                 Value<int> setIndex = const Value.absent(),
                 Value<String?> label = const Value.absent(),
                 Value<int?> reps = const Value.absent(),
-                Value<double?> weightKg = const Value.absent(),
+                Value<double?> weight = const Value.absent(),
                 Value<String> weightUnit = const Value.absent(),
                 Value<int?> rir = const Value.absent(),
                 Value<String?> rirNote = const Value.absent(),
-                Value<int?> restSec = const Value.absent(),
+                Value<int?> restTime = const Value.absent(),
                 Value<String?> cadence = const Value.absent(),
                 Value<bool> isFailure = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -8130,11 +8130,11 @@ class $$SerieLogsTableTableManager
                 setIndex: setIndex,
                 label: label,
                 reps: reps,
-                weightKg: weightKg,
+                weight: weight,
                 weightUnit: weightUnit,
                 rir: rir,
                 rirNote: rirNote,
-                restSec: restSec,
+                restTime: restTime,
                 cadence: cadence,
                 isFailure: isFailure,
                 createdAt: createdAt,
@@ -8154,11 +8154,11 @@ class $$SerieLogsTableTableManager
                 required int setIndex,
                 Value<String?> label = const Value.absent(),
                 Value<int?> reps = const Value.absent(),
-                Value<double?> weightKg = const Value.absent(),
+                Value<double?> weight = const Value.absent(),
                 Value<String> weightUnit = const Value.absent(),
                 Value<int?> rir = const Value.absent(),
                 Value<String?> rirNote = const Value.absent(),
-                Value<int?> restSec = const Value.absent(),
+                Value<int?> restTime = const Value.absent(),
                 Value<String?> cadence = const Value.absent(),
                 Value<bool> isFailure = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -8176,11 +8176,11 @@ class $$SerieLogsTableTableManager
                 setIndex: setIndex,
                 label: label,
                 reps: reps,
-                weightKg: weightKg,
+                weight: weight,
                 weightUnit: weightUnit,
                 rir: rir,
                 rirNote: rirNote,
-                restSec: restSec,
+                restTime: restTime,
                 cadence: cadence,
                 isFailure: isFailure,
                 createdAt: createdAt,

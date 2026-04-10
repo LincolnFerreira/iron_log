@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/core/services/http_service.dart';
+import 'package:iron_log/features/routines/data/models/routine_history_dto.dart';
 
 /// Provider que busca o histórico de treinos de uma rotina no backend.
 final routineHistoryProvider =
@@ -21,13 +22,13 @@ final routineHistoryProvider =
         // Flatten latest workouts into a list of WorkoutExercise summaries.
         final Map<String, WorkoutExercise> byExercise = {};
 
-        for (final workout in data) {
-          final series = (workout['series'] as List<dynamic>?) ?? [];
-          for (final s in series) {
-            final ex = s['exercise'] as Map<String, dynamic>?;
-            if (ex == null) continue;
-            final exId = ex['id']?.toString() ?? '';
-            final exName = ex['name']?.toString() ?? 'Exercício';
+        for (final workoutData in data) {
+          final dto = RoutineWorkoutHistoryDto.fromJson(
+            workoutData as Map<String, dynamic>,
+          );
+          for (final serie in dto.series) {
+            final exId = serie.exercise.id;
+            final exName = serie.exercise.name;
 
             if (!byExercise.containsKey(exId)) {
               byExercise[exId] = WorkoutExercise(

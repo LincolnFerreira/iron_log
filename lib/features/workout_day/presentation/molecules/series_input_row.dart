@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+
+extension WeightUnitDisplay on WeightUnit {
+  String get displayLabel => label;
+}
 
 /// A single input row in the SeriesTable for editing series during workout.
 /// Manages its own editing state with TextControllers for weight and reps entry.
@@ -8,7 +13,7 @@ class SeriesInputRow extends StatefulWidget {
   final SeriesEntry entry;
   final ValueChanged<SeriesEntry> onChanged;
   final ValueChanged<bool> onToggleDone;
-  final String weightUnit;
+  final WeightUnit weightUnit;
   final ValueNotifier<int>? activateWeightToken;
   final VoidCallback? onRepsDone;
   final bool isLastRow;
@@ -18,7 +23,7 @@ class SeriesInputRow extends StatefulWidget {
     required this.entry,
     required this.onChanged,
     required this.onToggleDone,
-    this.weightUnit = 'kg',
+    this.weightUnit = WeightUnit.kg,
     this.activateWeightToken,
     this.onRepsDone,
     this.isLastRow = false,
@@ -53,7 +58,12 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
   }
 
   void _onActivateWeight() {
-    _weightController.clear();
+    final cleaned = _cleanValue(widget.entry.weight);
+    _weightController.text = cleaned;
+    _weightController.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: _weightController.text.length,
+    );
     setState(() {
       _editingWeight = true;
       _editingReps = false;
@@ -64,18 +74,33 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     widget.onChanged(updated);
   }
 
-  void _handleWeightSubmitted(String val) {
+  /// Propagates the weight on every keystroke so the parent always has the
+  /// latest value — even if the user dismisses the keyboard without pressing Done.
+  void _handleWeightChanged(String val) {
+    if (val.isEmpty) return;
     _updateEntry(widget.entry.copyWith(weight: _cleanValue(val)));
+  }
+
+  void _handleWeightSubmitted(String val) {
+    final weight = val.isEmpty ? widget.entry.weight : _cleanValue(val);
+    _updateEntry(widget.entry.copyWith(weight: weight));
     setState(() {
       _editingWeight = false;
-      _editingReps = true; // avança automaticamente para reps
+      _editingReps = true;
     });
   }
 
-  void _handleRepsSubmitted(String val) {
+  /// Propagates reps on every keystroke.
+  void _handleRepsChanged(String val) {
+    if (val.isEmpty) return;
     _updateEntry(widget.entry.copyWith(reps: _cleanValue(val)));
+  }
+
+  void _handleRepsSubmitted(String val) {
+    final reps = val.isEmpty ? widget.entry.reps : _cleanValue(val);
+    _updateEntry(widget.entry.copyWith(reps: reps));
     setState(() => _editingReps = false);
-    widget.onRepsDone?.call(); // sinaliza para próxima série
+    widget.onRepsDone?.call();
   }
 
   void _handleTypeChanged(int? type) {
@@ -89,16 +114,46 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     widget.onToggleDone(newDone);
   }
 
-  /// Extract only the first sequence of digits from a value (ignores ranges like "-")
+  /// Extract a number (integer or decimal) from a value string.
   String _cleanValue(String value) {
-    final digits = RegExp(r'\d+').firstMatch(value);
-    return digits?.group(0) ?? '0';
+    print('[WEIGHT TRACE] _cleanValue START: input="$value"');
+    // Extract only numeric part (handles decimals like 1.5)
+    final digits = RegExp(r'\d+\.?\d*').firstMatch(value);
+    final result = digits?.group(0) ?? '0';
+    return result;
+  }
+
+  /// Format value for display: show "-" if the value is "0", otherwise show the cleaned value.
+  /// For placa: if it's an integer (like 1.0), display as integer (1)
+  /// Never send '-' to backend — backend always receives numeric values from _cleanValue().
+  String _displayValue(String value) {
+    final clean = _cleanValue(value);
+    if (clean == '0') {
+      return '-';
+    }
+
+    // For placa unit, if value is integer (e.g., 1.0, 20.0), show without decimal
+    final isPlaca =
+        widget.weightUnit == WeightUnit.placa ||
+        (widget.weightUnit is String && widget.weightUnit == 'placa');
+    if (isPlaca) {
+      try {
+        final parsed = double.parse(clean);
+        if (parsed == parsed.toInt()) {
+          return parsed.toInt().toString();
+        }
+      } catch (e) {
+        // If parsing fails, just return clean value
+      }
+    }
+
+    return clean;
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       decoration: BoxDecoration(color: Colors.grey.shade50),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -164,14 +219,19 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
 
           // Weight field (click to edit) - matches flex: 1 from header
           Expanded(
-            flex: 1,
+            flex: 2,
             child: _editingWeight
                 ? TextField(
                     controller: _weightController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      // FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                    ],
                     textInputAction: TextInputAction.next,
                     autofocus: true,
+                    onChanged: _handleWeightChanged,
                     onSubmitted: _handleWeightSubmitted,
                     decoration: InputDecoration(
                       isDense: true,
@@ -185,8 +245,15 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                   )
                 : GestureDetector(
                     onTap: () {
-                      _weightController.clear();
-                      setState(() => _editingWeight = true);
+                      _weightController.text = _cleanValue(widget.entry.weight);
+                      _weightController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _weightController.text.length,
+                      );
+                      setState(() {
+                        _editingWeight = true;
+                        _editingReps = false;
+                      });
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -200,12 +267,12 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _cleanValue(widget.entry.weight),
+                            _displayValue(widget.entry.weight),
                             style: TextStyle(color: Colors.grey.shade800),
                           ),
                           const SizedBox(width: 3),
                           Text(
-                            widget.weightUnit,
+                            widget.weightUnit.displayLabel,
                             style: TextStyle(
                               color: Colors.grey.shade400,
                               fontSize: 11,
@@ -230,6 +297,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                         ? TextInputAction.done
                         : TextInputAction.next,
                     autofocus: true,
+                    onChanged: _handleRepsChanged,
                     onSubmitted: _handleRepsSubmitted,
                     decoration: InputDecoration(
                       isDense: true,
@@ -243,8 +311,15 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                   )
                 : GestureDetector(
                     onTap: () {
-                      _repController.clear();
-                      setState(() => _editingReps = true);
+                      _repController.text = _cleanValue(widget.entry.reps);
+                      _repController.selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _repController.text.length,
+                      );
+                      setState(() {
+                        _editingReps = true;
+                        _editingWeight = false;
+                      });
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -252,7 +327,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                         vertical: 8,
                       ),
                       child: Text(
-                        _cleanValue(widget.entry.reps),
+                        _displayValue(widget.entry.reps),
                         style: TextStyle(color: Colors.grey.shade800),
                       ),
                     ),

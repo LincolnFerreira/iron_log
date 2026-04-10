@@ -4,6 +4,7 @@ import '../../../../core/services/http_service.dart';
 import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/mappers/workout_data_mapper.dart';
 import '../../domain/entities/workout_exercise.dart';
+import '../../data/models/workout_edit_dto.dart';
 
 // Provider para armazenar a duração original de um treino em edição
 // Usado para preservar a duração ao mudar a data do treino
@@ -230,27 +231,25 @@ class WorkoutDayExercisesNotifier
       final response = await _httpService.get(url);
 
       if (response.statusCode == 200) {
-        final data = response.data as Map<String, dynamic>;
+        final dto = WorkoutEditDto.fromJson(
+          response.data as Map<String, dynamic>,
+        );
 
         if (kDebugMode) {
-          print('📦 Workout raw data:');
-          print('   id         : ${data['id']}');
-          print('   startedAt  : ${data['startedAt']}');
-          print('   endedAt    : ${data['endedAt']}');
-          print('   isManual   : ${data['isManual']}');
-          print('   routineId  : ${data['routine']?['id']}');
-          print('   routineName: ${data['routine']?['name']}');
-          print('   series cnt : ${(data['series'] as List?)?.length ?? 0}');
+          print('📦 Workout data:');
+          print('   id         : ${dto.id}');
+          print('   startedAt  : ${dto.startedAt}');
+          print('   endedAt    : ${dto.endedAt}');
+          print('   isManual   : ${dto.isManual}');
+          print('   routineId  : ${dto.routineId}');
+          print('   routineName: ${dto.routineName}');
+          print('   series cnt : ${dto.series.length}');
         }
-
+        //TODO: imagino que isso poderia estar sendo feito na propria entity se não estiver errado diante de um clean architecture
         // Calcula e armazena a duração original do treino
-        final startedAtStr = data['startedAt'] as String?;
-        final endedAtStr = data['endedAt'] as String?;
-        if (startedAtStr != null && endedAtStr != null && _ref != null) {
+        if (dto.endedAt != null && _ref != null) {
           try {
-            final startedAt = DateTime.parse(startedAtStr);
-            final endedAt = DateTime.parse(endedAtStr);
-            final originalDuration = endedAt.difference(startedAt);
+            final originalDuration = dto.endedAt!.difference(dto.startedAt);
             _ref.read(workoutOriginalDurationProvider.notifier).state =
                 originalDuration;
 
@@ -266,8 +265,22 @@ class WorkoutDayExercisesNotifier
           }
         }
 
-        final seriesRaw = data['series'] as List<dynamic>? ?? [];
-        final exercises = WorkoutDataMapper.fromSerieLogList(seriesRaw);
+        final exercises = WorkoutDataMapper.fromSerieLogList(
+          dto.series
+              .map(
+                (s) => {
+                  'id': s.id,
+                  'label': s.label,
+                  'tag': s.tag,
+                  'weight': s.weight,
+                  'reps': s.reps,
+                  'rir': s.rir,
+                  'restTime': s.restTime,
+                  'notes': s.notes,
+                },
+              )
+              .toList(),
+        );
         state = AsyncValue.data(exercises);
 
         if (kDebugMode) {
@@ -290,12 +303,21 @@ class WorkoutDayExercisesNotifier
 
   // Atualiza um exercício específico
   void updateExercise(String exerciseId, WorkoutExercise updatedExercise) {
+    debugPrint(
+      '[Provider.updateExercise] exerciseId=$exerciseId, entries: ${updatedExercise.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+    );
     final currentState = state;
     if (currentState is AsyncData<List<WorkoutExercise>>) {
       final currentExercises = currentState.value;
+      debugPrint(
+        '[Provider.updateExercise] BEFORE: ${currentExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+      );
       final updatedExercises = currentExercises.map((exercise) {
         return exercise.id == exerciseId ? updatedExercise : exercise;
       }).toList();
+      debugPrint(
+        '[Provider.updateExercise] AFTER: ${updatedExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+      );
       state = AsyncValue.data(updatedExercises);
     }
   }

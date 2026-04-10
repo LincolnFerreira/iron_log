@@ -11,12 +11,12 @@ class SerieLogs extends Table {
   TextColumn get label =>
       text().nullable()(); // Warm-up / Top Set / Back-Off / AMRAP
   IntColumn get reps => integer().nullable()();
-  RealColumn get weightKg => real().nullable()();
+  RealColumn get weight => real().nullable()();
   TextColumn get weightUnit =>
       text().withDefault(const Constant('kg'))(); // 'kg' or 'lbs'
   IntColumn get rir => integer().nullable()();
   TextColumn get rirNote => text().nullable()();
-  IntColumn get restSec => integer().nullable()();
+  IntColumn get restTime => integer().nullable()();
   TextColumn get cadence => text().nullable()(); // "2-0-2"
   BoolColumn get isFailure => boolean().withDefault(const Constant(false))();
 

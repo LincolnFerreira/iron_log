@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
-import 'package:iron_log/features/workout_day/presentation/molecules/series_selector.dart';
 import '../atoms/custom_badge.dart';
+import '../atoms/exercise_history_chip.dart';
+import '../atoms/ai_suggestion_chip.dart';
 import '../molecules/series_table.dart';
+import '../molecules/exercise_history_modal.dart';
+import '../molecules/quick_fill_chips.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../domain/entities/weight_unit.dart';
+import '../../domain/entities/suggestion_result.dart';
 import '../providers/workout_day_provider.dart';
+import '../providers/exercise_last_sets_provider.dart';
+import '../providers/exercise_suggestion_provider.dart';
 
 class ExerciseCard extends ConsumerStatefulWidget {
   final WorkoutExercise exercise;
@@ -34,10 +40,15 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   late int _rir;
   late int _restTime;
   late WeightUnit _weightUnit;
-  SeriesType? _selectedSeriesType;
+  late String _notes;
 
-  /// Tracks the live per-series data reported by SeriesTable via onEntriesChanged.
+  /// Authoritative list of per-series data. ExerciseCard is the single owner;
+  /// SeriesTable is a controlled component that reads from this and reports changes.
   List<SeriesEntry> _currentEntries = const [];
+
+  bool _isSuggestionLoading = false;
+  bool _isSuggestionExpanded = false;
+  SuggestionResult? _suggestion;
 
   @override
   void initState() {
@@ -48,8 +59,56 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     _rir = widget.exercise.rir;
     _restTime = widget.exercise.restTime;
     _weightUnit = widget.exercise.weightUnit;
-    // Initialise from already-loaded entries (e.g. previous workout view).
-    _currentEntries = List<SeriesEntry>.from(widget.exercise.entries);
+    _notes = widget.exercise.notes ?? '';
+    _currentEntries = _buildEntries(widget.exercise.entries);
+  }
+
+  /// Builds the authoritative entries list from [source].
+  /// If [source] is non-empty, uses it (extending/trimming to [_series]).
+  /// Otherwise generates defaults from exercise weight/reps.
+  List<SeriesEntry> _buildEntries(List<SeriesEntry> source) {
+    if (source.isNotEmpty) {
+      final result = List<SeriesEntry>.from(source);
+      while (result.length < _series) {
+        result.add(
+          SeriesEntry(index: result.length, weight: _weight, reps: _reps),
+        );
+      }
+      if (result.length > _series) return result.sublist(0, _series);
+      return result;
+    }
+    return List.generate(
+      _series,
+      (i) => SeriesEntry(index: i, weight: _weight, reps: _reps),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant ExerciseCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sync all exercise fields when backend updates the exercise
+    if (widget.exercise != oldWidget.exercise) {
+      setState(() {
+        _series = widget.exercise.series;
+        _reps = widget.exercise.reps;
+        _weight = widget.exercise.weight;
+        _rir = widget.exercise.rir;
+        _restTime = widget.exercise.restTime;
+        _weightUnit = widget.exercise.weightUnit;
+        _notes = widget.exercise.notes ?? '';
+      });
+    }
+    final incoming = widget.exercise.entries;
+    // Sync when the provider delivers real entries (e.g. after async load)
+    // but only if the user hasn’t typed anything unique yet.
+    if (incoming.isNotEmpty && incoming != oldWidget.exercise.entries) {
+      final userHasEdited = _currentEntries.any(
+        (e) => e.weight != '' && e.weight != '0' && e.weight != _weight,
+      );
+      if (!userHasEdited) {
+        setState(() => _currentEntries = _buildEntries(incoming));
+      }
+    }
   }
 
   @override
@@ -135,6 +194,8 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               ),
             ],
           ),
+          const SizedBox(height: 6),
+          _buildChipsRow(ref),
           const SizedBox(height: 4),
           //TODO: verificar no back-end pq aqui não está vindo o nome dos musculos e sim um id, pra isso vamos precisar verificar bem provavelmente talvez um log no back-end pra ver o que está passando aqui
           Row(
@@ -148,6 +209,34 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               _buildWeightUnitToggle(ref),
             ],
           ),
+          const SizedBox(height: 8),
+          // Display notes if present
+          if (_notes.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.yellow.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.yellow.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.note, size: 16, color: Colors.yellow.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _notes,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.yellow.shade900,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 8),
 
           // Variation Dropdown
@@ -171,14 +260,25 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           // const SizedBox(height: 16),
 
           // Add series button (shows rows when _series > 0)
+          if (_isSuggestionExpanded &&
+              _suggestion != null &&
+              _suggestion!.hasData)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: QuickFillChips(
+                baseWeight: _suggestion!.suggestedWeight,
+                onWeightSelected: _applyWeightToAllPendingSeries,
+              ),
+            ),
+          //TODO: verificar no back-end pq aqui não está vindo o nome dos musculos e sim um id, pra isso vamos precisar verificar bem provavelmente talvez um log no back-end pra ver o que está passando aqui
           SeriesTable(
             count: _series,
             weight: _weight,
             reps: _reps,
-            weightUnit: _weightUnit.label,
-            initialEntries: _currentEntries.isNotEmpty ? _currentEntries : null,
+            weightUnit: _weightUnit,
+            entries: _currentEntries,
             onEntriesChanged: (entries) {
-              _currentEntries = entries;
+              setState(() => _currentEntries = List<SeriesEntry>.from(entries));
               _updateExercise();
             },
             onToggleDone: (index, done) {
@@ -197,15 +297,131 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           ),
           TextButton.icon(
             onPressed: () {
-              setState(() => _series = (_series + 1));
+              setState(() {
+                _series += 1;
+                _currentEntries = [
+                  ..._currentEntries,
+                  SeriesEntry(
+                    index: _currentEntries.length,
+                    weight: _weight,
+                    reps: _reps,
+                  ),
+                ];
+              });
               _updateExercise();
             },
             icon: const Icon(Icons.add, size: 18),
             label: const Text('Adicionar série'),
           ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: _showObservationsModal,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+                color: Colors.white,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    size: 18,
+                    color: Colors.grey.shade500,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _notes.isEmpty ? 'Adicionar observação' : _notes,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: _notes.isEmpty
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildChipsRow(WidgetRef ref) {
+    final historyAsync = ref.watch(
+      exerciseLastSetsProvider(widget.exercise.id),
+    );
+    final history = historyAsync.value;
+
+    return Row(
+      children: [
+        ExerciseHistoryChip(
+          historyAsync: historyAsync,
+          onTap: history != null && history.hasHistory
+              ? () => showExerciseHistoryModal(
+                  context,
+                  history: history,
+                  exerciseName: widget.exercise.name.toTitleCase(),
+                )
+              : null,
+        ),
+        const SizedBox(width: 8),
+        AiSuggestionChip(isLoading: _isSuggestionLoading, onTap: _onAiChipTap),
+      ],
+    );
+  }
+
+  Future<void> _onAiChipTap() async {
+    setState(() {
+      _isSuggestionLoading = true;
+      _isSuggestionExpanded = false;
+    });
+    try {
+      final result = await ref.read(
+        exerciseSuggestionProvider(widget.exercise.id).future,
+      );
+      if (mounted) {
+        setState(() {
+          _suggestion = result;
+          _isSuggestionLoading = false;
+          _isSuggestionExpanded = result.hasData;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isSuggestionLoading = false);
+      }
+    }
+  }
+
+  void _applyWeightToAllPendingSeries(double weight) {
+    final weightStr = weight % 1 == 0
+        ? weight.toInt().toString()
+        : weight.toStringAsFixed(1);
+
+    final baseEntries = _currentEntries.isNotEmpty
+        ? _currentEntries
+        : List.generate(
+            _series,
+            (i) => SeriesEntry(index: i, weight: _weight, reps: _reps),
+          );
+
+    final updated = baseEntries
+        .map((e) => e.done ? e : e.copyWith(weight: weightStr))
+        .toList();
+
+    setState(() {
+      _currentEntries = updated;
+      _weight = weightStr;
+      _isSuggestionExpanded = false;
+    });
+    _updateExercise();
   }
 
   Widget _buildWeightUnitToggle(WidgetRef ref) {
@@ -309,33 +525,6 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
 
             // Opções de edição
             _buildEditOption(
-              icon: Icons.fitness_center,
-              title: 'Alterar Séries e Repetições',
-              subtitle: 'Ajustar volume do exercício',
-              onTap: () {
-                Navigator.pop(context);
-                _editSeriesAndReps();
-              },
-            ),
-            _buildEditOption(
-              icon: Icons.monitor_weight,
-              title: 'Alterar Carga',
-              subtitle: 'Ajustar peso utilizado',
-              onTap: () {
-                Navigator.pop(context);
-                _editWeight();
-              },
-            ),
-            _buildEditOption(
-              icon: Icons.timer,
-              title: 'Alterar Descanso',
-              subtitle: 'Tempo entre séries',
-              onTap: () {
-                Navigator.pop(context);
-                _editRestTime();
-              },
-            ),
-            _buildEditOption(
               icon: Icons.settings,
               title: 'Configurações Avançadas',
               subtitle: 'RIR, variação e observações',
@@ -370,41 +559,100 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     );
   }
 
-  // Métodos de edição específicos (placeholders por enquanto)
-  void _editSeriesAndReps() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('🏋️ Edição de séries e reps em desenvolvimento'),
-        backgroundColor: Colors.blue,
-      ),
-    );
-  }
-
-  void _editWeight() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('⚖️ Edição de carga em desenvolvimento'),
-        backgroundColor: Colors.blue,
-      ),
-    );
-  }
-
-  void _editRestTime() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('⏱️ Edição de descanso em desenvolvimento'),
-        backgroundColor: Colors.blue,
+  void _showObservationsModal() {
+    final notesController = TextEditingController(text: _notes);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Icon(Icons.edit_note, color: Colors.blue.shade600),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Observações',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Notes TextField
+              TextField(
+                controller: notesController,
+                maxLines: 4,
+                minLines: 3,
+                decoration: InputDecoration(
+                  hintText:
+                      'Ex: Exercício dificultoso, tentar peso menor na próxima vez',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  labelText: 'Observações',
+                  labelStyle: const TextStyle(fontSize: 14),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Action buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancelar'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() => _notes = notesController.text);
+                      _updateExercise();
+                      Navigator.pop(context);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Observações salvas!'),
+                            duration: Duration(milliseconds: 1500),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text('Salvar'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   void _editAdvanced() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('⚙️ Configurações avançadas em desenvolvimento'),
-        backgroundColor: Colors.blue,
-      ),
-    );
+    _showObservationsModal();
   }
 
   void _showRemoveConfirmation() {
@@ -528,6 +776,12 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   // Atualiza o exercício localmente no provider com os valores actuais.
   // Não persiste no backend aqui — isso acontece apenas ao finalizar o treino.
   void _updateExercise() {
+    debugPrint(
+      '[ExerciseCard._updateExercise] called for ${widget.exercise.name}',
+    );
+    debugPrint(
+      '[ExerciseCard._updateExercise] _currentEntries before copyWith: ${_currentEntries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+    );
     final updated = widget.exercise.copyWith(
       series: _series,
       reps: _reps,
@@ -535,6 +789,10 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
       rir: _rir,
       restTime: _restTime,
       entries: List<SeriesEntry>.from(_currentEntries),
+      notes: _notes.isEmpty ? null : _notes,
+    );
+    debugPrint(
+      '[ExerciseCard._updateExercise] updated.entries: ${updated.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
     );
 
     ref

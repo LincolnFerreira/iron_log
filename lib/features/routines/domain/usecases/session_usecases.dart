@@ -1,5 +1,6 @@
 import '../entities/routine.dart';
 import '../repositories/session_repository.dart';
+import '../../data/models/session_exercise_update_dto.dart';
 
 class CreateSessionUseCase {
   final SessionRepository repository;
@@ -58,9 +59,12 @@ class UpdateSessionExercisesUseCase {
 
   Future<Session> execute(
     String sessionId,
-    List<Map<String, dynamic>> exercises,
+    List<SessionExerciseUpdateDto> exercises,
   ) async {
-    return await repository.updateSessionExercises(sessionId, exercises);
+    // Convert DTOs to Maps for repository if needed
+    // OR repository can be refactored to work with DTOs directly
+    final exerciseMaps = exercises.map((e) => e.toJson()).toList();
+    return await repository.updateSessionExercises(sessionId, exerciseMaps);
   }
 }
 

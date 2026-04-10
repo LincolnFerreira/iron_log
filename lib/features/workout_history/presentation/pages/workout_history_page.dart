@@ -114,8 +114,9 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed)
+    if (state == AppLifecycleState.resumed) {
       ref.invalidate(workoutHistoryProvider);
+    }
   }
 
   @override

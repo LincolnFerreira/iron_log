@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
 import 'series_input_row.dart';
 
 /// A table displaying workout series with type, weight, reps, and completion status.
-/// Manages a list of SeriesEntry models and renders them as individual SeriesRow widgets.
+/// Controlled component — the caller owns the entries list via [onEntriesChanged].
 class SeriesTable extends StatefulWidget {
   final int count;
-  final String weight;
-  final String reps;
+  final String weight; // default weight for auto-generated rows
+  final String reps; // default reps for auto-generated rows
+
+  /// The authoritative list of series entries maintained by the parent.
+  final List<SeriesEntry> entries;
+
   final void Function(int index, bool done)? onToggleDone;
-  final String weightUnit;
+  final WeightUnit weightUnit;
 
   /// Called with the full updated entries list whenever any row changes.
   final void Function(List<SeriesEntry> entries)? onEntriesChanged;
-
-  /// Optional pre-populated entries (e.g. loaded from a previous workout).
-  final List<SeriesEntry>? initialEntries;
 
   const SeriesTable({
     super.key,
     required this.count,
     required this.weight,
     required this.reps,
+    required this.entries,
     this.onToggleDone,
-    this.weightUnit = 'kg',
+    this.weightUnit = WeightUnit.kg,
     this.onEntriesChanged,
-    this.initialEntries,
   });
 
   @override
@@ -33,35 +35,12 @@ class SeriesTable extends StatefulWidget {
 }
 
 class _SeriesTableState extends State<SeriesTable> {
-  late List<SeriesEntry> _entries;
+  // Only UI state lives here — no data copies.
   late List<ValueNotifier<int>> _activateWeightTokens;
 
   @override
   void initState() {
     super.initState();
-    _initializeEntries();
-  }
-
-  void _initializeEntries() {
-    final initial = widget.initialEntries;
-    if (initial != null && initial.isNotEmpty) {
-      // Use provided entries; append new default rows if count grew.
-      _entries = List<SeriesEntry>.from(initial);
-      if (_entries.length < widget.count) {
-        for (var i = _entries.length; i < widget.count; i++) {
-          _entries.add(
-            SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
-          );
-        }
-      } else if (_entries.length > widget.count) {
-        _entries = _entries.sublist(0, widget.count);
-      }
-    } else {
-      _entries = List.generate(
-        widget.count,
-        (i) => SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
-      );
-    }
     _activateWeightTokens = List.generate(
       widget.count,
       (_) => ValueNotifier(0),
@@ -83,29 +62,51 @@ class _SeriesTableState extends State<SeriesTable> {
       for (final token in _activateWeightTokens) {
         token.dispose();
       }
-      // Preserve existing entries and extend/trim based on new count.
-      final previous = List<SeriesEntry>.from(_entries);
       _activateWeightTokens = List.generate(
         widget.count,
         (_) => ValueNotifier(0),
       );
-      if (widget.count > previous.length) {
-        _entries = [
-          ...previous,
-          for (var i = previous.length; i < widget.count; i++)
-            SeriesEntry(index: i, weight: widget.weight, reps: widget.reps),
-        ];
-      } else {
-        _entries = previous.sublist(0, widget.count);
-      }
     }
   }
 
+  /// Returns the effective display list: fills to [count] with defaults,
+  /// or trims if the parent passed more than [count] entries.
+  List<SeriesEntry> _resolvedEntries() {
+    final result = List<SeriesEntry>.from(widget.entries);
+    while (result.length < widget.count) {
+      result.add(
+        SeriesEntry(
+          index: result.length,
+          weight: widget.weight,
+          reps: widget.reps,
+        ),
+      );
+    }
+    if (result.length > widget.count) return result.sublist(0, widget.count);
+
+    print('  resolved result.length: ${result.length}');
+    if (result.isNotEmpty) {
+      print('  ✓ first resolved entry.weight: "${result[0].weight}"');
+    }
+    return result;
+  }
+
   void _handleEntryChanged(int index, SeriesEntry updated) {
-    setState(() {
-      _entries[index] = updated;
-    });
-    widget.onEntriesChanged?.call(List.unmodifiable(_entries));
+    // Merge only the changed index into the parent-owned list.
+    // Never call _resolvedEntries() here — that would inject defaults into
+    // entries the user hasn't touched yet, corrupting the payload.
+    final result = List<SeriesEntry>.from(widget.entries);
+    while (result.length <= index) {
+      result.add(
+        SeriesEntry(
+          index: result.length,
+          weight: widget.weight,
+          reps: widget.reps,
+        ),
+      );
+    }
+    result[index] = updated;
+    widget.onEntriesChanged?.call(List<SeriesEntry>.unmodifiable(result));
   }
 
   void _handleToggleDone(int index, bool done) {
@@ -138,7 +139,7 @@ class _SeriesTableState extends State<SeriesTable> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'PESO (${widget.weightUnit.toUpperCase()})',
+                  'PESO (${widget.weightUnit.displayLabel.toUpperCase()})',
                   style: Theme.of(
                     context,
                   ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
@@ -167,23 +168,26 @@ class _SeriesTableState extends State<SeriesTable> {
         ),
 
         // Series rows
-        ..._entries.asMap().entries.map((entry) {
-          final index = entry.key;
-          final seriesEntry = entry.value;
-          final isLast = index == _entries.length - 1;
-          return SeriesInputRow(
-            key: ValueKey(index),
-            entry: seriesEntry,
-            onChanged: (updated) => _handleEntryChanged(index, updated),
-            onToggleDone: (done) => _handleToggleDone(index, done),
-            weightUnit: widget.weightUnit,
-            activateWeightToken: _activateWeightTokens[index],
-            isLastRow: isLast,
-            onRepsDone: isLast
-                ? null
-                : () => _activateWeightTokens[index + 1].value++,
-          );
-        }),
+        ...() {
+          final entries = _resolvedEntries();
+          return entries.asMap().entries.map((entry) {
+            final index = entry.key;
+            final seriesEntry = entry.value;
+            final isLast = index == entries.length - 1;
+            return SeriesInputRow(
+              key: ValueKey(index),
+              entry: seriesEntry,
+              onChanged: (updated) => _handleEntryChanged(index, updated),
+              onToggleDone: (done) => _handleToggleDone(index, done),
+              weightUnit: widget.weightUnit,
+              activateWeightToken: _activateWeightTokens[index],
+              isLastRow: isLast,
+              onRepsDone: isLast
+                  ? null
+                  : () => _activateWeightTokens[index + 1].value++,
+            );
+          }).toList();
+        }(),
 
         // TODO: When per-series data persistence is needed, wire onToggleDone
         // callback to the provider/backend and store individual series state.

@@ -326,7 +326,13 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                   if (widget.workoutId != null &&
                       widget.workoutId!.isNotEmpty) {
                     try {
-                      final currentExercises = exercisesAsync.value ?? [];
+                      // Always read current provider state at finalize time,
+                      // never use the stale closure-captured exercisesAsync.
+                      final currentExercises =
+                          ref.read(workoutDayExercisesProvider).value ?? [];
+                      debugPrint(
+                        '[FINALIZE-EDIT] entries: ${currentExercises.map((ex) => "${ex.name}: ${ex.entries.map((s) => "s${s.index}(w=${s.weight} r=${s.reps})").join(",")}").join(" | ")}',
+                      );
                       final timerStartTime = ref.read(workoutTimerProvider);
                       final now = DateTime.now();
 
@@ -394,7 +400,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
 
                     if (!mounted) return;
 
-                    final currentExercises = exercisesAsync.value ?? [];
+                    final currentExercises =
+                        ref.read(workoutDayExercisesProvider).value ?? [];
+                    debugPrint(
+                      '[FINALIZE-POST] entries: ${currentExercises.map((ex) => "${ex.name}: ${ex.entries.map((s) => "s${s.index}(w=${s.weight} r=${s.reps})").join(",")}").join(" | ")}',
+                    );
                     final timerStartTime = ref.read(workoutTimerProvider);
                     final now = DateTime.now();
 

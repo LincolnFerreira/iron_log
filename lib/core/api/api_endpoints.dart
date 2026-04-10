@@ -50,6 +50,14 @@ class ApiEndpoints {
 
   // Rest Day endpoints
   static const String restDay = '/rest-day';
+
+  // Workout history per exercise
+  static String exerciseLastSets(String exerciseId, {int limit = 2}) =>
+      '/workout/exercise/$exerciseId/last-sets?limit=$limit';
+
+  // AI suggestion for an exercise
+  static String exerciseSuggestion(String exerciseId) =>
+      '/suggestion?exerciseId=$exerciseId';
 }
 
 /// Configuração de parâmetros de query padrão

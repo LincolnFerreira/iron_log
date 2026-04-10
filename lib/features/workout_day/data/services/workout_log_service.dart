@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/services/auth_service.dart';
-import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 
 /// Serviço responsável por persistir sessões de treino no backend.
@@ -114,6 +114,13 @@ class WorkoutLogService {
 
   double _parseWeight(String value) =>
       double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+
+  /// Exposes [_exerciseToDto] for unit testing without HTTP/Firebase.
+  @visibleForTesting
+  Map<String, dynamic> exerciseToDtoForTesting(
+    WorkoutExercise exercise, {
+    int order = 1,
+  }) => _exerciseToDto(exercise, order: order);
 
   /// Atualiza (substitui as séries de) um treino já registrado.
   ///

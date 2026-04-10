@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/usecases/session_usecases.dart';
 import '../../session_providers.dart';
+import '../../data/models/session_exercise_update_dto.dart';
 
 // Session State
 class SessionState {
@@ -119,7 +120,12 @@ class SessionNotifier extends StateNotifier<SessionState> {
   ) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      await _updateSessionExercisesUseCase.execute(sessionId, exercises);
+      // Deserialize Map list to typed DTOs at provider boundary
+      final dtos = exercises
+          .map((e) => SessionExerciseUpdateDto.fromJson(e))
+          .toList();
+
+      await _updateSessionExercisesUseCase.execute(sessionId, dtos);
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {

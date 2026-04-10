@@ -3,6 +3,7 @@ import '../../../core/services/http_service.dart';
 import '../../../core/api/api_endpoints.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
+import 'package:iron_log/features/home/data/models/home_metrics_dto.dart';
 
 class HomeState {
   final bool isLoading;
@@ -75,9 +76,10 @@ class HomeNotifier extends StateNotifier<HomeState> {
             ApiEndpoints.meMetrics,
           );
           if (metricsResponse.statusCode == 200) {
-            metrics = HomeMetrics.fromJson(
+            final metricsDto = HomeMetricsDto.fromJson(
               metricsResponse.data as Map<String, dynamic>,
             );
+            metrics = metricsDto.toEntity();
           }
         } catch (_) {
           // Métricas são não-críticas, continua sem elas

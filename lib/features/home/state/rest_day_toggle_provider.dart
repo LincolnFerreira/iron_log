@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/services/auth_service.dart';
+import 'package:iron_log/features/home/data/models/rest_day_toggle_dto.dart';
 import 'workout_calendar_provider.dart';
 
 /// Calls POST /rest-day with a given ISO date and invalidates the calendar.
@@ -14,8 +15,8 @@ final restDayToggleProvider = FutureProvider.family<bool, String>((
     ApiEndpoints.restDay,
     data: {'date': isoDate},
   );
-  final active = (response.data as Map<String, dynamic>?)?['active'] == true;
+  final dto = RestDayToggleDto.fromJson(response.data as Map<String, dynamic>);
   // Invalidate calendar so the strip refreshes
   ref.invalidate(workoutCalendarProvider);
-  return active;
+  return dto.active;
 });

@@ -11,6 +11,7 @@ void main() {
   ) async {
     final routine = Routine(
       id: 'r1',
+      userId: 'test-user',
       name: 'Minha Rotina',
       division: null,
       isTemplate: false,
