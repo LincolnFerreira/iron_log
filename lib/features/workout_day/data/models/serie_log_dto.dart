@@ -42,7 +42,7 @@ class SerieLogDto {
   factory SerieLogDto.fromJson(Map<String, dynamic> json) {
     final exerciseData = json[ApiFieldNames.exercise] as Map<String, dynamic>?;
 
-    return SerieLogDto(
+    final convert = SerieLogDto(
       id: json[ApiFieldNames.id]?.toString(),
       exerciseId: json[ApiFieldNames.exerciseId]?.toString(),
       sessionId: json[ApiFieldNames.sessionId]?.toString(),
@@ -60,6 +60,7 @@ class SerieLogDto {
           ? ExerciseDataDto.fromJson(exerciseData)
           : null,
     );
+    return convert;
   }
 
   /// Convert single SerieLog to SeriesEntry (for building entries list)
@@ -98,7 +99,7 @@ class SerieLogDto {
       variation: 'Traditional',
       series: series.length,
       reps: reps > 0 ? reps.toString() : '-',
-      weight: weight > 0 ? '${weight}kg' : '0kg',
+      weight: weight > 0 ? weight.toString() : '0',
       rir: rir,
       restTime: restTime,
       entries: entries,

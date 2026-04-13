@@ -192,6 +192,7 @@ class WorkoutHistory {
   final String id;
   final String routineName; // ex: "Peito & Tríceps"
   final String? sessionName;
+  final String? sessionId;
   final DateTime date;
   final Duration duration;
   final int seriesCount;
@@ -205,6 +206,7 @@ class WorkoutHistory {
     this.id = '',
     required this.routineName,
     this.sessionName,
+    this.sessionId,
     required this.date,
     required this.duration,
     required this.seriesCount,
@@ -317,6 +319,7 @@ class WorkoutHistory {
       id: json['id']?.toString() ?? '',
       routineName: json['routineName'] ?? '',
       sessionName: json['sessionName']?.toString(),
+      sessionId: json['sessionId']?.toString(),
       date: json['date'] != null
           ? DateTime.parse(json['date'])
           : DateTime.now(),
@@ -338,6 +341,7 @@ class WorkoutHistory {
       'id': id,
       'routineName': routineName,
       'sessionName': sessionName,
+      'sessionId': sessionId,
       'date': date.toIso8601String(),
       'durationSeconds': duration.inSeconds,
       'seriesCount': seriesCount,

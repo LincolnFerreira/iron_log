@@ -116,16 +116,11 @@ class SessionNotifier extends StateNotifier<SessionState> {
 
   Future<bool> updateSessionExercises(
     String sessionId,
-    List<Map<String, dynamic>> exercises,
+    List<SessionExerciseUpdateDto> exercises,
   ) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      // Deserialize Map list to typed DTOs at provider boundary
-      final dtos = exercises
-          .map((e) => SessionExerciseUpdateDto.fromJson(e))
-          .toList();
-
-      await _updateSessionExercisesUseCase.execute(sessionId, dtos);
+      await _updateSessionExercisesUseCase.execute(sessionId, exercises);
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {

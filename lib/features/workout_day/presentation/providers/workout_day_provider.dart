@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../core/services/http_service.dart';
 import '../../../../core/api/api_endpoints.dart';
-import '../../../../core/mappers/workout_data_mapper.dart';
+import '../../data/models/session_exercise_dto.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../data/models/workout_edit_dto.dart';
 
@@ -61,8 +61,14 @@ class WorkoutDayExercisesNotifier
         final sessionExercises =
             sessionData['exercises'] as List<dynamic>? ?? [];
 
-        // Usa mapper dedicado para conversão
-        final exercises = WorkoutDataMapper.fromApiList(sessionExercises);
+        // Converte DTOs diretamente para entidades
+        final exercises = sessionExercises
+            .map(
+              (data) => SessionExerciseDto.fromJson(
+                data as Map<String, dynamic>,
+              ).toEntity(),
+            )
+            .toList();
 
         state = AsyncValue.data(exercises);
 
@@ -182,8 +188,7 @@ class WorkoutDayExercisesNotifier
             'exerciseId': ex.id,
             'order': index + 1,
             'customName': null,
-            'config': ex
-                .toJson(), // envia configuração básica; backend aceita JSON flexível
+            'config': ex.toConfigJson(),
           };
         }).toList(),
       };
@@ -265,22 +270,7 @@ class WorkoutDayExercisesNotifier
           }
         }
 
-        final exercises = WorkoutDataMapper.fromSerieLogList(
-          dto.series
-              .map(
-                (s) => {
-                  'id': s.id,
-                  'label': s.label,
-                  'tag': s.tag,
-                  'weight': s.weight,
-                  'reps': s.reps,
-                  'rir': s.rir,
-                  'restTime': s.restTime,
-                  'notes': s.notes,
-                },
-              )
-              .toList(),
-        );
+        final exercises = dto.toWorkoutExercises();
         state = AsyncValue.data(exercises);
 
         if (kDebugMode) {

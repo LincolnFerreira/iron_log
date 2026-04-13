@@ -1,4 +1,5 @@
 import '../entities/routine.dart';
+import '../../data/models/session_exercise_update_dto.dart';
 
 abstract class SessionRepository {
   Future<Session> createSession({
@@ -18,7 +19,7 @@ abstract class SessionRepository {
   /// Atualizar exercícios da sessão
   Future<Session> updateSessionExercises(
     String sessionId,
-    List<Map<String, dynamic>> exercises,
+    List<SessionExerciseUpdateDto> exercises,
   );
 
   /// Remover exercício específico da sessão

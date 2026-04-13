@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/repositories/session_repository.dart';
+import '../../data/models/session_exercise_update_dto.dart';
 import '../models/routine_model.dart';
 
 class SessionRepositoryImpl implements SessionRepository {
@@ -62,10 +63,10 @@ class SessionRepositoryImpl implements SessionRepository {
   @override
   Future<Session> updateSessionExercises(
     String sessionId,
-    List<Map<String, dynamic>> exercises,
+    List<SessionExerciseUpdateDto> exercises,
   ) async {
     try {
-      final data = {'exercises': exercises};
+      final data = {'exercises': exercises.map((e) => e.toJson()).toList()};
 
       final response = await _dio.patch(
         '/session/$sessionId/exercises',

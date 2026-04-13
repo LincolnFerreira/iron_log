@@ -5,6 +5,7 @@ import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
 import 'package:iron_log/core/app_colors.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/search_exercise.dart';
+import '../../data/models/session_exercise_update_dto.dart';
 import 'available_exercises_list.dart';
 import 'selected_exercises_section.dart';
 import '../providers/session_selection_provider.dart';
@@ -338,14 +339,14 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
     // Se a sessão foi salva com sucesso, atualizar os exercícios
     if (result != null) {
-      // Formatar exercícios para o backend
+      // Formatar exercícios para o backend como DTOs tipados
       final exercisesData = selectedExercises.asMap().entries.map((entry) {
-        return {
-          'exerciseId': entry.value.id,
-          'order': entry.key, // índice como ordem
-          'customName': null,
-          'config': {},
-        };
+        return SessionExerciseUpdateDto(
+          exerciseId: entry.value.id,
+          order: entry.key,
+          customName: null,
+          config: {},
+        );
       }).toList();
 
       // Atualizar exercícios da sessão

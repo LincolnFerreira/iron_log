@@ -24,11 +24,20 @@ class ExerciseDataDto {
   factory ExerciseDataDto.fromJson(Map<String, dynamic>? json) {
     if (json == null) return ExerciseDataDto();
 
+    // Parse primaryMuscle — can be object { name: "Chest" } or string (CUID/name)
+    final primaryMuscleRaw = json[ApiFieldNames.primaryMuscle];
+    String? muscleName;
+    if (primaryMuscleRaw is Map<String, dynamic>) {
+      muscleName = primaryMuscleRaw['name']?.toString();
+    } else if (primaryMuscleRaw is String && primaryMuscleRaw.isNotEmpty) {
+      muscleName = primaryMuscleRaw;
+    }
+
     return ExerciseDataDto(
       id: json[ApiFieldNames.id]?.toString(),
       name: json[ApiFieldNames.name]?.toString(),
       category: json[ApiFieldNames.category]?.toString(),
-      primaryMuscle: json[ApiFieldNames.primaryMuscle]?.toString(),
+      primaryMuscle: muscleName,
       tags: json[ApiFieldNames.tags] as List<dynamic>? ?? [],
     );
   }
@@ -127,7 +136,7 @@ class SessionExerciseDto {
       variation: config.variation ?? 'Traditional',
       series: series.isNotEmpty ? series.length : 3,
       reps: reps > 0 ? reps.toString() : '-',
-      weight: weight > 0 ? '${weight}kg' : '0kg',
+      weight: weight > 0 ? weight.toString() : '0',
       rir: firstSeries?.rir ?? 0,
       restTime: firstSeries?.restTime ?? 0,
       entries: entries,

@@ -1,24 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
-import '../molecules/exercise_search_bar.dart';
+import '../molecules/add_exercise_search_results.dart';
+import '../molecules/add_exercise_added_list.dart';
 
-class AddExerciseBottomSheet extends StatefulWidget {
+class AddExerciseBottomSheet extends ConsumerStatefulWidget {
   final Function(SearchExercise) onExerciseSelected;
 
   const AddExerciseBottomSheet({super.key, required this.onExerciseSelected});
 
   @override
-  State<AddExerciseBottomSheet> createState() => _AddExerciseBottomSheetState();
+  ConsumerState<AddExerciseBottomSheet> createState() =>
+      _AddExerciseBottomSheetState();
 }
 
-class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
+class _AddExerciseBottomSheetState
+    extends ConsumerState<AddExerciseBottomSheet> {
   late List<SearchExercise> addedExercises;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     addedExercises = [];
+    // Clear previous search state when bottom sheet opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(exerciseSearchProvider.notifier).clearSearch();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   void _onExerciseSelected(SearchExercise exercise) {
@@ -54,6 +70,8 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final searchState = ref.watch(exerciseSearchProvider);
+
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
       minChildSize: 0.5,
@@ -116,96 +134,79 @@ class _AddExerciseBottomSheetState extends State<AddExerciseBottomSheet> {
                   ],
                 ),
               ),
-              // Search bar with exercise selection
+              // Inline search field
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ExerciseSearchBar(
-                  onExerciseSelected: _onExerciseSelected,
+                child: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar exercícios...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _controller.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _controller.clear();
+                              ref
+                                  .read(exerciseSearchProvider.notifier)
+                                  .clearSearch();
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    ref
+                        .read(exerciseSearchProvider.notifier)
+                        .updateQuery(value);
+                    setState(() {}); // update suffix icon
+                  },
                 ),
               ),
               const SizedBox(height: 16),
-              // Added exercises list
-              if (addedExercises.isNotEmpty)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Exercícios adicionados',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: Colors.grey.shade600),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: addedExercises.length,
-                          itemBuilder: (context, index) {
-                            final exercise = addedExercises[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade50,
-                                  border: Border.all(
-                                    color: Colors.green.shade200,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            exercise.name.toTitleCase(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            exercise.primaryMuscle ??
-                                                'Sem categoria',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: Colors.grey.shade600,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.check_circle),
-                                      color: Colors.green,
-                                      onPressed: () {
-                                        // Apenas visual, exercise já foi adicionado
-                                      },
-                                    ),
-                                  ],
+              // Results / Added list
+              Expanded(
+                child: searchState.query.isNotEmpty
+                    ? searchState.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : searchState.results.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(32),
+                                child: Text(
+                                  'Nenhum exercício encontrado para "${searchState.query}"',
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(color: Colors.grey.shade600),
                                 ),
                               ),
-                            );
-                          },
+                            )
+                          : AddExerciseSearchResults(
+                              results: searchState.results,
+                              addedExercises: addedExercises,
+                              onExerciseSelected: _onExerciseSelected,
+                            )
+                    : addedExercises.isNotEmpty
+                    ? AddExerciseAddedList(addedExercises: addedExercises)
+                    : Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Text(
+                            'Digite para buscar exercícios',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey.shade400),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
+              ),
             ],
           ),
         );

@@ -20,8 +20,13 @@ class ReorderableExercisesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReorderableListView.builder(
+      buildDefaultDragHandles: false,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      onReorder: onReorder,
+      onReorder: (oldIndex, newIndex) {
+        // Guard: ignore reorder from the add-button slot
+        if (oldIndex >= exercises.length) return;
+        onReorder(oldIndex, newIndex);
+      },
       itemCount: exercises.length + 1, // +1 para o botão
       itemBuilder: (context, index) {
         // Último item é o botão de adicionar

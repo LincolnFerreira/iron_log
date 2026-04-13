@@ -216,18 +216,21 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     : '${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
               loading: () => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: 'Carregando...',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
               error: (_, __) => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: 'Erro ao carregar',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
             ),
             const SizedBox(height: 24),
@@ -340,9 +343,17 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                       DateTime endedAt;
 
                       if (_selectedDate != null) {
-                        final picked = await _pickDuration(context);
-                        if (!mounted) return;
-                        if (picked == null) return;
+                        final existingDur = ref.read(
+                          workoutOriginalDurationProvider,
+                        );
+                        Duration? picked;
+                        if (existingDur != null) {
+                          picked = existingDur;
+                        } else {
+                          picked = await _pickDuration(context);
+                          if (!mounted) return;
+                          if (picked == null) return;
+                        }
                         startedAt = _selectedDate!;
                         endedAt = startedAt.add(picked);
                       } else {
@@ -355,6 +366,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         exercises: currentExercises,
                         startedAt: startedAt,
                         endedAt: endedAt,
+                        sessionId: widget.sessionId,
                       );
 
                       if (!mounted) return;
@@ -414,10 +426,17 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     DateTime endedAt;
 
                     if (_selectedDate != null) {
-                      final picked = await _pickDuration(context);
-                      if (!mounted) return;
-                      if (picked == null) return; // usuário cancelou
-                      duration = picked;
+                      final existingDur = ref.read(
+                        workoutOriginalDurationProvider,
+                      );
+                      if (existingDur != null) {
+                        duration = existingDur;
+                      } else {
+                        final picked = await _pickDuration(context);
+                        if (!mounted) return;
+                        if (picked == null) return; // usuário cancelou
+                        duration = picked;
+                      }
                       startedAt = _selectedDate!;
                       endedAt = startedAt.add(duration);
                     } else {

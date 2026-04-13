@@ -204,6 +204,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
                             MaterialPageRoute(
                               builder: (_) => WorkoutDayScreen(
                                 workoutId: workout.id,
+                                sessionId: workout.sessionId,
                                 subtitle:
                                     workout.sessionName ?? workout.routineName,
                                 manualDate: workout.date,

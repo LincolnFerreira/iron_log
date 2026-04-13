@@ -132,11 +132,13 @@ class WorkoutLogService {
     required DateTime startedAt,
     required DateTime endedAt,
     String? notes,
+    String? sessionId,
   }) async {
     final payload = {
       'date': startedAt.toIso8601String(),
       'endedAt': endedAt.toIso8601String(),
       if (notes != null) 'notes': notes,
+      if (sessionId != null) 'sessionId': sessionId,
       'exercises': exercises
           .asMap()
           .entries

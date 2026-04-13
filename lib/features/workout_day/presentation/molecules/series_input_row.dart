@@ -169,7 +169,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                   child: SizedBox(
                     height: 32,
                     child: DropdownButtonFormField<int>(
-                      initialValue: widget.entry.type,
+                      value: widget.entry.type,
                       items: const [
                         DropdownMenuItem(
                           value: 0,

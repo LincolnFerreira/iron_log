@@ -61,10 +61,7 @@ class UpdateSessionExercisesUseCase {
     String sessionId,
     List<SessionExerciseUpdateDto> exercises,
   ) async {
-    // Convert DTOs to Maps for repository if needed
-    // OR repository can be refactored to work with DTOs directly
-    final exerciseMaps = exercises.map((e) => e.toJson()).toList();
-    return await repository.updateSessionExercises(sessionId, exerciseMaps);
+    return await repository.updateSessionExercises(sessionId, exercises);
   }
 }
 

@@ -20,11 +20,13 @@ final workoutHistoryProvider = FutureProvider<List<WorkoutHistory>>((
         ? dto.endedAt!.difference(dto.startedAt)
         : Duration.zero;
 
-    // Extract sessionName from the first serie that carries session info
+    // Extract sessionName and sessionId from the first serie that carries session info
     String? sessionName;
+    String? sessionId;
     for (final serie in dto.series) {
       if (serie.sessionExercise?.session != null) {
         sessionName = serie.sessionExercise?.session?.name;
+        sessionId = serie.sessionExercise?.session?.id;
         break;
       }
     }
@@ -56,6 +58,7 @@ final workoutHistoryProvider = FutureProvider<List<WorkoutHistory>>((
       id: dto.id,
       routineName: routineName,
       sessionName: sessionName,
+      sessionId: sessionId,
       date: dto.startedAt,
       duration: duration,
       seriesCount: totalSeries,

@@ -14,6 +14,10 @@ class WorkoutDayHeader extends ConsumerWidget {
   /// Quando não nulo e manualDate != null, torna o badge de data clicável.
   final VoidCallback? onDateTap;
 
+  /// Duração existente do treino (modo edição). Quando presente, exibe badge
+  /// de duração abaixo da data.
+  final Duration? existingDuration;
+
   const WorkoutDayHeader({
     super.key,
     this.onBackPressed,
@@ -22,6 +26,7 @@ class WorkoutDayHeader extends ConsumerWidget {
     this.subtitle,
     this.manualDate,
     this.onDateTap,
+    this.existingDuration,
   });
 
   @override
@@ -110,6 +115,42 @@ class WorkoutDayHeader extends ConsumerWidget {
                 ] else ...[
                   const WorkoutTimer(),
                 ],
+                if (existingDuration != null) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.timer_outlined,
+                          size: 12,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSecondaryContainer,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDuration(existingDuration!),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -120,5 +161,13 @@ class WorkoutDayHeader extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _formatDuration(Duration d) {
+    final hours = d.inHours;
+    final minutes = d.inMinutes.remainder(60);
+    if (hours > 0 && minutes > 0) return '${hours}h ${minutes}min';
+    if (hours > 0) return '${hours}h';
+    return '${minutes}min';
   }
 }

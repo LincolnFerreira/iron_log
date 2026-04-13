@@ -51,7 +51,7 @@ class WorkoutExercise {
       variation: json['variation']?.toString() ?? 'Traditional',
       series: json['series'] ?? 3,
       reps: json['reps']?.toString() ?? '-',
-      weight: json['weight']?.toString() ?? '0kg',
+      weight: json['weight']?.toString() ?? '0',
       rir: json['rir'] ?? 2,
       restTime: json['restTime'] ?? 120,
       weightUnit: WeightUnit.fromString(json['weightUnit']?.toString() ?? 'kg'),
@@ -72,6 +72,40 @@ class WorkoutExercise {
       'rir': rir,
       'restTime': restTime,
       'weightUnit': weightUnit.label,
+      if (notes != null) 'notes': notes,
+    };
+  }
+
+  /// Converts to the config format expected by the backend SessionExercise.config field.
+  ///
+  /// Output: `{ series: [{ label, reps, weight, rir, rest }], variation, notes }`
+  Map<String, dynamic> toConfigJson() {
+    final seriesList = entries.isNotEmpty
+        ? entries
+              .map(
+                (e) => {
+                  'label': e.backendLabel,
+                  'reps': int.tryParse(e.reps) ?? 0,
+                  'weight': double.tryParse(e.weight) ?? 0.0,
+                  'rir': rir,
+                  'rest': restTime,
+                },
+              )
+              .toList()
+        : List.generate(
+            series,
+            (_) => {
+              'label': 'Top Set',
+              'reps': int.tryParse(reps) ?? 0,
+              'weight': double.tryParse(weight) ?? 0.0,
+              'rir': rir,
+              'rest': restTime,
+            },
+          );
+
+    return {
+      'series': seriesList,
+      'variation': variation,
       if (notes != null) 'notes': notes,
     };
   }
