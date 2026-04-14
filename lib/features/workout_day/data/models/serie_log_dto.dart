@@ -42,7 +42,8 @@ class SerieLogDto {
   });
 
   factory SerieLogDto.fromJson(Map<String, dynamic> json) {
-    final sessionExerciseData = json[ApiFieldNames.sessionExercise] as Map<String, dynamic>?;
+    final sessionExerciseData =
+        json[ApiFieldNames.sessionExercise] as Map<String, dynamic>?;
 
     // Helper function para converter valores numéricos com debug
     int? parseToInt(dynamic value, String fieldName) {
@@ -51,7 +52,9 @@ class SerieLogDto {
         if (value is int) return value;
         if (value is double) return value.toInt();
         if (value is String) return int.parse(value);
-        print('⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como int');
+        print(
+          '⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como int',
+        );
         return null;
       } catch (e) {
         print('❌ Erro ao parsear $fieldName = $value: $e');
@@ -65,23 +68,31 @@ class SerieLogDto {
         if (value is double) return value;
         if (value is int) return value.toDouble();
         if (value is String) return double.parse(value);
-        print('⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como double');
+        print(
+          '⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como double',
+        );
         return null;
       } catch (e) {
-        print('❌ Erro ao parsear $fieldName = $value (${value.runtimeType}): $e');
+        print(
+          '❌ Erro ao parsear $fieldName = $value (${value.runtimeType}): $e',
+        );
         return null;
       }
     }
 
     final convert = SerieLogDto(
       id: json[ApiFieldNames.id]?.toString(),
-      sessionExerciseId: json[ApiFieldNames.sessionExerciseId]?.toString() ?? '',
+      sessionExerciseId:
+          json[ApiFieldNames.sessionExerciseId]?.toString() ?? '',
       sessionExercise: sessionExerciseData != null
           ? SessionExerciseDto.fromJson(sessionExerciseData)
           : null,
       sessionId: json[ApiFieldNames.sessionId]?.toString(),
       setIndex: parseToInt(json[ApiFieldNames.setIndex], 'setIndex'),
-      exerciseOrder: parseToInt(json[ApiFieldNames.exerciseOrder], 'exerciseOrder'),
+      exerciseOrder: parseToInt(
+        json[ApiFieldNames.exerciseOrder],
+        'exerciseOrder',
+      ),
       label: json[ApiFieldNames.label]?.toString(),
       reps: parseToInt(json[ApiFieldNames.reps], 'reps'),
       weight: parseToDouble(json[ApiFieldNames.weight], 'weight'),
@@ -120,7 +131,7 @@ class SerieLogDto {
     final reps = first.reps ?? 0;
     final rir = first.rir ?? 0;
     final restTime = first.restTime ?? 0;
-    
+
     // Access exercise data via sessionExercise nested object
     final exerciseData = first.sessionExercise?.exercise;
 
