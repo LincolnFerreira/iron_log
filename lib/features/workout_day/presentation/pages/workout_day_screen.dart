@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../home/components/organisms/session_picker_sheet.dart';
+import '../../../home/state/home_provider.dart';
+import '../../../routines/domain/entities/routine.dart';
 import '../../../routines/domain/entities/search_exercise.dart';
 import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/exercise_tag.dart';
@@ -361,12 +364,30 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         endedAt = now;
                       }
 
+                      // If no sessionId in edit mode, ask user to select one
+                      String? finalSessionId = widget.sessionId;
+                      if (finalSessionId == null || finalSessionId.isEmpty) {
+                        final homeState = ref.read(homeProvider);
+                        final routine = homeState.todaysRoutine;
+                        if (routine != null && routine.sessions.isNotEmpty) {
+                          if (!mounted) return;
+                          Session? selectedSession =
+                              await SessionPickerSheet.show(
+                                context,
+                                sessions: routine.sessions,
+                                onSelectSession: (_) {},
+                              );
+                          if (selectedSession == null || !mounted) return;
+                          finalSessionId = selectedSession.id;
+                        }
+                      }
+
                       await WorkoutLogService().updateWorkout(
                         workoutId: widget.workoutId!,
                         exercises: currentExercises,
                         startedAt: startedAt,
                         endedAt: endedAt,
-                        sessionId: widget.sessionId,
+                        sessionId: finalSessionId,
                       );
 
                       if (!mounted) return;

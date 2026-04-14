@@ -19,16 +19,45 @@ class SeriesConfigDto {
   });
 
   factory SeriesConfigDto.fromJson(Map<String, dynamic> json) {
+    // Helper function para converter valores numéricos com debug
+    int? parseToInt(dynamic value, String fieldName) {
+      try {
+        if (value == null) return null;
+        if (value is int) return value;
+        if (value is double) return value.toInt();
+        if (value is String) return int.parse(value);
+        print('⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como int');
+        return null;
+      } catch (e) {
+        print('❌ Erro ao parsear $fieldName = $value: $e');
+        return null;
+      }
+    }
+
+    double? parseToDouble(dynamic value, String fieldName) {
+      try {
+        if (value == null) return null;
+        if (value is double) return value;
+        if (value is int) return value.toDouble();
+        if (value is String) return double.parse(value);
+        print('⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como double');
+        return null;
+      } catch (e) {
+        print('❌ Erro ao parsear $fieldName = $value (${value.runtimeType}): $e');
+        return null;
+      }
+    }
+
     return SeriesConfigDto(
       label:
           json[ApiFieldNames.label]?.toString() ??
           json[ApiFieldNames.tag]?.toString(),
-      reps: (json[ApiFieldNames.reps] as num?)?.toInt(),
-      weight: (json[ApiFieldNames.weight] as num?)?.toDouble(),
-      rir: (json[ApiFieldNames.rir] as num?)?.toInt(),
+      reps: parseToInt(json[ApiFieldNames.reps], 'reps'),
+      weight: parseToDouble(json[ApiFieldNames.weight], 'weight'),
+      rir: parseToInt(json[ApiFieldNames.rir], 'rir'),
       restTime:
-          (json[ApiFieldNames.restTime] as num?)?.toInt() ??
-          (json[ApiFieldNames.rest] as num?)?.toInt(),
+          parseToInt(json[ApiFieldNames.restTime], 'restTime') ??
+          parseToInt(json[ApiFieldNames.rest], 'rest'),
       notes: json[ApiFieldNames.notes]?.toString(),
     );
   }

@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../core/routes/app_router.dart';
 import '../auth/auth.dart';
 import '../auth/utils/logout_utils.dart';
+import '../routines/domain/entities/routine.dart';
 import '../workout_day/workout_day.dart';
+import 'components/organisms/session_picker_sheet.dart';
 import 'components/templates/home_template.dart';
 import 'state/home_provider.dart';
 import 'state/workout_calendar_provider.dart';
@@ -128,20 +130,38 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     }
   }
 
-  void _navigateToWorkout(BuildContext context, WidgetRef ref) {
+  void _navigateToWorkout(BuildContext context, WidgetRef ref) async {
     final homeState = ref.read(homeProvider);
-    if (homeState.todaysRoutine != null && homeState.todaysSession != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => WorkoutDayScreen(
-            routineId: homeState.todaysRoutine!.id,
-            sessionId: homeState.todaysSession!.id,
-            subtitle:
-                '${homeState.todaysSession!.name} - ${homeState.todaysRoutine!.name}',
-          ),
-        ),
+    final routine = homeState.todaysRoutine;
+    
+    if (routine == null) return;
+    
+    // If routine has multiple sessions, let user pick which one to do
+    Session? selectedSession = homeState.todaysSession;
+    if (routine.sessions.length > 1) {
+      selectedSession = await SessionPickerSheet.show(
+        context,
+        sessions: routine.sessions,
+        currentSession: homeState.todaysSession,
+        onSelectSession: (session) {
+          ref.read(homeProvider.notifier).selectSession(session);
+        },
       );
+      if (selectedSession == null || !context.mounted) return;
     }
+    
+    if (selectedSession == null) return;
+    
+    if (!context.mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => WorkoutDayScreen(
+          routineId: routine.id,
+          sessionId: selectedSession!.id,
+          subtitle: '${selectedSession!.name} - ${routine.name}',
+        ),
+      ),
+    );
   }
 
   void _changeWorkout(BuildContext context) {

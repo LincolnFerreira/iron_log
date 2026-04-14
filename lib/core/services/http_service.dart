@@ -41,9 +41,9 @@ class HttpService {
   void _setupConfiguration() {
     _dio.options.baseUrl = ApiConfig.baseUrl;
     _dio.options.headers.addAll(ApiConfig.defaultHeaders);
-    _dio.options.connectTimeout = const Duration(seconds: 10);
-    _dio.options.receiveTimeout = const Duration(seconds: 10);
-    _dio.options.sendTimeout = const Duration(seconds: 10);
+    _dio.options.connectTimeout = const Duration(seconds: 20);
+    _dio.options.receiveTimeout = const Duration(seconds: 20);
+    _dio.options.sendTimeout = const Duration(seconds: 20);
   }
 
   /// Adiciona interceptors

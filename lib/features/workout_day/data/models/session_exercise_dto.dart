@@ -139,6 +139,7 @@ class SessionExerciseDto {
       weight: weight > 0 ? weight.toString() : '0',
       rir: firstSeries?.rir ?? 0,
       restTime: firstSeries?.restTime ?? 0,
+      order: order,
       entries: entries,
     );
   }

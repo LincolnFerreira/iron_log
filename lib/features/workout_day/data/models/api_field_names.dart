@@ -5,6 +5,8 @@ abstract class ApiFieldNames {
   static const String exerciseId = 'exerciseId';
   static const String sessionId = 'sessionId';
   static const String exercise = 'exercise';
+  static const String sessionExercise = 'sessionExercise';
+  static const String sessionExerciseId = 'sessionExerciseId';
   static const String config = 'config';
   static const String order = 'order';
   static const String isActive = 'isActive';
@@ -33,6 +35,7 @@ abstract class ApiFieldNames {
 
   // SerieLog fields (executed workout data)
   static const String setIndex = 'setIndex';
+  static const String exerciseOrder = 'exerciseOrder';
   static const String weightUnit = 'weightUnit';
   static const String rirNote = 'rirNote';
   static const String cadence = 'cadence';

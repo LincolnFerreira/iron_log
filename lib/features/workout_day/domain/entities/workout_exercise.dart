@@ -17,6 +17,7 @@ class WorkoutExercise {
   final int rir;
   final int restTime;
   final WeightUnit weightUnit;
+  final int? order;
 
   /// Per-series data as typed by the user. When non-empty, this is the
   /// source of truth for the API payload. [reps] and [weight] are used
@@ -38,6 +39,7 @@ class WorkoutExercise {
     required this.rir,
     required this.restTime,
     this.weightUnit = WeightUnit.kg,
+    this.order,
     this.entries = const [],
     this.notes,
   });
@@ -55,6 +57,7 @@ class WorkoutExercise {
       rir: json['rir'] ?? 2,
       restTime: json['restTime'] ?? 120,
       weightUnit: WeightUnit.fromString(json['weightUnit']?.toString() ?? 'kg'),
+      order: (json['order'] as num?)?.toInt(),
       notes: json['notes']?.toString(),
     );
   }
@@ -72,6 +75,7 @@ class WorkoutExercise {
       'rir': rir,
       'restTime': restTime,
       'weightUnit': weightUnit.label,
+      if (order != null) 'order': order,
       if (notes != null) 'notes': notes,
     };
   }
@@ -122,6 +126,7 @@ class WorkoutExercise {
     int? rir,
     int? restTime,
     WeightUnit? weightUnit,
+    int? order,
     List<SeriesEntry>? entries,
     Object? notes = _notSet,
   }) {
@@ -137,6 +142,7 @@ class WorkoutExercise {
       rir: rir ?? this.rir,
       restTime: restTime ?? this.restTime,
       weightUnit: weightUnit ?? this.weightUnit,
+      order: order ?? this.order,
       entries: entries ?? this.entries,
       notes: notes == _notSet ? this.notes : notes as String?,
     );

@@ -70,6 +70,13 @@ class WorkoutDayExercisesNotifier
             )
             .toList();
 
+        // Ordena exercícios por campo "order" para garantir exibição correta
+        exercises.sort((a, b) {
+          final aOrder = a.order ?? 999;
+          final bOrder = b.order ?? 999;
+          return aOrder.compareTo(bOrder);
+        });
+
         state = AsyncValue.data(exercises);
 
         if (kDebugMode) {

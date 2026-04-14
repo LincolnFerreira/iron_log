@@ -45,24 +45,24 @@ class WorkoutEditDto {
 
   /// Convert the flat series list into grouped WorkoutExercise list.
   ///
-  /// Groups by [exerciseId] while preserving order of first appearance.
-  /// Each group becomes one WorkoutExercise with its series as entries.
+  /// Groups by [sessionExerciseId] (one card = one SessionExercise).
+  /// Maintains correct order with exerciseOrder from backend.
   List<WorkoutExercise> toWorkoutExercises() {
     final grouped = <String, List<WorkoutEditSerieLogDto>>{};
     final insertionOrder = <String>[];
 
     for (final s in series) {
-      final exId = s.exerciseId;
-      if (exId.isEmpty) continue;
-      if (!grouped.containsKey(exId)) {
-        grouped[exId] = [];
-        insertionOrder.add(exId);
+      final seId = s.sessionExerciseId;
+      if (seId.isEmpty) continue;
+      if (!grouped.containsKey(seId)) {
+        grouped[seId] = [];
+        insertionOrder.add(seId);
       }
-      grouped[exId]!.add(s);
+      grouped[seId]!.add(s);
     }
 
-    return insertionOrder.map((exId) {
-      final group = grouped[exId]!;
+    return insertionOrder.map((seId) {
+      final group = grouped[seId]!;
       final first = group.first;
 
       final entries = group
@@ -70,7 +70,7 @@ class WorkoutEditDto {
           .entries
           .map(
             (e) => SeriesEntry(
-              index: e.key,
+              index: e.value.setIndex, // Use actual setIndex from backend
               type: _labelToType(e.value.label),
               weight: e.value.weight > 0 ? e.value.weight.toString() : '0',
               reps: e.value.reps > 0 ? e.value.reps.toString() : '0',
@@ -83,7 +83,7 @@ class WorkoutEditDto {
       final reps = first.reps;
 
       return WorkoutExercise(
-        id: exId,
+        id: seId,
         name: first.exerciseName,
         tag: first.exerciseTag,
         muscles: first.exerciseMuscle,
@@ -118,10 +118,13 @@ class WorkoutEditDto {
 /// DTO for a single series log in workout edit
 class WorkoutEditSerieLogDto {
   final String id;
+  final String sessionExerciseId;
   final String exerciseId;
   final String exerciseName;
   final ExerciseTag exerciseTag;
   final String exerciseMuscle;
+  final int setIndex;
+  final int exerciseOrder;
   final String? label;
   final String? tag;
   final double weight;
@@ -134,10 +137,13 @@ class WorkoutEditSerieLogDto {
 
   WorkoutEditSerieLogDto({
     required this.id,
+    required this.sessionExerciseId,
     required this.exerciseId,
     required this.exerciseName,
     required this.exerciseTag,
     required this.exerciseMuscle,
+    required this.setIndex,
+    required this.exerciseOrder,
     required this.label,
     required this.tag,
     required this.weight,
@@ -150,7 +156,8 @@ class WorkoutEditSerieLogDto {
   });
 
   factory WorkoutEditSerieLogDto.fromJson(Map<String, dynamic> json) {
-    final exerciseData = json['exercise'] as Map<String, dynamic>? ?? {};
+    final sessionExerciseData = json['sessionExercise'] as Map<String, dynamic>? ?? {};
+    final exerciseData = sessionExerciseData['exercise'] as Map<String, dynamic>? ?? {};
     final tags = exerciseData['tags'] as List<dynamic>? ?? [];
 
     // Parse primaryMuscle — can be object { name: "Chest" } or string
@@ -169,19 +176,51 @@ class WorkoutEditSerieLogDto {
       exerciseTag = _parseTag(firstTag);
     }
 
+    // Helper function para converter valores numéricos com debug
+    int? parseToInt(dynamic value, String fieldName) {
+      try {
+        if (value == null) return null;
+        if (value is int) return value;
+        if (value is double) return value.toInt();
+        if (value is String) return int.parse(value);
+        print('⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como int');
+        return null;
+      } catch (e) {
+        print('❌ Erro ao parsear $fieldName = $value: $e');
+        return null;
+      }
+    }
+
+    double? parseToDouble(dynamic value, String fieldName) {
+      try {
+        if (value == null) return null;
+        if (value is double) return value;
+        if (value is int) return value.toDouble();
+        if (value is String) return double.parse(value);
+        print('⚠️ Warning: $fieldName = $value (type: ${value.runtimeType}) não pôde ser parseado como double');
+        return null;
+      } catch (e) {
+        print('❌ Erro ao parsear $fieldName = $value (${value.runtimeType}): $e');
+        return null;
+      }
+    }
+
     return WorkoutEditSerieLogDto(
       id: json['id']?.toString() ?? '',
-      exerciseId: json['exerciseId']?.toString() ?? '',
+      sessionExerciseId: json['sessionExerciseId']?.toString() ?? '',
+      exerciseId: sessionExerciseData['exerciseId']?.toString() ?? '',
       exerciseName: exerciseData['name']?.toString() ?? '',
       exerciseTag: exerciseTag,
       exerciseMuscle: muscleName,
+      setIndex: parseToInt(json['setIndex'], 'setIndex') ?? 1,
+      exerciseOrder: parseToInt(json['exerciseOrder'], 'exerciseOrder') ?? 1,
       label: json['label']?.toString(),
       tag: json['tag']?.toString(),
-      weight: (json['weight'] as num?)?.toDouble() ?? 0,
-      reps: (json['reps'] as num?)?.toInt() ?? 0,
+      weight: parseToDouble(json['weight'], 'weight') ?? 0,
+      reps: parseToInt(json['reps'], 'reps') ?? 0,
       weightUnit: json['weightUnit']?.toString(),
-      rir: (json['rir'] as num?)?.toInt(),
-      restTime: (json['restTime'] as num?)?.toInt(),
+      rir: parseToInt(json['rir'], 'rir'),
+      restTime: parseToInt(json['restTime'], 'restTime'),
       notes: json['notes']?.toString(),
       exerciseNotes: json['exerciseNotes']?.toString(),
     );
