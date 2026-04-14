@@ -133,9 +133,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   void _navigateToWorkout(BuildContext context, WidgetRef ref) async {
     final homeState = ref.read(homeProvider);
     final routine = homeState.todaysRoutine;
-    
+
     if (routine == null) return;
-    
+
     // If routine has multiple sessions, let user pick which one to do
     Session? selectedSession = homeState.todaysSession;
     if (routine.sessions.length > 1) {
@@ -149,9 +149,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       );
       if (selectedSession == null || !context.mounted) return;
     }
-    
+
     if (selectedSession == null) return;
-    
+
     if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
