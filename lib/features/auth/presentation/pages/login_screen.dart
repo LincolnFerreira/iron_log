@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/services/http_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:iron_log/features/auth/presentation/components/atoms/app_icon_widget.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/auth_buttons_section.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/login_footer.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/title_section.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   bool _isLoading = false;
 
   @override
@@ -115,7 +117,44 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      await FirebaseAuth.instance.signInWithProvider(GoogleAuthProvider());
+      // Reutiliza o fluxo existente com GoogleAuthProvider e solicita
+      // seleção de conta via `prompt: select_account`.
+      final provider = GoogleAuthProvider();
+      provider.setCustomParameters({'prompt': 'select_account'});
+      await FirebaseAuth.instance.signInWithProvider(provider);
+
+      // Após login bem-sucedido, sincroniza/cria o usuário no backend
+      final http = ref.read(httpServiceProvider);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        try {
+          await http.post(
+            '/user',
+            data: {
+              'firebaseId': user.uid,
+              'email': user.email ?? '',
+              'name': user.displayName,
+            },
+          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Usuário sincronizado com o servidor'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Erro ao sincronizar usuário: ${e.toString()}'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,13 +172,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _createAccount() {
-    // TODO: Implementar criação de conta
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Criação de conta em breve!'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    // Reutiliza o fluxo de login com Google para criar conta
+    _signInWithGoogle();
   }
 
   void _forgotPassword() {

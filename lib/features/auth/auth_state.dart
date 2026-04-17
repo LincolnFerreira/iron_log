@@ -70,7 +70,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
+    // Atualiza estado localmente de forma otimista para evitar que o
+    // router leia um estado ainda inconsistente enquanto o signOut
+    // do Firebase está sendo processado.
+    state = state.copyWith(user: null, isLoading: false);
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      // Se ocorrer erro, rethrow para ser tratado pelo chamador
+      rethrow;
+    }
   }
 
   Future<void> loadOnboardingStatus() async {

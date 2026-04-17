@@ -10,13 +10,15 @@ import '../../domain/entities/exercise_tag.dart';
 import '../../domain/entities/exercise_summary.dart';
 import '../../domain/entities/serie_log.dart';
 import '../../domain/entities/workout_exercise.dart';
-import '../../domain/entities/workout_summary.dart';
 import '../components/molecules/workout_day_header.dart';
 import '../components/organisms/add_exercise_bottom_sheet.dart';
 import '../components/organisms/reorderable_exercises_list.dart';
 import '../organisms/footer_actions.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/workout_timer_provider.dart';
+import '../controllers/workout_controller.dart';
+import '../../domain/workout_mode.dart';
+import '../../domain/enums/workout_screen_mode.dart';
 import './workout_summary_screen.dart';
 
 class WorkoutDayScreen extends ConsumerStatefulWidget {
@@ -41,12 +43,58 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
     this.workoutId,
   });
 
+  const WorkoutDayScreen.create({
+    Key? key,
+    String? routineId,
+    String? sessionId,
+    String? subtitle,
+  }) : this(
+         key: key,
+         routineId: routineId,
+         sessionId: sessionId,
+         subtitle: subtitle,
+         manualDate: null,
+         workoutId: null,
+       );
+
+  const WorkoutDayScreen.manual({
+    Key? key,
+    required DateTime manualDate,
+    String? routineId,
+    String? sessionId,
+    String? subtitle,
+  }) : this(
+         key: key,
+         routineId: routineId,
+         sessionId: sessionId,
+         subtitle: subtitle,
+         manualDate: manualDate,
+         workoutId: null,
+       );
+
+  const WorkoutDayScreen.edit({
+    Key? key,
+    required String workoutId,
+    DateTime? manualDate,
+    String? routineId,
+    String? sessionId,
+    String? subtitle,
+  }) : this(
+         key: key,
+         routineId: routineId,
+         sessionId: sessionId,
+         subtitle: subtitle,
+         manualDate: manualDate,
+         workoutId: workoutId,
+       );
+
   @override
   ConsumerState<WorkoutDayScreen> createState() => _WorkoutDayScreenState();
 }
 
 class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   bool _workoutStarted = false;
+  bool _isStartingWorkout = false;
 
   /// Data mutável do treino — inicializada com widget.manualDate e pode ser
   /// alterada pelo usuário via date picker no header.
@@ -58,6 +106,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     _selectedDate = widget.manualDate;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+
+      // Determina e define o modo de operação baseado nos parâmetros do widget
+      final mode = _determineMode();
+      ref.read(workoutScreenModeProvider.notifier).state = mode;
+
       if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
         // Modo edição: carrega treino existente pelo ID do WorkoutSession.
         _loadExistingWorkout();
@@ -86,20 +139,34 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     super.dispose();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Auto-reload quando retornar para a tela (ex: de "organize suas sessões")
-    // Só aplica no modo de sessão normal — no modo edição não recarregamos.
-    if (widget.workoutId == null &&
-        widget.sessionId != null &&
-        widget.sessionId!.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _reloadSessionIfNeeded();
-      });
+  /// Determina o modo de operação baseado nos parâmetros do widget.
+  /// - editing: se workoutId está definido (editando treino passado)
+  /// - execution: se manualDate está definido (executando treino em data específica)
+  /// - template: caso contrário (editando/visualizando template de sessão)
+  WorkoutScreenMode _determineMode() {
+    if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
+      return WorkoutScreenMode.editing;
+    } else if (widget.manualDate != null) {
+      return WorkoutScreenMode.execution;
+    } else {
+      return WorkoutScreenMode.template;
     }
   }
+
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  //   // Auto-reload quando retornar para a tela (ex: de "organize suas sessões")
+  //   // Só aplica no modo de sessão normal — no modo edição não recarregamos.
+  //   if (widget.workoutId == null &&
+  //       widget.sessionId != null &&
+  //       widget.sessionId!.isNotEmpty) {
+  //     WidgetsBinding.instance.addPostFrameCallback((_) {
+  //       if (!mounted) return;
+  //       _reloadSessionIfNeeded();
+  //     });
+  //   }
+  // }
 
   Future<void> _loadSession() async {
     if (widget.sessionId == null) return;
@@ -326,70 +393,95 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 volumeKg: _calculateVolume(exercises),
                 completionPercent: _calculateCompletion(exercises),
                 workoutStarted: _workoutStarted,
+                isLoading:
+                    ref.watch(workoutControllerProvider).isLoading ||
+                    _isStartingWorkout,
                 onStartWorkout: _handleStartWorkout,
                 onFinishWorkout: () async {
-                  // ── MODO EDIÇÃO: PATCH no treino existente ─────────────
-                  if (widget.workoutId != null &&
-                      widget.workoutId!.isNotEmpty) {
-                    try {
-                      // Always read current provider state at finalize time,
-                      // never use the stale closure-captured exercisesAsync.
-                      final currentExercises =
-                          ref.read(workoutDayExercisesProvider).value ?? [];
-                      debugPrint(
-                        '[FINALIZE-EDIT] entries: ${currentExercises.map((ex) => "${ex.name}: ${ex.entries.map((s) => "s${s.index}(w=${s.weight} r=${s.reps})").join(",")}").join(" | ")}',
+                  final exercises =
+                      ref.read(workoutDayExercisesProvider).value ?? [];
+                  final timerStartTime = ref.read(workoutTimerProvider);
+
+                  final mode =
+                      (widget.workoutId != null && widget.workoutId!.isNotEmpty)
+                      ? WorkoutMode.edit
+                      : (widget.manualDate != null
+                            ? WorkoutMode.manual
+                            : WorkoutMode.create);
+
+                  final controller = ref.read(
+                    workoutControllerProvider.notifier,
+                  );
+
+                  var result = await controller.finishWorkout(
+                    mode: mode,
+                    exercises: exercises,
+                    routineId: widget.routineId,
+                    sessionId: widget.sessionId,
+                    workoutId: widget.workoutId,
+                    selectedDate: _selectedDate,
+                    timerStartTime: timerStartTime,
+                  );
+
+                  if (result.needDuration) {
+                    final picked = await _pickDuration(context);
+                    if (!mounted) return;
+                    if (picked == null) {
+                      if (mounted) setState(() => _workoutStarted = false);
+                      return;
+                    }
+                    result = await controller.finishWorkout(
+                      mode: mode,
+                      exercises: exercises,
+                      routineId: widget.routineId,
+                      sessionId: widget.sessionId,
+                      workoutId: widget.workoutId,
+                      selectedDate: _selectedDate,
+                      timerStartTime: timerStartTime,
+                      manualDuration: picked,
+                    );
+                  }
+
+                  if (result.needSessionSelection) {
+                    final homeState = ref.read(homeProvider);
+                    final routine = homeState.todaysRoutine;
+                    if (routine != null && routine.sessions.isNotEmpty) {
+                      if (!mounted) return;
+                      Session? selectedSession = await SessionPickerSheet.show(
+                        context,
+                        sessions: routine.sessions,
+                        onSelectSession: (_) {},
                       );
-                      final timerStartTime = ref.read(workoutTimerProvider);
-                      final now = DateTime.now();
-
-                      DateTime startedAt;
-                      DateTime endedAt;
-
-                      if (_selectedDate != null) {
-                        final existingDur = ref.read(
-                          workoutOriginalDurationProvider,
+                      if (selectedSession == null || !mounted) {
+                        if (mounted) setState(() => _workoutStarted = false);
+                        return;
+                      }
+                      result = await controller.finishWorkout(
+                        mode: mode,
+                        exercises: exercises,
+                        routineId: widget.routineId,
+                        sessionId: selectedSession.id,
+                        workoutId: widget.workoutId,
+                        selectedDate: _selectedDate,
+                        timerStartTime: timerStartTime,
+                      );
+                    } else {
+                      if (mounted) {
+                        setState(() => _workoutStarted = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Nenhuma sessão disponível para selecionar.',
+                            ),
+                          ),
                         );
-                        Duration? picked;
-                        if (existingDur != null) {
-                          picked = existingDur;
-                        } else {
-                          picked = await _pickDuration(context);
-                          if (!mounted) return;
-                          if (picked == null) return;
-                        }
-                        startedAt = _selectedDate!;
-                        endedAt = startedAt.add(picked);
-                      } else {
-                        startedAt = timerStartTime ?? now;
-                        endedAt = now;
                       }
+                      return;
+                    }
+                  }
 
-                      // If no sessionId in edit mode, ask user to select one
-                      String? finalSessionId = widget.sessionId;
-                      if (finalSessionId == null || finalSessionId.isEmpty) {
-                        final homeState = ref.read(homeProvider);
-                        final routine = homeState.todaysRoutine;
-                        if (routine != null && routine.sessions.isNotEmpty) {
-                          if (!mounted) return;
-                          Session? selectedSession =
-                              await SessionPickerSheet.show(
-                                context,
-                                sessions: routine.sessions,
-                                onSelectSession: (_) {},
-                              );
-                          if (selectedSession == null || !mounted) return;
-                          finalSessionId = selectedSession.id;
-                        }
-                      }
-
-                      await WorkoutLogService().updateWorkout(
-                        workoutId: widget.workoutId!,
-                        exercises: currentExercises,
-                        startedAt: startedAt,
-                        endedAt: endedAt,
-                        sessionId: finalSessionId,
-                      );
-
+                  if (result.success && result.summary != null) {
+                    if (mode == WorkoutMode.edit) {
                       if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -397,121 +489,24 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         ),
                       );
                       Navigator.of(context).pop();
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erro ao atualizar treino: $e'),
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.error,
-                          ),
-                        );
-                      }
-                    }
-                    return;
-                  }
-
-                  // ── MODO NORMAL: POST novo treino ──────────────────────
-                  if (widget.sessionId == null || widget.sessionId!.isEmpty) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Nenhuma sessão associada para finalizar.',
-                          ),
-                        ),
-                      );
-                    }
-                    return;
-                  }
-
-                  try {
-                    await ref
-                        .read(workoutDayExercisesProvider.notifier)
-                        .saveSessionExercises(widget.sessionId!);
-
-                    if (!mounted) return;
-
-                    final currentExercises =
-                        ref.read(workoutDayExercisesProvider).value ?? [];
-                    debugPrint(
-                      '[FINALIZE-POST] entries: ${currentExercises.map((ex) => "${ex.name}: ${ex.entries.map((s) => "s${s.index}(w=${s.weight} r=${s.reps})").join(",")}").join(" | ")}',
-                    );
-                    final timerStartTime = ref.read(workoutTimerProvider);
-                    final now = DateTime.now();
-
-                    // Para treino manual, pede duração ao usuário
-                    Duration duration;
-                    DateTime startedAt;
-                    DateTime endedAt;
-
-                    if (_selectedDate != null) {
-                      final existingDur = ref.read(
-                        workoutOriginalDurationProvider,
-                      );
-                      if (existingDur != null) {
-                        duration = existingDur;
-                      } else {
-                        final picked = await _pickDuration(context);
-                        if (!mounted) return;
-                        if (picked == null) return; // usuário cancelou
-                        duration = picked;
-                      }
-                      startedAt = _selectedDate!;
-                      endedAt = startedAt.add(duration);
                     } else {
-                      startedAt = timerStartTime ?? now;
-                      endedAt = now;
-                      duration = endedAt.difference(startedAt);
-                    }
-
-                    // Persiste no backend
-                    if (widget.routineId != null &&
-                        widget.routineId!.isNotEmpty) {
-                      try {
-                        await WorkoutLogService().saveWorkout(
-                          exercises: currentExercises,
-                          routineId: widget.routineId!,
-                          startedAt: startedAt,
-                          endedAt: endedAt,
-                          isManual: _selectedDate != null,
-                          sessionId: widget.sessionId,
-                        );
-                      } catch (e) {
-                        if (kDebugMode) {
-                          print('Aviso: falha ao salvar treino no backend: $e');
-                        }
-                        // Não bloqueia a navegação para o resumo
-                      }
-                    }
-
-                    if (!mounted) return;
-
-                    final workoutSummary = WorkoutSummary(
-                      sessionName: widget.subtitle ?? 'Treino',
-                      date: _selectedDate ?? now,
-                      duration: duration,
-                      exercises: _buildExerciseSummaries(currentExercises),
-                      totalSeries: _calculateSeriesDone(currentExercises),
-                      completedSeries: _calculateSeriesDone(currentExercises),
-                      totalVolume: _calculateVolume(currentExercises),
-                      isFirstWorkout: false,
-                      previousWorkouts: [],
-                    );
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => WorkoutSummaryScreen(
-                          workoutSummary: workoutSummary,
+                      if (!mounted) return;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => WorkoutSummaryScreen(
+                            workoutSummary: result.summary!,
+                          ),
                         ),
-                      ),
-                    );
-                  } catch (e) {
+                      );
+                    }
+                  } else {
                     if (mounted) {
+                      setState(() => _workoutStarted = false);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Erro ao finalizar treino: $e'),
+                          content: Text(
+                            'Erro ao finalizar treino: ${result.error ?? 'unknown'}',
+                          ),
                           backgroundColor: Theme.of(context).colorScheme.error,
                         ),
                       );
@@ -563,13 +558,60 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     );
   }
 
-  void _handleStartWorkout() {
-    setState(() {
-      _workoutStarted = true;
-    });
-    // Treino manual não usa o timer em tempo real
-    if (_selectedDate == null) {
-      ref.read(workoutTimerProvider.notifier).startTimer();
+  Future<void> _handleStartWorkout() async {
+    try {
+      setState(() {
+        _isStartingWorkout = true;
+        _workoutStarted = true;
+      });
+
+      // Se em modo execution, cria a WorkoutSession no backend
+      if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
+        if (kDebugMode) {
+          print('🚀 Iniciando execução de treino em modo execution');
+        }
+
+        await ref
+            .read(workoutDayExercisesProvider.notifier)
+            .startExecution(
+              routineId: widget.routineId,
+              sessionId: widget.sessionId,
+              isManual: widget.manualDate != null,
+            );
+
+        if (kDebugMode) {
+          print('✅ WorkoutSession criada com sucesso');
+        }
+      }
+
+      // Treino manual não usa o timer em tempo real
+      if (_selectedDate == null) {
+        ref.read(workoutControllerProvider.notifier).startWorkout();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Erro ao iniciar treino: $e');
+      }
+
+      setState(() {
+        _isStartingWorkout = false;
+        _workoutStarted = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao iniciar treino: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isStartingWorkout = false;
+        });
+      }
     }
   }
 
@@ -678,6 +720,14 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   }
 
   void _discardWorkout() async {
+    try {
+      await ref.read(workoutControllerProvider.notifier).discardWorkout();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Aviso: falha ao descartar treino: $e');
+      }
+    }
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -685,7 +735,6 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
           backgroundColor: Colors.red,
         ),
       );
-      // TODO: Implementar navegação de volta ou limpeza do estado
       Navigator.pop(context);
     }
   }

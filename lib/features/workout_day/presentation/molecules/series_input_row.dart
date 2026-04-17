@@ -3,9 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
 
-extension WeightUnitDisplay on WeightUnit {
-  String get displayLabel => label;
-}
 
 /// A single input row in the SeriesTable for editing series during workout.
 /// Manages its own editing state with TextControllers for weight and reps entry.
@@ -58,12 +55,6 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
   }
 
   void _onActivateWeight() {
-    final cleaned = _cleanValue(widget.entry.weight);
-    _weightController.text = cleaned;
-    _weightController.selection = TextSelection(
-      baseOffset: 0,
-      extentOffset: _weightController.text.length,
-    );
     setState(() {
       _editingWeight = true;
       _editingReps = false;
@@ -116,7 +107,6 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
 
   /// Extract a number (integer or decimal) from a value string.
   String _cleanValue(String value) {
-    print('[WEIGHT TRACE] _cleanValue START: input="$value"');
     // Extract only numeric part (handles decimals like 1.5)
     final digits = RegExp(r'\d+\.?\d*').firstMatch(value);
     final result = digits?.group(0) ?? '0';
@@ -133,9 +123,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     }
 
     // For placa unit, if value is integer (e.g., 1.0, 20.0), show without decimal
-    final isPlaca =
-        widget.weightUnit == WeightUnit.placa ||
-        (widget.weightUnit is String && widget.weightUnit == 'placa');
+    final isPlaca = widget.weightUnit == WeightUnit.placa;
     if (isPlaca) {
       try {
         final parsed = double.parse(clean);
@@ -245,11 +233,6 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                   )
                 : GestureDetector(
                     onTap: () {
-                      _weightController.text = _cleanValue(widget.entry.weight);
-                      _weightController.selection = TextSelection(
-                        baseOffset: 0,
-                        extentOffset: _weightController.text.length,
-                      );
                       setState(() {
                         _editingWeight = true;
                         _editingReps = false;
@@ -272,7 +255,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                           ),
                           const SizedBox(width: 3),
                           Text(
-                            widget.weightUnit.displayLabel,
+                            widget.weightUnit.label,
                             style: TextStyle(
                               color: Colors.grey.shade400,
                               fontSize: 11,
@@ -311,11 +294,6 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                   )
                 : GestureDetector(
                     onTap: () {
-                      _repController.text = _cleanValue(widget.entry.reps);
-                      _repController.selection = TextSelection(
-                        baseOffset: 0,
-                        extentOffset: _repController.text.length,
-                      );
                       setState(() {
                         _editingReps = true;
                         _editingWeight = false;

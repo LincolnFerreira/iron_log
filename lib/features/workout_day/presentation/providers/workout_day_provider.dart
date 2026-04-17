@@ -5,10 +5,23 @@ import '../../../../core/api/api_endpoints.dart';
 import '../../data/models/session_exercise_dto.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../data/models/workout_edit_dto.dart';
+import '../../data/services/workout_log_service.dart';
+import '../../domain/enums/workout_screen_mode.dart';
 
 // Provider para armazenar a duração original de um treino em edição
 // Usado para preservar a duração ao mudar a data do treino
 final workoutOriginalDurationProvider = StateProvider<Duration?>((ref) => null);
+
+// Provider para rastrear o modo atual da tela de treino
+// Diferencia entre template (editando rotina), execution (fazendo treino) e editing (editando log)
+final workoutScreenModeProvider = StateProvider<WorkoutScreenMode?>(
+  (ref) => null,
+);
+
+// Provider para rastrear o ID da sessão de treino ativa durante execution/editing
+// Criado ao iniciar treino (execution) ou carregado ao editar (editing)
+// Nulo em modo template
+final workoutSessionIdProvider = StateProvider<String?>((ref) => null);
 
 // Provider para gerenciar os exercícios do workout day
 final workoutDayExercisesProvider =
@@ -167,8 +180,17 @@ class WorkoutDayExercisesNotifier
     }
   }
 
-  // Salva os exercícios atualizados da sessão
+  // Salva os exercícios atualizados da sessão (apenas em modo template)
   Future<void> saveSessionExercises(String sessionId) async {
+    final mode = _ref?.read(workoutScreenModeProvider);
+    if (mode != WorkoutScreenMode.template) {
+      throw Exception(
+        'saveSessionExercises deve ser chamado apenas em modo template. '
+        'Modo atual: $mode. '
+        'Use updateExistingWorkout() para editar treinos passados.',
+      );
+    }
+
     final currentState = state;
     if (currentState is! AsyncData<List<WorkoutExercise>>) {
       throw Exception('Não há exercícios para salvar');
@@ -187,7 +209,7 @@ class WorkoutDayExercisesNotifier
 
       // Constrói payload esperado pelo backend: { exercises: [{ exerciseId, order, config?, customName? }, ...] }
       final currentExercises = currentState.value;
-      final payload = {
+      final Map<String, dynamic> payload = {
         'exercises': currentExercises.asMap().entries.map((entry) {
           final index = entry.key;
           final ex = entry.value;
@@ -258,6 +280,14 @@ class WorkoutDayExercisesNotifier
           print('   series cnt : ${dto.series.length}');
         }
         //TODO: imagino que isso poderia estar sendo feito na propria entity se não estiver errado diante de um clean architecture
+        // Armazena o ID da WorkoutSession para referência durante edição
+        if (_ref != null) {
+          _ref.read(workoutSessionIdProvider.notifier).state = dto.id;
+          if (kDebugMode) {
+            print('📌 WorkoutSession ID armazenado: ${dto.id}');
+          }
+        }
+
         // Calcula e armazena a duração original do treino
         if (dto.endedAt != null && _ref != null) {
           try {
@@ -298,24 +328,211 @@ class WorkoutDayExercisesNotifier
     }
   }
 
-  // Atualiza um exercício específico
+  /// Inicia a execução de um treino criando uma WorkoutSession no backend.
+  ///
+  /// Deve ser chamado apenas em modo execution (após o usuário clicar em "Iniciar Treino").
+  /// Cria a sessão com os exercícios carregados, armazenando o workoutSessionId
+  /// para permitir recovery se o app crashear.
+  ///
+  /// Parâmetros:
+  /// - routineId: ID da rotina associada (opcional)
+  /// - sessionId: ID da sessão da rotina (opcional)
+  /// - isManual: true se é um treino retroativo (manual date)
+  Future<void> startExecution({
+    String? routineId,
+    String? sessionId,
+    bool isManual = false,
+  }) async {
+    final mode = _ref?.read(workoutScreenModeProvider);
+    if (mode != WorkoutScreenMode.execution) {
+      throw Exception(
+        'startExecution deve ser chamado apenas em modo execution. '
+        'Modo atual: $mode',
+      );
+    }
+
+    try {
+      if (kDebugMode) {
+        print('🚀 Iniciando execução de treino...');
+      }
+
+      final currentState = state;
+      if (currentState is! AsyncData<List<WorkoutExercise>>) {
+        throw Exception('Nenhum exercício carregado para iniciar execução');
+      }
+
+      // Importa o serviço de log
+      final WorkoutLogService workoutLogService = WorkoutLogService();
+
+      // Cria a WorkoutSession no backend com os exercícios e timestamp inicial
+      final workoutSessionId = await workoutLogService.saveWorkout(
+        exercises: currentState.value,
+        routineId: routineId,
+        startedAt: DateTime.now(),
+        endedAt: DateTime.now(), // Será atualizado no finish
+        isManual: isManual,
+        sessionId: sessionId,
+      );
+
+      // Armazena o ID da sessão criada para referência durante execução
+      if (_ref != null) {
+        _ref.read(workoutSessionIdProvider.notifier).state = workoutSessionId;
+      }
+
+      if (kDebugMode) {
+        print('✅ WorkoutSession criada: $workoutSessionId');
+      }
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print('❌ Erro ao iniciar execução: $e');
+      }
+      throw Exception('Erro ao iniciar execução de treino: $e');
+    }
+  }
+
+  void updateExerciseExecution(
+    String exerciseId,
+    WorkoutExercise updatedExercise,
+  ) {
+    final mode = _ref?.read(workoutScreenModeProvider);
+    if (mode != WorkoutScreenMode.execution) {
+      throw Exception(
+        'updateExerciseExecution deve ser chamado apenas em modo execution. '
+        'Modo atual: $mode',
+      );
+    }
+    _updateExerciseInMemory(exerciseId, updatedExercise);
+  }
+
+  // Atualiza um exercício durante edição de template/sessão
+  void updateExerciseTemplate(
+    String exerciseId,
+    WorkoutExercise updatedExercise,
+  ) {
+    final mode = _ref?.read(workoutScreenModeProvider);
+    if (mode != WorkoutScreenMode.template) {
+      throw Exception(
+        'updateExerciseTemplate deve ser chamado apenas em modo template. '
+        'Modo atual: $mode',
+      );
+    }
+    _updateExerciseInMemory(exerciseId, updatedExercise);
+  }
+
+  // Atualiza um exercício durante edição de treino passado (log)
+  void updateExerciseLog(String exerciseId, WorkoutExercise updatedExercise) {
+    final mode = _ref?.read(workoutScreenModeProvider);
+    if (mode != WorkoutScreenMode.editing) {
+      throw Exception(
+        'updateExerciseLog deve ser chamado apenas em modo editing. '
+        'Modo atual: $mode',
+      );
+    }
+    _updateExerciseInMemory(exerciseId, updatedExercise);
+  }
+
+  // Método legado mantido para compatibilidade - depreciado em favor dos métodos específicos
+  @Deprecated(
+    'Use updateExerciseExecution, updateExerciseTemplate ou updateExerciseLog em vez disso. '
+    'Este método será removido em versão futura.',
+  )
   void updateExercise(String exerciseId, WorkoutExercise updatedExercise) {
     debugPrint(
-      '[Provider.updateExercise] exerciseId=$exerciseId, entries: ${updatedExercise.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+      '[Provider.updateExercise] ⚠️ DEPRECATED: Use método específico (execution/template/log)',
+    );
+    _updateExerciseInMemory(exerciseId, updatedExercise);
+  }
+
+  // Helper privado: atualiza exercício em memória sem validação de modo
+  void _updateExerciseInMemory(
+    String exerciseId,
+    WorkoutExercise updatedExercise,
+  ) {
+    debugPrint(
+      '[Provider._updateExerciseInMemory] exerciseId=$exerciseId, entries: ${updatedExercise.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
     );
     final currentState = state;
     if (currentState is AsyncData<List<WorkoutExercise>>) {
       final currentExercises = currentState.value;
       debugPrint(
-        '[Provider.updateExercise] BEFORE: ${currentExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+        '[Provider._updateExerciseInMemory] BEFORE: ${currentExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
       );
       final updatedExercises = currentExercises.map((exercise) {
         return exercise.id == exerciseId ? updatedExercise : exercise;
       }).toList();
       debugPrint(
-        '[Provider.updateExercise] AFTER: ${updatedExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+        '[Provider._updateExerciseInMemory] AFTER: ${updatedExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
       );
       state = AsyncValue.data(updatedExercises);
+    }
+  }
+
+  /// Atualiza um treino existente (editando log histórico).
+  ///
+  /// Deve ser chamado apenas em modo editing após o usuário editar um treino passado.
+  /// Converte WorkoutExercise.entries para o formato esperado pelo backend e envia PATCH.
+  ///
+  /// Parâmetros:
+  /// - workoutSessionId: ID da WorkoutSession a ser atualizada
+  /// - exercises: lista de exercícios com modificações
+  /// - endedAt: nova data/hora de término (opcional, se mudou a duração)
+  Future<void> updateExistingWorkout({
+    required String workoutSessionId,
+    required List<WorkoutExercise> exercises,
+    DateTime? endedAt,
+  }) async {
+    final mode = _ref?.read(workoutScreenModeProvider);
+    if (mode != WorkoutScreenMode.editing) {
+      throw Exception(
+        'updateExistingWorkout deve ser chamado apenas em modo editing. '
+        'Modo atual: $mode',
+      );
+    }
+
+    try {
+      if (kDebugMode) {
+        print(
+          '📝 Atualizando treino existente: $workoutSessionId com ${exercises.length} exercícios',
+        );
+      }
+
+      // Importa o serviço para converter exercícios
+      final WorkoutLogService workoutLogService = WorkoutLogService();
+
+      // Constrói payload similiar a saveWorkout mas como PATCH
+      final Map<String, dynamic> payload = {
+        'exercises': exercises
+            .asMap()
+            .entries
+            .map(
+              (e) => workoutLogService.exerciseToDtoForTesting(
+                e.value,
+                order: e.key + 1,
+              ),
+            )
+            .toList(),
+      };
+
+      if (endedAt != null) {
+        payload['endedAt'] = endedAt.toIso8601String();
+      }
+
+      // Envia PATCH para atualizar a WorkoutSession
+      final url = ApiEndpoints.workoutById(workoutSessionId);
+      final response = await _httpService.patch(url, data: payload);
+
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('✅ Treino atualizado com sucesso');
+        }
+      } else {
+        throw Exception('Erro ao atualizar treino: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Erro ao atualizar treino existente: $e');
+      }
+      throw Exception('Erro ao atualizar treino: $e');
     }
   }
 }

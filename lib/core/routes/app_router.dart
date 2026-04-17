@@ -10,8 +10,8 @@ import 'package:iron_log/features/onboarding/presentation/pages/methodology_setu
 import 'package:iron_log/features/onboarding/presentation/pages/frequency_setup_page.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/routines/presentation/pages/routines_page.dart';
-import 'package:iron_log/features/routines/presentation/pages/session_edit_page.dart';
-import 'package:iron_log/features/routines/presentation/pages/session_detail_page.dart';
+import 'package:iron_log/features/routines/presentation/pages/routine_sessions_page.dart';
+import 'package:iron_log/features/routines/presentation/pages/session_editor_page.dart';
 import 'package:iron_log/features/workout_creation/presentation/pages/quick_workout_creation_page.dart';
 import 'package:iron_log/features/settings/presentation/pages/settings_page.dart';
 import 'package:iron_log/features/workout_history/presentation/pages/workout_history_page.dart';
@@ -62,8 +62,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/onboarding';
       }
 
-      // Se já completou onboarding, evita ir para login/onboarding
-      if (onboardingCompleted &&
+      // Se já completou onboarding e está logado, evita ir para login/onboarding
+      if (isLoggedIn &&
+          onboardingCompleted &&
           (atLogin || atOnboarding || atMethodology || atRoot)) {
         return '/home';
       }
@@ -116,7 +117,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           final routine = state.extra as Routine;
           return AppPage(
             key: state.pageKey,
-            child: SessionEditPage(routine: routine),
+            child: RoutineSessionsPage(routine: routine),
           );
         },
       ),
@@ -126,7 +127,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           final routine = state.extra as Routine;
           return AppPage(
             key: state.pageKey,
-            child: SessionDetailPage(routine: routine),
+            child: SessionEditorPage(routine: routine),
           );
         },
       ),
@@ -137,7 +138,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           final sessionId = state.pathParameters['sessionId']!;
           return AppPage(
             key: state.pageKey,
-            child: SessionDetailPage(routine: routine, sessionId: sessionId),
+            child: SessionEditorPage(routine: routine, sessionId: sessionId),
           );
         },
       ),

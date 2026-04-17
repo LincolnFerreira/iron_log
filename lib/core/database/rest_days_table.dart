@@ -6,6 +6,12 @@ class RestDays extends Table {
   DateTimeColumn get date => dateTime()(); // UTC midnight
   TextColumn get note => text().nullable()();
 
+  // Active rest fields
+  TextColumn get type => text().withDefault(const Constant('rest'))();
+  TextColumn get activityType => text().nullable()();
+  IntColumn get duration => integer().nullable()(); // minutes
+  TextColumn get intensity => text().nullable()();
+
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 

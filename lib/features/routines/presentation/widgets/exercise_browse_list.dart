@@ -32,18 +32,25 @@ class ExerciseBrowseList extends ConsumerWidget {
           ),
         ),
       ),
-      data: (groups) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: groups
-            .map(
-              (group) => ExerciseMuscleGroupTile(
-                muscle: group.muscle,
-                exercises: group.exercises,
-                onExerciseSelected: onExerciseSelected,
-              ),
-            )
-            .toList(),
-      ),
+      data: (groups) {
+        final selectedMuscles = ref.watch(sessionMuscleFilterProvider);
+        final filtered = selectedMuscles.isEmpty
+            ? groups
+            : groups.where((g) => selectedMuscles.contains(g.muscle)).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: filtered
+              .map(
+                (group) => ExerciseMuscleGroupTile(
+                  muscle: group.muscle,
+                  exercises: group.exercises,
+                  onExerciseSelected: onExerciseSelected,
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 }
@@ -65,47 +72,43 @@ class ExerciseMuscleGroupTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIds = ref.watch(sessionAllExerciseIdsProvider);
     final theme = Theme.of(context);
+    final selectedMuscles = ref.watch(sessionMuscleFilterProvider);
+    final initiallyExpanded =
+        selectedMuscles.isEmpty || selectedMuscles.contains(muscle);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.fitness_center,
-                  size: 16,
-                  color: AppColors.primaryLight,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                muscle,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondaryLight,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
+    return ExpansionTile(
+      leading: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(8),
         ),
-        ...exercises.map(
-          (ex) => ExerciseBrowseItem(
-            exercise: ex,
-            isSelected: selectedIds.contains(ex.id),
-            onTap: () => onExerciseSelected?.call(ex),
-          ),
+        child: Icon(
+          Icons.fitness_center,
+          size: 16,
+          color: AppColors.primaryLight,
         ),
-      ],
+      ),
+      title: Text(
+        muscle,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondaryLight,
+          letterSpacing: 0.5,
+        ),
+      ),
+      initiallyExpanded: initiallyExpanded,
+      maintainState: true,
+      children: exercises
+          .map(
+            (ex) => ExerciseBrowseItem(
+              exercise: ex,
+              isSelected: selectedIds.contains(ex.id),
+              onTap: () => onExerciseSelected?.call(ex),
+            ),
+          )
+          .toList(),
     );
   }
 }

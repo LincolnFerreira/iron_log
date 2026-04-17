@@ -9,6 +9,7 @@ import '../../data/models/session_exercise_update_dto.dart';
 import 'available_exercises_list.dart';
 import 'selected_exercises_section.dart';
 import '../providers/session_selection_provider.dart';
+import '../providers/exercise_browse_provider.dart';
 import '../providers/session_provider.dart';
 import 'session_section_title.dart';
 
@@ -16,12 +17,15 @@ class SessionDetailContent extends ConsumerStatefulWidget {
   final Routine routine;
   final Session? session;
   final TextEditingController sessionNameController;
+  // Callback used by the parent to register a save function exposed by this widget
+  final void Function(Future<void> Function())? registerSaveCallback;
 
   const SessionDetailContent({
     super.key,
     required this.routine,
     this.session,
     required this.sessionNameController,
+    this.registerSaveCallback,
   });
 
   @override
@@ -44,6 +48,8 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _initializeExercises();
+      // Expose the internal save method to the parent via the provided callback
+      widget.registerSaveCallback?.call(() => _onSave());
     });
   }
 
@@ -91,6 +97,9 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
     final selectedExerciseIds = ref.watch(sessionAllExerciseIdsProvider);
     final hasSelectedExercises = selectedExerciseIds.isNotEmpty && !_isSaving;
     final hasName = widget.sessionNameController.text.trim().isNotEmpty;
+    // Filtro de músculos via chips
+    final muscleFilter = ref.watch(sessionMuscleFilterProvider);
+    final browseAsync = ref.watch(exerciseBrowseProvider);
 
     return Column(
       children: [
@@ -196,6 +205,59 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
                   },
                 ),
               ),
+              // Filtros rápidos por músculo (chips)
+              browseAsync.when(
+                data: (groups) => SizedBox(
+                  height: 48,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: groups.map((g) {
+                        final name = g.muscle;
+                        final selected = muscleFilter.contains(name);
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: Text(
+                              name,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: selected
+                                        ? AppColors.primaryLight
+                                        : null,
+                                  ),
+                            ),
+                            selected: selected,
+                            onSelected: (sel) {
+                              final notifier = ref.read(
+                                sessionMuscleFilterProvider.notifier,
+                              );
+                              final current = Set<String>.from(notifier.state);
+                              if (sel) {
+                                current.add(name);
+                              } else {
+                                current.remove(name);
+                              }
+                              notifier.state = current;
+                            },
+                            selectedColor: AppColors.primaryLight.withOpacity(
+                              0.12,
+                            ),
+                            checkmarkColor: AppColors.primaryLight,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                loading: () => const SizedBox(
+                  height: 40,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+
               const SizedBox(height: 24),
 
               // Exercícios Disponíveis

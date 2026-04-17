@@ -34,6 +34,11 @@ final sessionAllExerciseIdsProvider = Provider<Set<String>>((ref) {
   return ref.watch(sessionAllExercisesProvider).map((e) => e.id).toSet();
 });
 
+// Filtro de músculos selecionados via chips na UI (conjunto de nomes de músculos)
+final sessionMuscleFilterProvider = StateProvider<Set<String>>(
+  (ref) => <String>{},
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Notifier que gerencia as interações do usuário
 // ─────────────────────────────────────────────────────────────────────────────

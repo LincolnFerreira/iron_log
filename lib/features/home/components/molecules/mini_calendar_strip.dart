@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/features/home/state/rest_day_toggle_provider.dart';
 import 'package:iron_log/features/home/state/workout_calendar_provider.dart';
+import 'rest_day_creation_sheet.dart';
 
 /// Mini calendário horizontal dos últimos 14 dias com scroll.
 /// - Verde   → dia com treino registrado
@@ -56,17 +57,37 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
     // Disallow taps on future days or when there's already a workout
     if (date.isAfter(DateTime(today.year, today.month, today.day))) return;
     if (hasWorkout) return;
+
     final isoDate = _isoDate(date);
-    final label = isRestDay ? 'Remover descanso?' : 'Marcar como descanso?';
-    final confirm = await showModalBottomSheet<bool>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) => _RestDaySheet(date: date, label: label),
-    );
-    if (confirm == true && mounted) {
-      ref.read(restDayToggleProvider(isoDate).future);
+
+    if (isRestDay) {
+      // Existing rest day: show confirmation to remove
+      final confirm = await showModalBottomSheet<bool>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (_) => _RestDaySheet(date: date, label: 'Remover descanso?'),
+      );
+      if (confirm == true && mounted) {
+        ref.read(restDayToggleProvider(isoDate).future);
+      }
+    } else {
+      // New rest day: show creation sheet
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (_) => RestDayCreationSheet(
+          date: isoDate,
+          onCreated: () {
+            // Refresh calendar after creation
+            ref.invalidate(workoutCalendarProvider);
+          },
+        ),
+      );
     }
   }
 

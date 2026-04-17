@@ -134,7 +134,7 @@ class SessionExerciseDto {
       tag: exercise.toTag(),
       muscles: exercise.primaryMuscle ?? 'Não especificado',
       variation: config.variation ?? 'Traditional',
-      series: series.isNotEmpty ? series.length : 3,
+      series: series.isNotEmpty ? series.length : 2,
       reps: reps > 0 ? reps.toString() : '-',
       weight: weight > 0 ? weight.toString() : '0',
       rir: firstSeries?.rir ?? 0,

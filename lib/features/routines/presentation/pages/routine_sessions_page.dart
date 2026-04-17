@@ -10,19 +10,17 @@ import '../widgets/session_section_title.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
 import '../providers/routine_last_workout_provider.dart';
 
-class SessionEditPage extends ConsumerStatefulWidget {
+class RoutineSessionsPage extends ConsumerStatefulWidget {
   final Routine routine;
 
-  const SessionEditPage({super.key, required this.routine});
+  const RoutineSessionsPage({super.key, required this.routine});
 
   @override
-  ConsumerState<SessionEditPage> createState() => _SessionEditPageState();
+  ConsumerState<RoutineSessionsPage> createState() => _SessionEditPageState();
 }
 
-class _SessionEditPageState extends ConsumerState<SessionEditPage>
+class _SessionEditPageState extends ConsumerState<RoutineSessionsPage>
     with RouteAware {
-  Future<void> Function()? _saveSessions;
-  bool _isSaving = false;
   @override
   void initState() {
     super.initState();
@@ -66,29 +64,6 @@ class _SessionEditPageState extends ConsumerState<SessionEditPage>
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          _isSaving
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.save_rounded),
-                  tooltip: 'Salvar',
-                  onPressed: () async {
-                    setState(() => _isSaving = true);
-                    await _saveSessions?.call();
-                    if (mounted) {
-                      setState(() => _isSaving = false);
-                      context.pop();
-                    }
-                  },
-                ),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -102,7 +77,7 @@ class _SessionEditPageState extends ConsumerState<SessionEditPage>
           Expanded(
             child: ReorderableSessionList(
               routine: routine,
-              onSaveCallback: (fn) => _saveSessions = fn,
+              // onSaveCallback: (fn) => _saveSessions = fn,
             ),
           ),
           Padding(

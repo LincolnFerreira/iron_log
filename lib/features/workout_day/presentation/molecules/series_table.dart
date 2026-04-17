@@ -139,7 +139,7 @@ class _SeriesTableState extends State<SeriesTable> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'PESO (${widget.weightUnit.displayLabel.toUpperCase()})',
+                  'PESO (${widget.weightUnit.label.toUpperCase()})',
                   style: Theme.of(
                     context,
                   ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),

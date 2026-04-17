@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../core/services/http_service.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../data/models/active_rest_dto.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
 import 'package:iron_log/features/home/data/models/home_metrics_dto.dart';
@@ -152,3 +154,21 @@ final homeProvider = StateNotifierProvider<HomeNotifier, HomeState>((ref) {
   final httpService = ref.read(httpServiceProvider);
   return HomeNotifier(httpService);
 });
+
+/// Provider para criar/atualizar um dia de descanso (rest day)
+final createRestDayProvider =
+    FutureProvider.family<RestDayEntity, CreateRestDayDto>((ref, dto) async {
+      final authService = AuthService();
+      authService.initialize();
+
+      final response = await authService.post('/rest-day', data: dto.toJson());
+
+      final restDay = RestDayEntity.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+
+      // Invalida o provider de calendar para refrescar UI
+      ref.invalidate(workoutCalendarProvider);
+
+      return restDay;
+    });

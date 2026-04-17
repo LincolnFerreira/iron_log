@@ -10,13 +10,8 @@ class ReorderableSessionList extends ConsumerStatefulWidget {
   final Routine routine;
 
   /// Chamado no initState para registrar a função de salvar no pai.
-  final void Function(Future<void> Function() saveFn)? onSaveCallback;
 
-  const ReorderableSessionList({
-    super.key,
-    required this.routine,
-    this.onSaveCallback,
-  });
+  const ReorderableSessionList({super.key, required this.routine});
 
   @override
   ConsumerState<ReorderableSessionList> createState() =>
@@ -32,7 +27,6 @@ class _ReorderableSessionListState
   void initState() {
     super.initState();
     sessions = List.from(widget.routine.sessions);
-    widget.onSaveCallback?.call(_persistSessionsOrder);
   }
 
   @override

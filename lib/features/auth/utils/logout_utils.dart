@@ -7,7 +7,7 @@ class LogoutUtils {
   static void showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -28,12 +28,12 @@ class LogoutUtils {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () async {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 await _performLogout(context, ref);
               },
               style: FilledButton.styleFrom(
@@ -99,9 +99,7 @@ class LogoutUtils {
           ),
         );
 
-        // Força navegação para login como fallback
-        print('🔀 LogoutUtils: Forçando navegação para /login');
-        context.go('/login');
+        // Fallback removido: confiar no redirect do GoRouter via authStateProvider
       }
     } catch (e) {
       // Mostrar erro

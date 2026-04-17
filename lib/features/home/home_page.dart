@@ -155,7 +155,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     if (!context.mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WorkoutDayScreen(
+        builder: (context) => WorkoutDayScreen.create(
           routineId: routine.id,
           sessionId: selectedSession!.id,
           subtitle: '${selectedSession!.name} - ${routine.name}',

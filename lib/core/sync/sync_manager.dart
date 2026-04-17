@@ -187,6 +187,21 @@ class SyncManager {
       });
     }
 
+    // RestDays
+    final restDays = await (database.select(
+      database.restDays,
+    )..where((rd) => rd.pendingSync.equals(true))).get();
+
+    for (final restDay in restDays) {
+      changes.add({
+        'entity': 'RestDay',
+        'entityId': restDay.id,
+        'operation': restDay.version == 1 ? 'create' : 'update',
+        'localVersion': restDay.version,
+        'data': _restDayToJson(restDay),
+      });
+    }
+
     return changes;
   }
 
@@ -208,7 +223,15 @@ class SyncManager {
       database.serieLogs,
     )..where((s) => s.pendingSync.equals(true))).get();
 
-    return routines.length + sessions.length + workouts.length + series.length;
+    final restDays = await (database.select(
+      database.restDays,
+    )..where((rd) => rd.pendingSync.equals(true))).get();
+
+    return routines.length +
+        sessions.length +
+        workouts.length +
+        series.length +
+        restDays.length;
   }
 
   /// Mark entity as synced in local database
@@ -251,6 +274,16 @@ class SyncManager {
           database.serieLogs,
         )..where((s) => s.id.equals(entityId))).write(
           SerieLogsCompanion(
+            pendingSync: const Value(false),
+            syncedAt: Value(now),
+          ),
+        );
+        break;
+      case 'RestDay':
+        await (database.update(
+          database.restDays,
+        )..where((rd) => rd.id.equals(entityId))).write(
+          RestDaysCompanion(
             pendingSync: const Value(false),
             syncedAt: Value(now),
           ),
@@ -313,6 +346,20 @@ class SyncManager {
     'version': s.version,
     'pendingSync': s.pendingSync,
     'syncedAt': s.syncedAt?.toIso8601String(),
+  };
+
+  Map<String, dynamic> _restDayToJson(RestDay rd) => {
+    'id': rd.id,
+    'userId': rd.userId,
+    'date': rd.date.toIso8601String().split('T')[0],
+    'type': rd.type,
+    'activityType': rd.activityType,
+    'duration': rd.duration,
+    'intensity': rd.intensity,
+    'note': rd.note,
+    'version': rd.version,
+    'pendingSync': rd.pendingSync,
+    'syncedAt': rd.syncedAt?.toIso8601String(),
   };
 
   void dispose() {

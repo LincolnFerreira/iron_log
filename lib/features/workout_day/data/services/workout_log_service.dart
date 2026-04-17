@@ -25,7 +25,7 @@ class WorkoutLogService {
   /// [isManual]           true quando o treino foi registrado retroativamente
   Future<String> saveWorkout({
     required List<WorkoutExercise> exercises,
-    required String routineId,
+    String? routineId,
     required DateTime startedAt,
     required DateTime endedAt,
     bool isManual = false,
@@ -33,7 +33,7 @@ class WorkoutLogService {
     String? sessionId,
   }) async {
     final payload = {
-      'routineId': routineId,
+      if (routineId != null) 'routineId': routineId,
       'date': startedAt.toIso8601String(),
       'endedAt': endedAt.toIso8601String(),
       'isManual': isManual,

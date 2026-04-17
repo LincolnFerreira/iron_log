@@ -129,8 +129,16 @@ class _FooterActionsState extends State<FooterActions> {
             child: widget.isManual
                 ? ElevatedButton.icon(
                     onPressed: widget.isLoading ? null : widget.onFinishWorkout,
-                    icon: const Icon(Icons.save_alt),
-                    label: const Text('Salvar Treino'),
+                    icon: widget.isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save_alt),
+                    label: widget.isLoading
+                        ? const SizedBox.shrink()
+                        : const Text('Salvar Treino'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
@@ -147,9 +155,21 @@ class _FooterActionsState extends State<FooterActions> {
                       Expanded(
                         flex: 3,
                         child: ElevatedButton.icon(
-                          onPressed: widget.onFinishWorkout,
-                          icon: const Icon(Icons.check_circle_outline),
-                          label: const Text('Finalizar Treino'),
+                          onPressed: widget.isLoading
+                              ? null
+                              : widget.onFinishWorkout,
+                          icon: widget.isLoading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.check_circle_outline),
+                          label: widget.isLoading
+                              ? const SizedBox.shrink()
+                              : const Text('Finalizar Treino'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green.shade600,
                             foregroundColor: Colors.white,
@@ -165,7 +185,9 @@ class _FooterActionsState extends State<FooterActions> {
                         width: 56,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed: _showDiscardConfirmation,
+                          onPressed: widget.isLoading
+                              ? null
+                              : _showDiscardConfirmation,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red.shade600,
                             foregroundColor: Colors.white,
@@ -185,9 +207,21 @@ class _FooterActionsState extends State<FooterActions> {
                       // Botão Adicionar Exercício
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: widget.onSaveTrain,
-                          icon: const Icon(Icons.save),
-                          label: const Text('Salvar Treino'),
+                          onPressed: widget.isLoading
+                              ? null
+                              : widget.onSaveTrain,
+                          icon: widget.isLoading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
+                          label: widget.isLoading
+                              ? const SizedBox.shrink()
+                              : const Text('Salvar Treino'),
                           style: OutlinedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -199,9 +233,21 @@ class _FooterActionsState extends State<FooterActions> {
                       Expanded(
                         flex: 2,
                         child: ElevatedButton.icon(
-                          onPressed: widget.onStartWorkout,
-                          icon: const Icon(Icons.play_circle_outline),
-                          label: const Text('Iniciar Treino'),
+                          onPressed: widget.isLoading
+                              ? null
+                              : widget.onStartWorkout,
+                          icon: widget.isLoading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.play_circle_outline),
+                          label: widget.isLoading
+                              ? const SizedBox.shrink()
+                              : const Text('Iniciar Treino'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(
                               context,

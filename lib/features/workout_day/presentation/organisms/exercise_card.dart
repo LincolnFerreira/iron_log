@@ -11,6 +11,7 @@ import '../molecules/quick_fill_chips.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../domain/entities/weight_unit.dart';
 import '../../domain/entities/suggestion_result.dart';
+import '../../domain/enums/workout_screen_mode.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/exercise_last_sets_provider.dart';
 import '../providers/exercise_suggestion_provider.dart';
@@ -795,9 +796,28 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
       '[ExerciseCard._updateExercise] updated.entries: ${updated.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
     );
 
-    ref
-        .read(workoutDayExercisesProvider.notifier)
-        .updateExercise(widget.exercise.id, updated);
+    final mode = ref.read(workoutScreenModeProvider);
+    final notifier = ref.read(workoutDayExercisesProvider.notifier);
+
+    // Chama o método de atualização apropriado baseado no modo atual
+    try {
+      if (mode == WorkoutScreenMode.execution) {
+        notifier.updateExerciseExecution(widget.exercise.id, updated);
+      } else if (mode == WorkoutScreenMode.template) {
+        notifier.updateExerciseTemplate(widget.exercise.id, updated);
+      } else if (mode == WorkoutScreenMode.editing) {
+        notifier.updateExerciseLog(widget.exercise.id, updated);
+      } else {
+        // Fallback para compatibilidade se modo não foi definido
+        notifier.updateExercise(widget.exercise.id, updated);
+      }
+    } catch (e) {
+      debugPrint(
+        '[ExerciseCard._updateExercise] Erro ao atualizar exercício: $e',
+      );
+      // Mesmo com erro, tenta atualizar com o método legado para não bloquear UI
+      notifier.updateExercise(widget.exercise.id, updated);
+    }
   }
 
   void _showRirHelp() {

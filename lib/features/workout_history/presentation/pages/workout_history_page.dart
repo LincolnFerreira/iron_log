@@ -202,7 +202,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
                           workout,
                           onEdit: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => WorkoutDayScreen(
+                              builder: (_) => WorkoutDayScreen.edit(
                                 workoutId: workout.id,
                                 sessionId: workout.sessionId,
                                 subtitle:
@@ -293,7 +293,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => WorkoutDayScreen(
+        builder: (context) => WorkoutDayScreen.manual(
           routineId: routineId,
           sessionId: sessionId,
           subtitle: subtitle,
