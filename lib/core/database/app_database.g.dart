@@ -4196,12 +4196,10 @@ class $SerieLogsTable extends SerieLogs
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _weightKgMeta = const VerificationMeta(
-    'weight',
-  );
+  static const VerificationMeta _weightMeta = const VerificationMeta('weight');
   @override
   late final GeneratedColumn<double> weight = GeneratedColumn<double>(
-    'weight_kg',
+    'weight',
     aliasedName,
     true,
     type: DriftSqlType.double,
@@ -4239,12 +4237,12 @@ class $SerieLogsTable extends SerieLogs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _restSecMeta = const VerificationMeta(
+  static const VerificationMeta _restTimeMeta = const VerificationMeta(
     'restTime',
   );
   @override
   late final GeneratedColumn<int> restTime = GeneratedColumn<int>(
-    'rest_sec',
+    'rest_time',
     aliasedName,
     true,
     type: DriftSqlType.int,
@@ -4430,10 +4428,10 @@ class $SerieLogsTable extends SerieLogs
         reps.isAcceptableOrUnknown(data['reps']!, _repsMeta),
       );
     }
-    if (data.containsKey('weight_kg')) {
+    if (data.containsKey('weight')) {
       context.handle(
-        _weightKgMeta,
-        weight.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta),
+        _weightMeta,
+        weight.isAcceptableOrUnknown(data['weight']!, _weightMeta),
       );
     }
     if (data.containsKey('weight_unit')) {
@@ -4454,10 +4452,10 @@ class $SerieLogsTable extends SerieLogs
         rirNote.isAcceptableOrUnknown(data['rir_note']!, _rirNoteMeta),
       );
     }
-    if (data.containsKey('rest_sec')) {
+    if (data.containsKey('rest_time')) {
       context.handle(
-        _restSecMeta,
-        restTime.isAcceptableOrUnknown(data['rest_sec']!, _restSecMeta),
+        _restTimeMeta,
+        restTime.isAcceptableOrUnknown(data['rest_time']!, _restTimeMeta),
       );
     }
     if (data.containsKey('cadence')) {
@@ -4548,7 +4546,7 @@ class $SerieLogsTable extends SerieLogs
       ),
       weight: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
-        data['${effectivePrefix}weight_kg'],
+        data['${effectivePrefix}weight'],
       ),
       weightUnit: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -4564,7 +4562,7 @@ class $SerieLogsTable extends SerieLogs
       ),
       restTime: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}rest_sec'],
+        data['${effectivePrefix}rest_time'],
       ),
       cadence: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -4672,7 +4670,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       map['reps'] = Variable<int>(reps);
     }
     if (!nullToAbsent || weight != null) {
-      map['weight_kg'] = Variable<double>(weight);
+      map['weight'] = Variable<double>(weight);
     }
     map['weight_unit'] = Variable<String>(weightUnit);
     if (!nullToAbsent || rir != null) {
@@ -4682,7 +4680,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       map['rir_note'] = Variable<String>(rirNote);
     }
     if (!nullToAbsent || restTime != null) {
-      map['rest_sec'] = Variable<int>(restTime);
+      map['rest_time'] = Variable<int>(restTime);
     }
     if (!nullToAbsent || cadence != null) {
       map['cadence'] = Variable<String>(cadence);
@@ -5067,11 +5065,11 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       if (setIndex != null) 'set_index': setIndex,
       if (label != null) 'label': label,
       if (reps != null) 'reps': reps,
-      if (weight != null) 'weight_kg': weight,
+      if (weight != null) 'weight': weight,
       if (weightUnit != null) 'weight_unit': weightUnit,
       if (rir != null) 'rir': rir,
       if (rirNote != null) 'rir_note': rirNote,
-      if (restTime != null) 'rest_sec': restTime,
+      if (restTime != null) 'rest_time': restTime,
       if (cadence != null) 'cadence': cadence,
       if (isFailure != null) 'is_failure': isFailure,
       if (createdAt != null) 'created_at': createdAt,
@@ -5165,7 +5163,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       map['reps'] = Variable<int>(reps.value);
     }
     if (weight.present) {
-      map['weight_kg'] = Variable<double>(weight.value);
+      map['weight'] = Variable<double>(weight.value);
     }
     if (weightUnit.present) {
       map['weight_unit'] = Variable<String>(weightUnit.value);
@@ -5177,7 +5175,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       map['rir_note'] = Variable<String>(rirNote.value);
     }
     if (restTime.present) {
-      map['rest_sec'] = Variable<int>(restTime.value);
+      map['rest_time'] = Variable<int>(restTime.value);
     }
     if (cadence.present) {
       map['cadence'] = Variable<String>(cadence.value);
@@ -5276,6 +5274,49 @@ class $RestDaysTable extends RestDays with TableInfo<$RestDaysTable, RestDay> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('rest'),
+  );
+  static const VerificationMeta _activityTypeMeta = const VerificationMeta(
+    'activityType',
+  );
+  @override
+  late final GeneratedColumn<String> activityType = GeneratedColumn<String>(
+    'activity_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _durationMeta = const VerificationMeta(
+    'duration',
+  );
+  @override
+  late final GeneratedColumn<int> duration = GeneratedColumn<int>(
+    'duration',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _intensityMeta = const VerificationMeta(
+    'intensity',
+  );
+  @override
+  late final GeneratedColumn<String> intensity = GeneratedColumn<String>(
+    'intensity',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -5344,6 +5385,10 @@ class $RestDaysTable extends RestDays with TableInfo<$RestDaysTable, RestDay> {
     userId,
     date,
     note,
+    type,
+    activityType,
+    duration,
+    intensity,
     createdAt,
     updatedAt,
     version,
@@ -5387,6 +5432,33 @@ class $RestDaysTable extends RestDays with TableInfo<$RestDaysTable, RestDay> {
       context.handle(
         _noteMeta,
         note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    }
+    if (data.containsKey('activity_type')) {
+      context.handle(
+        _activityTypeMeta,
+        activityType.isAcceptableOrUnknown(
+          data['activity_type']!,
+          _activityTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('duration')) {
+      context.handle(
+        _durationMeta,
+        duration.isAcceptableOrUnknown(data['duration']!, _durationMeta),
+      );
+    }
+    if (data.containsKey('intensity')) {
+      context.handle(
+        _intensityMeta,
+        intensity.isAcceptableOrUnknown(data['intensity']!, _intensityMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -5451,6 +5523,22 @@ class $RestDaysTable extends RestDays with TableInfo<$RestDaysTable, RestDay> {
         DriftSqlType.string,
         data['${effectivePrefix}note'],
       ),
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      activityType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}activity_type'],
+      ),
+      duration: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration'],
+      ),
+      intensity: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}intensity'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -5485,6 +5573,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
   final String userId;
   final DateTime date;
   final String? note;
+  final String type;
+  final String? activityType;
+  final int? duration;
+  final String? intensity;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int version;
@@ -5495,6 +5587,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
     required this.userId,
     required this.date,
     this.note,
+    required this.type,
+    this.activityType,
+    this.duration,
+    this.intensity,
     required this.createdAt,
     required this.updatedAt,
     required this.version,
@@ -5509,6 +5605,16 @@ class RestDay extends DataClass implements Insertable<RestDay> {
     map['date'] = Variable<DateTime>(date);
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
+    }
+    map['type'] = Variable<String>(type);
+    if (!nullToAbsent || activityType != null) {
+      map['activity_type'] = Variable<String>(activityType);
+    }
+    if (!nullToAbsent || duration != null) {
+      map['duration'] = Variable<int>(duration);
+    }
+    if (!nullToAbsent || intensity != null) {
+      map['intensity'] = Variable<String>(intensity);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -5526,6 +5632,16 @@ class RestDay extends DataClass implements Insertable<RestDay> {
       userId: Value(userId),
       date: Value(date),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      type: Value(type),
+      activityType: activityType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(activityType),
+      duration: duration == null && nullToAbsent
+          ? const Value.absent()
+          : Value(duration),
+      intensity: intensity == null && nullToAbsent
+          ? const Value.absent()
+          : Value(intensity),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       version: Value(version),
@@ -5546,6 +5662,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
       userId: serializer.fromJson<String>(json['userId']),
       date: serializer.fromJson<DateTime>(json['date']),
       note: serializer.fromJson<String?>(json['note']),
+      type: serializer.fromJson<String>(json['type']),
+      activityType: serializer.fromJson<String?>(json['activityType']),
+      duration: serializer.fromJson<int?>(json['duration']),
+      intensity: serializer.fromJson<String?>(json['intensity']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       version: serializer.fromJson<int>(json['version']),
@@ -5561,6 +5681,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
       'userId': serializer.toJson<String>(userId),
       'date': serializer.toJson<DateTime>(date),
       'note': serializer.toJson<String?>(note),
+      'type': serializer.toJson<String>(type),
+      'activityType': serializer.toJson<String?>(activityType),
+      'duration': serializer.toJson<int?>(duration),
+      'intensity': serializer.toJson<String?>(intensity),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'version': serializer.toJson<int>(version),
@@ -5574,6 +5698,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
     String? userId,
     DateTime? date,
     Value<String?> note = const Value.absent(),
+    String? type,
+    Value<String?> activityType = const Value.absent(),
+    Value<int?> duration = const Value.absent(),
+    Value<String?> intensity = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     int? version,
@@ -5584,6 +5712,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
     userId: userId ?? this.userId,
     date: date ?? this.date,
     note: note.present ? note.value : this.note,
+    type: type ?? this.type,
+    activityType: activityType.present ? activityType.value : this.activityType,
+    duration: duration.present ? duration.value : this.duration,
+    intensity: intensity.present ? intensity.value : this.intensity,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     version: version ?? this.version,
@@ -5596,6 +5728,12 @@ class RestDay extends DataClass implements Insertable<RestDay> {
       userId: data.userId.present ? data.userId.value : this.userId,
       date: data.date.present ? data.date.value : this.date,
       note: data.note.present ? data.note.value : this.note,
+      type: data.type.present ? data.type.value : this.type,
+      activityType: data.activityType.present
+          ? data.activityType.value
+          : this.activityType,
+      duration: data.duration.present ? data.duration.value : this.duration,
+      intensity: data.intensity.present ? data.intensity.value : this.intensity,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       version: data.version.present ? data.version.value : this.version,
@@ -5613,6 +5751,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
           ..write('userId: $userId, ')
           ..write('date: $date, ')
           ..write('note: $note, ')
+          ..write('type: $type, ')
+          ..write('activityType: $activityType, ')
+          ..write('duration: $duration, ')
+          ..write('intensity: $intensity, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('version: $version, ')
@@ -5628,6 +5770,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
     userId,
     date,
     note,
+    type,
+    activityType,
+    duration,
+    intensity,
     createdAt,
     updatedAt,
     version,
@@ -5642,6 +5788,10 @@ class RestDay extends DataClass implements Insertable<RestDay> {
           other.userId == this.userId &&
           other.date == this.date &&
           other.note == this.note &&
+          other.type == this.type &&
+          other.activityType == this.activityType &&
+          other.duration == this.duration &&
+          other.intensity == this.intensity &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.version == this.version &&
@@ -5654,6 +5804,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
   final Value<String> userId;
   final Value<DateTime> date;
   final Value<String?> note;
+  final Value<String> type;
+  final Value<String?> activityType;
+  final Value<int?> duration;
+  final Value<String?> intensity;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> version;
@@ -5665,6 +5819,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
     this.userId = const Value.absent(),
     this.date = const Value.absent(),
     this.note = const Value.absent(),
+    this.type = const Value.absent(),
+    this.activityType = const Value.absent(),
+    this.duration = const Value.absent(),
+    this.intensity = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.version = const Value.absent(),
@@ -5677,6 +5835,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
     required String userId,
     required DateTime date,
     this.note = const Value.absent(),
+    this.type = const Value.absent(),
+    this.activityType = const Value.absent(),
+    this.duration = const Value.absent(),
+    this.intensity = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.version = const Value.absent(),
@@ -5691,6 +5853,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
     Expression<String>? userId,
     Expression<DateTime>? date,
     Expression<String>? note,
+    Expression<String>? type,
+    Expression<String>? activityType,
+    Expression<int>? duration,
+    Expression<String>? intensity,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? version,
@@ -5703,6 +5869,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
       if (userId != null) 'user_id': userId,
       if (date != null) 'date': date,
       if (note != null) 'note': note,
+      if (type != null) 'type': type,
+      if (activityType != null) 'activity_type': activityType,
+      if (duration != null) 'duration': duration,
+      if (intensity != null) 'intensity': intensity,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (version != null) 'version': version,
@@ -5717,6 +5887,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
     Value<String>? userId,
     Value<DateTime>? date,
     Value<String?>? note,
+    Value<String>? type,
+    Value<String?>? activityType,
+    Value<int?>? duration,
+    Value<String?>? intensity,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? version,
@@ -5729,6 +5903,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
       userId: userId ?? this.userId,
       date: date ?? this.date,
       note: note ?? this.note,
+      type: type ?? this.type,
+      activityType: activityType ?? this.activityType,
+      duration: duration ?? this.duration,
+      intensity: intensity ?? this.intensity,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       version: version ?? this.version,
@@ -5752,6 +5930,18 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
     }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (activityType.present) {
+      map['activity_type'] = Variable<String>(activityType.value);
+    }
+    if (duration.present) {
+      map['duration'] = Variable<int>(duration.value);
+    }
+    if (intensity.present) {
+      map['intensity'] = Variable<String>(intensity.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -5781,6 +5971,10 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
           ..write('userId: $userId, ')
           ..write('date: $date, ')
           ..write('note: $note, ')
+          ..write('type: $type, ')
+          ..write('activityType: $activityType, ')
+          ..write('duration: $duration, ')
+          ..write('intensity: $intensity, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('version: $version, ')
@@ -8218,6 +8412,10 @@ typedef $$RestDaysTableCreateCompanionBuilder =
       required String userId,
       required DateTime date,
       Value<String?> note,
+      Value<String> type,
+      Value<String?> activityType,
+      Value<int?> duration,
+      Value<String?> intensity,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> version,
@@ -8231,6 +8429,10 @@ typedef $$RestDaysTableUpdateCompanionBuilder =
       Value<String> userId,
       Value<DateTime> date,
       Value<String?> note,
+      Value<String> type,
+      Value<String?> activityType,
+      Value<int?> duration,
+      Value<String?> intensity,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> version,
@@ -8265,6 +8467,26 @@ class $$RestDaysTableFilterComposer
 
   ColumnFilters<String> get note => $composableBuilder(
     column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get activityType => $composableBuilder(
+    column: $table.activityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get duration => $composableBuilder(
+    column: $table.duration,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get intensity => $composableBuilder(
+    column: $table.intensity,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8323,6 +8545,26 @@ class $$RestDaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get activityType => $composableBuilder(
+    column: $table.activityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get duration => $composableBuilder(
+    column: $table.duration,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get intensity => $composableBuilder(
+    column: $table.intensity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -8369,6 +8611,20 @@ class $$RestDaysTableAnnotationComposer
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get activityType => $composableBuilder(
+    column: $table.activityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get duration =>
+      $composableBuilder(column: $table.duration, builder: (column) => column);
+
+  GeneratedColumn<String> get intensity =>
+      $composableBuilder(column: $table.intensity, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -8420,6 +8676,10 @@ class $$RestDaysTableTableManager
                 Value<String> userId = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String?> note = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String?> activityType = const Value.absent(),
+                Value<int?> duration = const Value.absent(),
+                Value<String?> intensity = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -8431,6 +8691,10 @@ class $$RestDaysTableTableManager
                 userId: userId,
                 date: date,
                 note: note,
+                type: type,
+                activityType: activityType,
+                duration: duration,
+                intensity: intensity,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 version: version,
@@ -8444,6 +8708,10 @@ class $$RestDaysTableTableManager
                 required String userId,
                 required DateTime date,
                 Value<String?> note = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String?> activityType = const Value.absent(),
+                Value<int?> duration = const Value.absent(),
+                Value<String?> intensity = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -8455,6 +8723,10 @@ class $$RestDaysTableTableManager
                 userId: userId,
                 date: date,
                 note: note,
+                type: type,
+                activityType: activityType,
+                duration: duration,
+                intensity: intensity,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 version: version,

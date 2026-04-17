@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/features/home/state/rest_day_toggle_provider.dart';
 import 'package:iron_log/features/home/state/workout_calendar_provider.dart';
+import 'package:iron_log/features/home/presentation/components/molecules/activity_type_selection_sheet.dart';
 import 'rest_day_creation_sheet.dart';
 
 /// Mini calendário horizontal dos últimos 14 dias com scroll.
@@ -73,20 +74,14 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
         ref.read(restDayToggleProvider(isoDate).future);
       }
     } else {
-      // New rest day: show creation sheet
+      // New activity: show activity type selection (training, cardio, rest)
       await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        builder: (_) => RestDayCreationSheet(
-          date: isoDate,
-          onCreated: () {
-            // Refresh calendar after creation
-            ref.invalidate(workoutCalendarProvider);
-          },
-        ),
+        builder: (_) => ActivityTypeSelectionSheet(selectedDate: date),
       );
     }
   }

@@ -8,9 +8,24 @@ import '../../data/models/workout_edit_dto.dart';
 import '../../data/services/workout_log_service.dart';
 import '../../domain/enums/workout_screen_mode.dart';
 
+// Enum para rastrear tipo de atividade
+enum WorkoutActivityType { training, cardio, rest }
+
 // Provider para armazenar a duração original de um treino em edição
 // Usado para preservar a duração ao mudar a data do treino
 final workoutOriginalDurationProvider = StateProvider<Duration?>((ref) => null);
+
+// Provider para rastrear o tipo de atividade atual (training, cardio, rest)
+// Padrão: training (treino normal com séries)
+final workoutActivityTypeProvider = StateProvider<WorkoutActivityType>(
+  (ref) => WorkoutActivityType.training,
+);
+
+// Provider para armazenar metadata de cardio (tipo, intensidade, duração)
+final cardioMetadataProvider =
+    StateProvider<({String? type, String? intensity, int? duration})>(
+      (ref) => (type: null, intensity: null, duration: null),
+    );
 
 // Provider para rastrear o modo atual da tela de treino
 // Diferencia entre template (editando rotina), execution (fazendo treino) e editing (editando log)

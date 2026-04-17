@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/active_rest_dto.dart';
-import '../../../state/home_provider.dart';
+import 'package:iron_log/features/home/data/models/active_rest_dto.dart';
+import 'package:iron_log/features/home/state/home_provider.dart';
 
 class RestDayCreationSheet extends ConsumerStatefulWidget {
   final String date;

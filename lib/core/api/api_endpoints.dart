@@ -43,6 +43,7 @@ class ApiEndpoints {
 
   // Workout endpoints
   static const String workouts = '/workout';
+  static const String createWorkout = '/workout';
   static String workoutById(String id) => '/workout/$id';
   static String workoutsByUser(String userId) => '/workout/user/$userId';
   static String workoutCalendar({int days = 14}) =>
