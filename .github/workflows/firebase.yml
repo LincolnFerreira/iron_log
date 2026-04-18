@@ -44,9 +44,10 @@ jobs:
           storePassword=${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=upload-keystore.jks
+          storeFile=../upload-keystore.jks
           EOF
-
+      - name: Print SHA
+        run: cd android && ./gradlew signingReport
       # 6. Build APK
       - name: Build APK
         run: flutter build apk --release --dart-define=FLAVOR=prod
