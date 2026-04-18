@@ -3,7 +3,10 @@
         android:label="iron_log"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         android:enableOnBackInvokedCallback="true">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
