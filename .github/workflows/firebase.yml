@@ -2,7 +2,7 @@ name: Flutter CI + Firebase Distribution
 
 on:
   push:
-    branches: [ "main", "feature/offiline"]
+    branches: [ "main", "feature/offiline" ]
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: "stable"
 
       # 3. Install dependencies
       - name: Install dependencies
@@ -27,7 +27,7 @@ jobs:
         run: |
           VERSION_NAME=$(grep '^version:' pubspec.yaml | cut -d '+' -f 1 | sed 's/version: //')
           BUILD_NUMBER=${{ github.run_number }}
-          sed -i "s/^version: .*/version: $VERSION_NAME+$BUILD_NUMBER/" pubspec.yaml        
+          sed -i "s/^version: .*/version: $VERSION_NAME+$BUILD_NUMBER/" pubspec.yaml
 
       # 4. Testes (opcional mas recomendado)
       - name: Run tests
@@ -35,7 +35,8 @@ jobs:
 
       # 5. Restore keystore & signing config
       - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/upload-keystore.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode >
+          android/upload-keystore.jks
 
       - name: Create key.properties
         run: |
@@ -43,7 +44,7 @@ jobs:
           storePassword=${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=../upload-keystore.jks
+          storeFile=upload-keystore.jks
           EOF
 
       # 6. Build APK
