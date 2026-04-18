@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/services/http_service.dart';
+import 'package:iron_log/core/services/google_auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:iron_log/features/auth/presentation/components/atoms/app_icon_widget.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/auth_buttons_section.dart';
@@ -117,15 +118,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
-      // Reutiliza o fluxo existente com GoogleAuthProvider e solicita
-      // seleção de conta via `prompt: select_account`.
-      final provider = GoogleAuthProvider();
-      provider.setCustomParameters({'prompt': 'select_account'});
-      await FirebaseAuth.instance.signInWithProvider(provider);
+      final authService = GoogleAuthService();
+      final result = await authService.signInWithGoogle(
+        serverClientId:
+            '222174717889-qcdugbpqpmebh8j86q2t0rhfjqi48s64.apps.googleusercontent.com',
+      );
+
+      if (result == null) return; // user cancelled
 
       // Após login bem-sucedido, sincroniza/cria o usuário no backend
       final http = ref.read(httpServiceProvider);
-      final user = FirebaseAuth.instance.currentUser;
+      final user = result.user ?? FirebaseAuth.instance.currentUser;
       if (user != null) {
         try {
           await http.post(
@@ -163,6 +166,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             backgroundColor: Colors.red,
           ),
         );
+        print('Login error: $e');
       }
     } finally {
       if (mounted) {
