@@ -3,7 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 import 'package:iron_log/features/auth/domain/entities/user_profile.dart';
 import 'http_service.dart';
+import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/auth/domain/entities/user_profile.dart';
+import 'http_service.dart';
 
+/// Serviço responsável pela autenticação e requisições autenticadas
+/// Segue o Single Responsibility Principle - foca em autenticação
 /// Serviço responsável pela autenticação e requisições autenticadas
 /// Segue o Single Responsibility Principle - foca em autenticação
 class AuthService {
