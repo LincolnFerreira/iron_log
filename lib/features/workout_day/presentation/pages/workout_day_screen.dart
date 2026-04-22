@@ -13,6 +13,7 @@ import '../../domain/entities/workout_exercise.dart';
 import '../components/molecules/workout_day_header.dart';
 import '../components/organisms/add_exercise_bottom_sheet.dart';
 import '../components/organisms/reorderable_exercises_list.dart';
+import '../components/organisms/exercise_reorder_sheet.dart';
 import '../organisms/footer_actions.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/workout_timer_provider.dart';
@@ -273,6 +274,15 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   Widget build(BuildContext context) {
     final exercisesAsync = ref.watch(workoutDayExercisesProvider);
 
+    Future<void> _openReorderSheet() async {
+      final current = ref.read(workoutDayExercisesProvider).value ?? [];
+      if (current.isEmpty) return;
+      final result = await ExerciseReorderSheet.show(context, current);
+      if (result != null && result.isNotEmpty) {
+        ref.read(workoutDayExercisesProvider.notifier).replaceExercises(result);
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -286,6 +296,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     : '${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                onMorePressed: _openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
               loading: () => WorkoutDayHeader(
@@ -293,6 +304,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 subtitle: 'Carregando...',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                onMorePressed: _openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
               error: (_, __) => WorkoutDayHeader(
@@ -300,6 +312,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 subtitle: 'Erro ao carregar',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                onMorePressed: _openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
             ),

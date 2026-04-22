@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/services/auth_service.dart';
@@ -27,7 +28,7 @@ class CreateActivityDto {
     if (intensity != null) 'intensity': intensity,
     if (duration != null) 'duration': duration,
     if (notes != null && notes!.isNotEmpty) 'notes': notes,
-    'startedAt': '${date}T00:00:00Z',
+    'date': date,
   };
 }
 
@@ -44,11 +45,13 @@ class CreateActivityResponse {
   });
 
   factory CreateActivityResponse.fromJson(Map<String, dynamic> json) {
-    return CreateActivityResponse(
-      id: json['id'] as String,
-      type: json['type'] as String? ?? 'training',
-      date: json['startedAt'] as String? ?? '',
-    );
+    final idVal = (json['id'] ?? json['workoutId']) as String? ?? '';
+    final typeVal =
+        json['type'] as String? ?? json['status'] as String? ?? 'training';
+    final dateVal =
+        json['date'] as String? ?? json['startedAt'] as String? ?? '';
+
+    return CreateActivityResponse(id: idVal, type: typeVal, date: dateVal);
   }
 }
 
@@ -61,17 +64,36 @@ final createActivityProvider =
       final auth = AuthService();
       auth.initialize();
 
-      final response = await auth.post(
-        ApiEndpoints.createWorkout,
-        data: dto.toJson(),
-      );
+      try {
+        if (kDebugMode) {
+          debugPrint('create-activity: sending payload=${dto.toJson()}');
+        }
 
-      final result = CreateActivityResponse.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+        final response = await auth.post(
+          ApiEndpoints.createWorkout,
+          data: dto.toJson(),
+        );
 
-      // Invalida o provider de calendar para refrescar UI
-      ref.invalidate(workoutCalendarProvider);
+        if (kDebugMode) {
+          debugPrint('create-activity: response=${response.data}');
+        }
 
-      return result;
+        final data = response.data;
+        if (data == null || data is! Map<String, dynamic>) {
+          throw Exception(
+            'Unexpected response from server when creating activity',
+          );
+        }
+
+        final result = CreateActivityResponse.fromJson(
+          data as Map<String, dynamic>,
+        );
+
+        // Invalida o provider de calendar para refrescar UI
+        ref.invalidate(workoutCalendarProvider);
+
+        return result;
+      } catch (e) {
+        throw Exception('Failed to create activity: $e');
+      }
     });

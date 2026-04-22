@@ -23,9 +23,25 @@ class ReorderableExercisesList extends StatelessWidget {
       buildDefaultDragHandles: false,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       onReorder: (oldIndex, newIndex) {
-        // Guard: ignore reorder from the add-button slot
+        // Guard: ignore reorder starting from the add-button slot
         if (oldIndex >= exercises.length) return;
-        onReorder(oldIndex, newIndex);
+
+        // The ReorderableListView's newIndex is the index in the full
+        // list (including the add-button). Convert it to a target index
+        // for the underlying `exercises` list and clamp to valid bounds.
+        var targetIndex = newIndex;
+
+        // Cap to the add-button index (safe upper bound)
+        if (targetIndex > exercises.length) targetIndex = exercises.length;
+
+        // If the item is moved forward in the list, the removal of the
+        // original element shifts indices down by one.
+        if (targetIndex > oldIndex) targetIndex -= 1;
+
+        // If there's no effective change, ignore.
+        if (targetIndex == oldIndex) return;
+
+        onReorder(oldIndex, targetIndex);
       },
       itemCount: exercises.length + 1, // +1 para o botão
       itemBuilder: (context, index) {

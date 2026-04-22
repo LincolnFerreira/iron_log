@@ -1,10 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/features/home/state/rest_day_toggle_provider.dart';
 import 'package:iron_log/features/home/state/workout_calendar_provider.dart';
 import 'package:iron_log/features/home/presentation/components/molecules/activity_type_selection_sheet.dart';
-import 'rest_day_creation_sheet.dart';
 
 /// Mini calendário horizontal dos últimos 14 dias com scroll.
 /// - Verde   → dia com treino registrado
@@ -55,13 +55,13 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
 
   Future<void> _onDayTap(DateTime date, bool hasWorkout, bool isRestDay) async {
     final today = DateTime.now();
-    // Disallow taps on future days or when there's already a workout
+    // Disallow taps on future days
     if (date.isAfter(DateTime(today.year, today.month, today.day))) return;
-    if (hasWorkout) return;
 
     final isoDate = _isoDate(date);
 
-    if (isRestDay) {
+    // If the day is a rest-only day (no workout record), allow removing rest
+    if (isRestDay && !hasWorkout) {
       // Existing rest day: show confirmation to remove
       final confirm = await showModalBottomSheet<bool>(
         context: context,
@@ -74,7 +74,8 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
         ref.read(restDayToggleProvider(isoDate).future);
       }
     } else {
-      // New activity: show activity type selection (training, cardio, rest)
+      // If already has a workout (or not), open selection/edit flow so user can
+      // create or edit the activity (allows correcting wrong entries).
       await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
@@ -90,92 +91,150 @@ class _MiniCalendarStripState extends ConsumerState<MiniCalendarStrip> {
   Widget build(BuildContext context) {
     final workoutDates = ref.watch(workoutCalendarDatesProvider);
     final restDates = ref.watch(restDaysProvider);
+    final typeMap = ref.watch(workoutCalendarTypeProvider);
     final theme = Theme.of(context);
     final today = DateTime.now();
     // weekday: 1=Mon..7=Sun  →  Sunday is 7, mapped to index 0 below
     const dayLabels = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
-    return SizedBox(
-      height: 84,
-      child: ListView.builder(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: _days,
-        itemExtent: _itemWidth,
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, i) {
-          // show 7 days before today, today in the middle, 7 days after
-          final startDate = today.subtract(const Duration(days: 7));
-          final date = startDate.add(Duration(days: i));
-          final isoDate = _isoDate(date);
-          final isToday =
-              date.year == today.year &&
-              date.month == today.month &&
-              date.day == today.day;
-          final hasWorkout = workoutDates.contains(isoDate);
-          final isRest = restDates.contains(isoDate);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 84,
+          child: ListView.builder(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: _days,
+            itemExtent: _itemWidth,
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (context, i) {
+              // show 7 days before today, today in the middle, 7 days after
+              final startDate = today.subtract(const Duration(days: 7));
+              final date = startDate.add(Duration(days: i));
+              final isoDate = _isoDate(date);
+              final isToday =
+                  date.year == today.year &&
+                  date.month == today.month &&
+                  date.day == today.day;
+              final dayType = typeMap[isoDate];
+              final hasWorkout =
+                  dayType != null || workoutDates.contains(isoDate);
+              final isRest = dayType == 'rest' || restDates.contains(isoDate);
 
-          final Color circleColor = isToday
-              ? AppColors.primaryLight
-              : hasWorkout
-              ? AppColors.success
-              : isRest
-              ? AppColors.warning
-              : Colors.transparent;
+              if (kDebugMode) {
+                debugPrint(
+                  'mini-cal: $isoDate dayType=$dayType hasWorkout=$hasWorkout isRest=$isRest isToday=$isToday',
+                );
+              }
 
-          final Color labelColor = isToday
-              ? AppColors.primaryLight
-              : theme.colorScheme.onSurface.withValues(alpha: 0.45);
+              final Color circleColor;
+              if (isToday) {
+                circleColor = AppColors.primaryLight;
+              } else if (isRest) {
+                circleColor = AppColors.warning;
+              } else if (dayType != null) {
+                circleColor = dayType == 'training'
+                    ? AppColors.success
+                    : dayType == 'cardio'
+                    ? AppColors.info
+                    : dayType == 'rest'
+                    ? AppColors.warning
+                    : AppColors.success;
+              } else if (hasWorkout) {
+                circleColor = AppColors.success;
+              } else {
+                circleColor = Colors.transparent;
+              }
 
-          final Color numColor = (isToday || hasWorkout || isRest)
-              ? Colors.white
-              : theme.colorScheme.onSurface.withValues(alpha: 0.75);
+              final Color labelColor = isToday
+                  ? AppColors.primaryLight
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.45);
 
-          return GestureDetector(
-            onTap: () => _onDayTap(date, hasWorkout, isRest),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  dayLabels[date.weekday % 7],
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: labelColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: circleColor,
-                    shape: BoxShape.circle,
-                    border: !isToday && !hasWorkout && !isRest
-                        ? Border.all(
-                            color: theme.colorScheme.outline.withValues(
-                              alpha: 0.15,
-                            ),
-                            width: 1,
-                          )
-                        : null,
-                  ),
-                  child: Center(
-                    child: Text(
-                      '${date.day}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: numColor,
-                        fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
-                        fontSize: 13,
+              final Color numColor = (isToday || hasWorkout || isRest)
+                  ? Colors.white
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.75);
+
+              return GestureDetector(
+                onTap: () => _onDayTap(date, hasWorkout, isRest),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      dayLabels[date.weekday % 7],
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: labelColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: circleColor,
+                        shape: BoxShape.circle,
+                        border: !isToday && !hasWorkout && !isRest
+                            ? Border.all(
+                                color: theme.colorScheme.outline.withValues(
+                                  alpha: 0.15,
+                                ),
+                                width: 1,
+                              )
+                            : null,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${date.day}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: numColor,
+                            fontWeight: isToday
+                                ? FontWeight.w800
+                                : FontWeight.w500,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: _buildLegend(theme),
+        ),
+      ],
+    );
+  }
+
+  Widget _legendItem(Color color, String label, TextStyle? style) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Text(label, style: style),
+      ],
+    );
+  }
+
+  Widget _buildLegend(ThemeData theme) {
+    final labelStyle = theme.textTheme.bodySmall?.copyWith(fontSize: 12);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _legendItem(AppColors.success, 'Treino', labelStyle),
+        _legendItem(AppColors.info, 'Cardio', labelStyle),
+        _legendItem(AppColors.warning, 'Descanso', labelStyle),
+      ],
     );
   }
 }

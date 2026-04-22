@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/features/workout_day/data/providers/create_activity_provider.dart';
+import 'package:iron_log/features/home/state/workout_calendar_provider.dart';
 
 /// Modal que oferece três opções de atividade: Treino, Cardio e Descanso
 /// Apresentado quando usuário clica em um dia vazio do calendário
@@ -73,7 +74,6 @@ class ActivityTypeSelectionSheet extends ConsumerWidget {
             title: 'Descanso',
             subtitle: 'Marcar como dia de recuperação',
             onPressed: () {
-              Navigator.pop(context);
               _confirmRest(context, ref, selectedDate);
             },
             isOutlined: true,
@@ -114,40 +114,55 @@ class ActivityTypeSelectionSheet extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(ctx); // Fecha dialog
+              final dateStr = date.toIso8601String().split('T')[0];
+
+              // Prevent duplicate rest marking if calendar already shows rest
+              final existingRests = ref.read(restDaysProvider);
+              if (existingRests.contains(dateStr)) {
+                Navigator.pop(ctx); // close confirmation
+                final scaffold = ScaffoldMessenger.of(context);
+                scaffold.showSnackBar(
+                  const SnackBar(
+                    content: Text('⚠️ Dia já marcado como descanso'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+                return;
+              }
 
               try {
-                final dateStr = date.toIso8601String().split('T')[0];
-
                 // Criar DTO para rest
                 final dto = CreateActivityDto(type: 'rest', date: dateStr);
 
-                // Chamar backend
-                final result = await ref.read(
-                  createActivityProvider(dto).future,
-                );
+                // capture navigator/scaffold states to avoid using BuildContext across async gaps
+                final navigator = Navigator.of(context);
+                final scaffold = ScaffoldMessenger.of(context);
 
-                if (context.mounted) {
-                  Navigator.pop(context); // Fecha modal
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '✅ Descanso marcado para ${_formatDate(date)}',
-                      ),
-                      duration: const Duration(seconds: 2),
+                // Chamar backend
+                await ref.read(createActivityProvider(dto).future);
+
+                // Close confirmation and then the sheet, then show SnackBar
+                Navigator.pop(ctx);
+                navigator.pop();
+
+                scaffold.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '✅ Descanso marcado para ${_formatDate(date)}',
                     ),
-                  );
-                }
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('❌ Erro ao marcar descanso: $e'),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
-                }
+                Navigator.pop(ctx);
+                final scaffold = ScaffoldMessenger.of(context);
+                scaffold.showSnackBar(
+                  SnackBar(
+                    content: Text('❌ Erro ao marcar descanso: $e'),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
               }
             },
             child: const Text('Confirmar'),
@@ -237,7 +252,7 @@ class _ActivityButton extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.2),
+            color: iconColor.withAlpha(51),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: iconColor, size: 24),

@@ -54,9 +54,20 @@ class HomeState {
 
 class HomeNotifier extends StateNotifier<HomeState> {
   final HttpService _httpService;
+  bool _initialized = false;
 
-  HomeNotifier(this._httpService) : super(HomeState()) {
-    _loadTodaysWorkout();
+  HomeNotifier(this._httpService) : super(HomeState());
+
+  /// Initialize once. Calling this multiple times is safe.
+  Future<void> initialize() async {
+    if (_initialized) return;
+    try {
+      await _loadTodaysWorkout();
+      _initialized = true;
+    } catch (_) {
+      // keep _initialized false so caller can retry initialize later
+      rethrow;
+    }
   }
 
   Future<void> _loadTodaysWorkout() async {
@@ -136,7 +147,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
     final sessionIndex = (dayOfWeek - 1) % routine.sessions.length;
 
     // Ordena as sessões por ordem e pega a do dia
-    final sortedSessions = routine.sessions
+    final sortedSessions = List.of(routine.sessions)
       ..sort((a, b) => a.order.compareTo(b.order));
     return sortedSessions[sessionIndex];
   }
@@ -153,7 +164,11 @@ class HomeNotifier extends StateNotifier<HomeState> {
 
 final homeProvider = StateNotifierProvider<HomeNotifier, HomeState>((ref) {
   final httpService = ref.read(httpServiceProvider);
-  return HomeNotifier(httpService);
+  final notifier = HomeNotifier(httpService);
+  // Schedule a single initialization run after provider creation. This avoids
+  // triggering loads on widget rebuilds such as opening/closing bottom sheets.
+  Future.microtask(() => notifier.initialize());
+  return notifier;
 });
 
 /// Provider para criar/atualizar um dia de descanso (rest day)

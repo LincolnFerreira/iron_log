@@ -11,6 +11,23 @@ final workoutCalendarProvider = FutureProvider<CalendarResponse>((ref) async {
   return CalendarResponse.fromJson(response.data as Map<String, dynamic>);
 });
 
+/// Map of ISO date -> activity type (when provided by backend)
+final workoutCalendarTypeProvider = Provider<Map<String, String>>((ref) {
+  final calAsync = ref.watch(workoutCalendarProvider);
+  return calAsync.maybeWhen(
+    data: (cal) {
+      final map = <String, String>{};
+      for (final d in cal.workoutDays) {
+        if (d.type != null && d.type!.isNotEmpty) {
+          map[_isoDate(d.date)] = d.type!;
+        }
+      }
+      return map;
+    },
+    orElse: () => {},
+  );
+});
+
 /// ISO date strings (yyyy-MM-dd) with a workout logged.
 final workoutCalendarDatesProvider = Provider<Set<String>>((ref) {
   final calAsync = ref.watch(workoutCalendarProvider);

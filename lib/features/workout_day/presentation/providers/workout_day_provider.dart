@@ -195,6 +195,13 @@ class WorkoutDayExercisesNotifier
     }
   }
 
+  /// Substitui a lista inteira de exercícios por uma nova ordem.
+  /// Usado para aplicar o resultado vindo do bottom-sheet de reordenação.
+  void replaceExercises(List<WorkoutExercise> newExercises) {
+    if (newExercises.isEmpty) return;
+    state = AsyncValue.data(List<WorkoutExercise>.from(newExercises));
+  }
+
   // Salva os exercícios atualizados da sessão (apenas em modo template)
   Future<void> saveSessionExercises(String sessionId) async {
     final mode = _ref?.read(workoutScreenModeProvider);

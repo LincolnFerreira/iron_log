@@ -27,7 +27,7 @@ class TodaysWorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const WorkoutLoadingCard();
+      return const Skeleton(child: WorkoutSkeletonCard());
     }
 
     if (todaysRoutine == null || todaysSession == null) {
