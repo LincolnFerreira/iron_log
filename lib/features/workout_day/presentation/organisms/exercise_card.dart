@@ -660,13 +660,17 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     final mode = ref.read(workoutScreenModeProvider);
     String message;
     if (mode == WorkoutScreenMode.template) {
-      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" do plano deste dia?';
+      message =
+          'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" do plano deste dia?';
     } else if (mode == WorkoutScreenMode.execution) {
-      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" desta execução?\n\nObservação: isso remove apenas deste treino. Para remover do planejamento (template), edite a sessão correspondente em "Sessões".';
+      message =
+          'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" desta execução?\n\nObservação: isso remove apenas deste treino. Para remover do planejamento (template), edite a sessão correspondente em "Sessões".';
     } else if (mode == WorkoutScreenMode.editing) {
-      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" deste treino registrado?\n\nObservação: isso remove apenas deste treino registrado. Para remover do planejamento (template), edite a sessão correspondente em "Sessões".';
+      message =
+          'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" deste treino registrado?\n\nObservação: isso remove apenas deste treino registrado. Para remover do planejamento (template), edite a sessão correspondente em "Sessões".';
     } else {
-      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}"?';
+      message =
+          'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}"?';
     }
 
     showDialog(
@@ -684,10 +688,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              message,
-              style: const TextStyle(fontSize: 16),
-            ),
+            Text(message, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -769,9 +770,11 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
 
         String successMessage;
         if (mode == WorkoutScreenMode.execution) {
-          successMessage = 'Exercício removido deste treino. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
+          successMessage =
+              'Exercício removido deste treino. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
         } else if (mode == WorkoutScreenMode.editing) {
-          successMessage = 'Exercício removido deste treino registrado com sucesso. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
+          successMessage =
+              'Exercício removido deste treino registrado com sucesso. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
         } else if (mode == WorkoutScreenMode.template) {
           successMessage = 'Exercício removido do plano deste dia.';
         } else {

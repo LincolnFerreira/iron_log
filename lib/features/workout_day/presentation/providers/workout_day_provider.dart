@@ -157,10 +157,15 @@ class WorkoutDayExercisesNotifier
     if (mode == WorkoutScreenMode.template) {
       try {
         if (kDebugMode) {
-          print('🗑️ (template) Removendo exercício $exerciseId da sessão $sessionId');
+          print(
+            '🗑️ (template) Removendo exercício $exerciseId da sessão $sessionId',
+          );
         }
 
-        final url = ApiEndpoints.removeExerciseFromSession(sessionId, exerciseId);
+        final url = ApiEndpoints.removeExerciseFromSession(
+          sessionId,
+          exerciseId,
+        );
         final response = await _httpService.delete(url);
 
         if (response.statusCode == 200) {
@@ -186,14 +191,18 @@ class WorkoutDayExercisesNotifier
     if (mode == WorkoutScreenMode.editing) {
       try {
         if (kDebugMode) {
-          print('🗑️ (editing) Removendo exercício $exerciseId do treino registrado');
+          print(
+            '🗑️ (editing) Removendo exercício $exerciseId do treino registrado',
+          );
         }
 
         // Atualiza estado local imediatamente para responsividade
         removeExercise(exerciseId);
 
         if (workoutSessionId == null) {
-          throw Exception('WorkoutSessionId não encontrado para editar treino.');
+          throw Exception(
+            'WorkoutSessionId não encontrado para editar treino.',
+          );
         }
 
         // Constrói payload a partir do estado atual (após remoção)
@@ -223,7 +232,9 @@ class WorkoutDayExercisesNotifier
     // 3) Modo execution: removemos APENAS da sessão em memória (não altera o template do workout)
     if (mode == WorkoutScreenMode.execution) {
       if (kDebugMode) {
-        print('🗑️ (execution) Removendo exercício $exerciseId localmente (não altera template)');
+        print(
+          '🗑️ (execution) Removendo exercício $exerciseId localmente (não altera template)',
+        );
       }
       removeExercise(exerciseId);
       return;
@@ -234,14 +245,19 @@ class WorkoutDayExercisesNotifier
       // trata como edição de workout registrado
       try {
         if (kDebugMode) {
-          print('🗑️ (fallback->editing) Removendo exercício $exerciseId do treino registrado');
+          print(
+            '🗑️ (fallback->editing) Removendo exercício $exerciseId do treino registrado',
+          );
         }
         removeExercise(exerciseId);
         final currentState = state;
         final exercises = currentState is AsyncData<List<WorkoutExercise>>
             ? currentState.value
             : <WorkoutExercise>[];
-        await updateExistingWorkout(workoutSessionId: workoutSessionId, exercises: exercises);
+        await updateExistingWorkout(
+          workoutSessionId: workoutSessionId,
+          exercises: exercises,
+        );
       } catch (e) {
         if (kDebugMode) {
           print('❌ Erro ao remover exercício (fallback): $e');
@@ -254,7 +270,9 @@ class WorkoutDayExercisesNotifier
     // 5) Se chegamos aqui, por segurança, tenta remover do template
     try {
       if (kDebugMode) {
-        print('🗑️ (fallback->template) Removendo exercício $exerciseId da sessão $sessionId');
+        print(
+          '🗑️ (fallback->template) Removendo exercício $exerciseId da sessão $sessionId',
+        );
       }
 
       final url = ApiEndpoints.removeExerciseFromSession(sessionId, exerciseId);
