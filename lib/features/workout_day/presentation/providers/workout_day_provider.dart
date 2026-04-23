@@ -149,27 +149,128 @@ class WorkoutDayExercisesNotifier
     String sessionId,
     String exerciseId,
   ) async {
+    // Decide a ação baseada no contexto da tela (template / execution / editing)
+    final mode = _ref?.read(workoutScreenModeProvider);
+    final workoutSessionId = _ref?.read(workoutSessionIdProvider);
+
+    // 1) Modo template: removemos do template da Session (API DELETE /session/:id/exercises/:exerciseId)
+    if (mode == WorkoutScreenMode.template) {
+      try {
+        if (kDebugMode) {
+          print('🗑️ (template) Removendo exercício $exerciseId da sessão $sessionId');
+        }
+
+        final url = ApiEndpoints.removeExerciseFromSession(sessionId, exerciseId);
+        final response = await _httpService.delete(url);
+
+        if (response.statusCode == 200) {
+          // Remove da lista local após sucesso no backend
+          removeExercise(exerciseId);
+
+          if (kDebugMode) {
+            print('✅ Exercício removido do template com sucesso');
+          }
+        } else {
+          throw Exception('Erro ao remover exercício: ${response.statusCode}');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Erro ao remover exercício (template): $e');
+        }
+        throw Exception('Erro ao remover exercício: $e');
+      }
+      return;
+    }
+
+    // 2) Modo editing: estamos editando um workout já registrado => persistir a alteração no workout (PATCH /workout/:id)
+    if (mode == WorkoutScreenMode.editing) {
+      try {
+        if (kDebugMode) {
+          print('🗑️ (editing) Removendo exercício $exerciseId do treino registrado');
+        }
+
+        // Atualiza estado local imediatamente para responsividade
+        removeExercise(exerciseId);
+
+        if (workoutSessionId == null) {
+          throw Exception('WorkoutSessionId não encontrado para editar treino.');
+        }
+
+        // Constrói payload a partir do estado atual (após remoção)
+        final currentState = state;
+        final exercises = currentState is AsyncData<List<WorkoutExercise>>
+            ? currentState.value
+            : <WorkoutExercise>[];
+
+        // Reutiliza o método existente para aplicar PATCH no workout
+        await updateExistingWorkout(
+          workoutSessionId: workoutSessionId,
+          exercises: exercises,
+        );
+
+        if (kDebugMode) {
+          print('✅ Exercício removido do workout registrado com sucesso');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Erro ao remover exercício (editing): $e');
+        }
+        throw Exception('Erro ao remover exercício: $e');
+      }
+      return;
+    }
+
+    // 3) Modo execution: removemos APENAS da sessão em memória (não altera o template do workout)
+    if (mode == WorkoutScreenMode.execution) {
+      if (kDebugMode) {
+        print('🗑️ (execution) Removendo exercício $exerciseId localmente (não altera template)');
+      }
+      removeExercise(exerciseId);
+      return;
+    }
+
+    // 4) Fallback: se não soubermos o modo, deduzimos pelo presence de workoutSessionId
+    if (workoutSessionId != null) {
+      // trata como edição de workout registrado
+      try {
+        if (kDebugMode) {
+          print('🗑️ (fallback->editing) Removendo exercício $exerciseId do treino registrado');
+        }
+        removeExercise(exerciseId);
+        final currentState = state;
+        final exercises = currentState is AsyncData<List<WorkoutExercise>>
+            ? currentState.value
+            : <WorkoutExercise>[];
+        await updateExistingWorkout(workoutSessionId: workoutSessionId, exercises: exercises);
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Erro ao remover exercício (fallback): $e');
+        }
+        throw Exception('Erro ao remover exercício: $e');
+      }
+      return;
+    }
+
+    // 5) Se chegamos aqui, por segurança, tenta remover do template
     try {
       if (kDebugMode) {
-        print('🗑️ Removendo exercício $exerciseId da sessão $sessionId');
+        print('🗑️ (fallback->template) Removendo exercício $exerciseId da sessão $sessionId');
       }
 
       final url = ApiEndpoints.removeExerciseFromSession(sessionId, exerciseId);
       final response = await _httpService.delete(url);
 
       if (response.statusCode == 200) {
-        // Remove da lista local após sucesso no backend
         removeExercise(exerciseId);
-
         if (kDebugMode) {
-          print('✅ Exercício removido com sucesso');
+          print('✅ Exercício removido (fallback template)');
         }
       } else {
         throw Exception('Erro ao remover exercício: ${response.statusCode}');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Erro ao remover exercício: $e');
+        print('❌ Erro ao remover exercício (fallback template): $e');
       }
       throw Exception('Erro ao remover exercício: $e');
     }

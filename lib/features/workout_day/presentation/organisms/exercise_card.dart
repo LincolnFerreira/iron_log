@@ -358,7 +358,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     final historyAsync = ref.watch(
       exerciseLastSetsProvider(widget.exercise.id),
     );
-    final history = historyAsync.value;
+    final history = historyAsync.asData?.value;
 
     return Row(
       children: [
@@ -657,6 +657,18 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   }
 
   void _showRemoveConfirmation() {
+    final mode = ref.read(workoutScreenModeProvider);
+    String message;
+    if (mode == WorkoutScreenMode.template) {
+      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" do plano deste dia?';
+    } else if (mode == WorkoutScreenMode.execution) {
+      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" desta execução?\n\nObservação: isso remove apenas deste treino. Para remover do planejamento (template), edite a sessão correspondente em "Sessões".';
+    } else if (mode == WorkoutScreenMode.editing) {
+      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" deste treino registrado?\n\nObservação: isso remove apenas deste treino registrado. Para remover do planejamento (template), edite a sessão correspondente em "Sessões".';
+    } else {
+      message = 'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}"?';
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -673,7 +685,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tem certeza que deseja remover "${widget.exercise.name.toTitleCase()}" desta sessão?',
+              message,
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
@@ -726,6 +738,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
 
   Future<void> _removeExercise() async {
     if (widget.sessionId == null) return;
+    final mode = ref.read(workoutScreenModeProvider);
 
     try {
       // Mostra loading
@@ -745,17 +758,29 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         ),
       );
 
-      // Chama o provider para remover do backend
+      // Chama o provider para remover do backend / atualizar workout conforme contexto
       await ref
           .read(workoutDayExercisesProvider.notifier)
           .removeExerciseFromSession(widget.sessionId!, widget.exercise.id);
 
-      // Mostra sucesso
+      // Mostra sucesso contextualizado
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+        String successMessage;
+        if (mode == WorkoutScreenMode.execution) {
+          successMessage = 'Exercício removido deste treino. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
+        } else if (mode == WorkoutScreenMode.editing) {
+          successMessage = 'Exercício removido deste treino registrado com sucesso. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
+        } else if (mode == WorkoutScreenMode.template) {
+          successMessage = 'Exercício removido do plano deste dia.';
+        } else {
+          successMessage = 'Exercício removido com sucesso.';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exercício removido com sucesso'),
+          SnackBar(
+            content: Text(successMessage),
             backgroundColor: Colors.green,
           ),
         );
