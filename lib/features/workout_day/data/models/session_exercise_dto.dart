@@ -110,10 +110,7 @@ class SessionExerciseDto {
   /// Convert DTO to domain entity
   WorkoutExercise toEntity() {
     final series = config.series;
-    final entries = series
-        .asMap()
-        .entries
-        .map((e) {
+    final entries = series.asMap().entries.map((e) {
       // Determine series type. If label is missing and this is the first
       // series of multiple entries, treat it as warm-up by default.
       final label = e.value.label;

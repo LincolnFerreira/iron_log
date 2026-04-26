@@ -273,7 +273,8 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                       });
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         _weightFocusNode.requestFocus();
-                        _weightController.selection = TextSelection.fromPosition(
+                        _weightController
+                            .selection = TextSelection.fromPosition(
                           TextPosition(offset: _weightController.text.length),
                         );
                       });
