@@ -113,16 +113,23 @@ class SessionExerciseDto {
     final entries = series
         .asMap()
         .entries
-        .map(
-          (e) => SeriesEntry(
-            index: e.key,
-            type: _labelToType(e.value.label),
-            weight: (e.value.weight ?? 0).toString(),
-            reps: (e.value.reps ?? 0).toString(),
-            done: false,
-          ),
-        )
-        .toList();
+        .map((e) {
+      // Determine series type. If label is missing and this is the first
+      // series of multiple entries, treat it as warm-up by default.
+      final label = e.value.label;
+      final isFirst = e.key == 0;
+      final type = (label == null && isFirst && series.length > 1)
+          ? 0
+          : _labelToType(label);
+
+      return SeriesEntry(
+        index: e.key,
+        type: type,
+        weight: (e.value.weight ?? 0).toString(),
+        reps: (e.value.reps ?? 0).toString(),
+        done: false,
+      );
+    }).toList();
 
     final firstSeries = series.isNotEmpty ? series.first : null;
     final weight = firstSeries?.weight ?? 0.0;
@@ -134,7 +141,9 @@ class SessionExerciseDto {
       tag: exercise.toTag(),
       muscles: exercise.primaryMuscle ?? 'Não especificado',
       variation: config.variation ?? 'Traditional',
-      series: series.isNotEmpty ? series.length : 2,
+      // TODO(SERIES_DYNAMIC): Default series fallback when source omits series.
+      // Make this configurable in future instead of hardcoding here.
+      series: series.isNotEmpty ? series.length : 1,
       reps: reps > 0 ? reps.toString() : '-',
       weight: weight > 0 ? weight.toString() : '0',
       rir: firstSeries?.rir ?? 0,

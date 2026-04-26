@@ -51,7 +51,9 @@ class WorkoutExercise {
       tag: ExerciseTag.fromString(json['tag']?.toString() ?? 'multi'),
       muscles: json['muscles']?.toString() ?? '',
       variation: json['variation']?.toString() ?? 'Traditional',
-      series: json['series'] ?? 3,
+      // TODO(SERIES_DYNAMIC): Default series when backend omits value.
+      // Consider making this dynamic via settings/provider in future.
+      series: json['series'] ?? 1,
       reps: json['reps']?.toString() ?? '-',
       weight: json['weight']?.toString() ?? '0',
       rir: json['rir'] ?? 2,

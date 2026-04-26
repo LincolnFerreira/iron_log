@@ -80,7 +80,11 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         onChangeWorkout: () => _changeWorkout(context),
         onQuickCreate: () => _quickCreateWorkout(context),
         onRetryWorkout: () => _retryWorkout(ref),
-        onRefresh: () => ref.read(homeProvider.notifier).refresh(),
+        onRefresh: () async {
+          await ref.read(homeProvider.notifier).refresh();
+          // Revalida o provider de perfil para garantir nome/avatar atualizados
+          ref.read(userProfileRefreshProvider)();
+        },
         onAvatarTap: () => _showUserMenu(context, ref),
         metrics: homeState.metrics,
         routineSessions: homeState.todaysRoutine?.sessions ?? [],

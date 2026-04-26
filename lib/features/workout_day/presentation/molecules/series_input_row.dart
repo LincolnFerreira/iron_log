@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
 
-
 /// A single input row in the SeriesTable for editing series during workout.
 /// Manages its own editing state with TextControllers for weight and reps entry.
 class SeriesInputRow extends StatefulWidget {
@@ -33,14 +32,18 @@ class SeriesInputRow extends StatefulWidget {
 class _SeriesInputRowState extends State<SeriesInputRow> {
   late TextEditingController _weightController;
   late TextEditingController _repController;
+  late FocusNode _weightFocusNode;
+  late FocusNode _repFocusNode;
   late bool _editingWeight;
   late bool _editingReps;
 
   @override
   void initState() {
     super.initState();
-    _weightController = TextEditingController();
-    _repController = TextEditingController();
+    _weightController = TextEditingController(text: widget.entry.weight);
+    _repController = TextEditingController(text: widget.entry.reps);
+    _weightFocusNode = FocusNode();
+    _repFocusNode = FocusNode();
     _editingWeight = false;
     _editingReps = false;
     widget.activateWeightToken?.addListener(_onActivateWeight);
@@ -50,14 +53,24 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
   void dispose() {
     widget.activateWeightToken?.removeListener(_onActivateWeight);
     _weightController.dispose();
+    _weightFocusNode.dispose();
     _repController.dispose();
+    _repFocusNode.dispose();
     super.dispose();
   }
 
   void _onActivateWeight() {
+    // When parent requests activation, populate controller and focus weight field
     setState(() {
       _editingWeight = true;
       _editingReps = false;
+      _weightController.text = widget.entry.weight;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _weightFocusNode.requestFocus();
+      _weightController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _weightController.text.length),
+      );
     });
   }
 
@@ -78,6 +91,13 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     setState(() {
       _editingWeight = false;
       _editingReps = true;
+      _repController.text = widget.entry.reps;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _repFocusNode.requestFocus();
+      _repController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _repController.text.length),
+      );
     });
   }
 
@@ -92,6 +112,18 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     _updateEntry(widget.entry.copyWith(reps: reps));
     setState(() => _editingReps = false);
     widget.onRepsDone?.call();
+  }
+
+  @override
+  void didUpdateWidget(covariant SeriesInputRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Keep controllers in sync with external entry changes
+    if (widget.entry.weight != oldWidget.entry.weight && !_editingWeight) {
+      _weightController.text = widget.entry.weight;
+    }
+    if (widget.entry.reps != oldWidget.entry.reps && !_editingReps) {
+      _repController.text = widget.entry.reps;
+    }
   }
 
   void _handleTypeChanged(int? type) {
@@ -211,6 +243,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
             child: _editingWeight
                 ? TextField(
                     controller: _weightController,
+                    focusNode: _weightFocusNode,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
@@ -218,7 +251,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                       // FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
                     ],
                     textInputAction: TextInputAction.next,
-                    autofocus: true,
+                    autofocus: false,
                     onChanged: _handleWeightChanged,
                     onSubmitted: _handleWeightSubmitted,
                     decoration: InputDecoration(
@@ -232,10 +265,17 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                     ),
                   )
                 : GestureDetector(
-                    onTap: () {
+                    onTapDown: (details) {
                       setState(() {
                         _editingWeight = true;
                         _editingReps = false;
+                        _weightController.text = widget.entry.weight;
+                      });
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _weightFocusNode.requestFocus();
+                        _weightController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _weightController.text.length),
+                        );
                       });
                     },
                     child: Container(
@@ -274,12 +314,13 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
             child: _editingReps
                 ? TextField(
                     controller: _repController,
+                    focusNode: _repFocusNode,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     textInputAction: widget.isLastRow
                         ? TextInputAction.done
                         : TextInputAction.next,
-                    autofocus: true,
+                    autofocus: false,
                     onChanged: _handleRepsChanged,
                     onSubmitted: _handleRepsSubmitted,
                     decoration: InputDecoration(
@@ -293,10 +334,17 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                     ),
                   )
                 : GestureDetector(
-                    onTap: () {
+                    onTapDown: (details) {
                       setState(() {
                         _editingReps = true;
                         _editingWeight = false;
+                        _repController.text = widget.entry.reps;
+                      });
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _repFocusNode.requestFocus();
+                        _repController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _repController.text.length),
+                        );
                       });
                     },
                     child: Container(
