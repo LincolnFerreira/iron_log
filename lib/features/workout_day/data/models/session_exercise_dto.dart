@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
@@ -118,6 +119,11 @@ class SessionExerciseDto {
       final type = (label == null && isFirst && series.length > 1)
           ? 0
           : _labelToType(label);
+
+      // Debug: trace how labels from config.series map to internal type
+      debugPrint(
+        '[SessionExerciseDto.toEntity] exerciseId=${exerciseId ?? "<unknown>"} index=${e.key} label=${label ?? "<null>"} -> type=$type (seriesLen=${series.length})',
+      );
 
       return SeriesEntry(
         index: e.key,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
@@ -108,9 +109,14 @@ class SerieLogDto {
 
   /// Convert single SerieLog to SeriesEntry (for building entries list)
   SeriesEntry toSeriesEntry(int index) {
+    final resolvedType = _labelToType(label);
+    // Debug: trace how saved SerieLog label maps to internal type
+    debugPrint(
+      '[SerieLogDto.toSeriesEntry] sessionExerciseId=${sessionExerciseId} setIndex=${setIndex ?? index} label=${label ?? "<null>"} -> type=$resolvedType',
+    );
     return SeriesEntry(
       index: index,
-      type: _labelToType(label),
+      type: resolvedType,
       weight: (weight ?? 0) > 0 ? weight.toString() : '0',
       reps: (reps ?? 0) > 0 ? reps.toString() : '0',
       done: true, // Already executed

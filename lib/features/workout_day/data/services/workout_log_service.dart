@@ -94,6 +94,11 @@ class WorkoutLogService {
       }
     }
 
+    // Debug: log the label strings that will be sent to backend for this exercise
+    debugPrint(
+      '[WorkoutLogService._exerciseToDto] exerciseId=${exercise.id} labels=$labelList sets=$sets',
+    );
+
     return {
       'exerciseId': exercise.id,
       'name': exercise.name,

@@ -84,9 +84,13 @@ class _SeriesTableState extends State<SeriesTable> {
     }
     if (result.length > widget.count) return result.sublist(0, widget.count);
 
-    print('  resolved result.length: ${result.length}');
+    debugPrint(
+      '  [SeriesTable._resolvedEntries] resolved result.length: ${result.length}',
+    );
     if (result.isNotEmpty) {
-      print('  ✓ first resolved entry.weight: "${result[0].weight}"');
+      debugPrint(
+        '  ✓ first resolved entry.weight: "${result[0].weight}" first.type: ${result[0].type}',
+      );
     }
     return result;
   }

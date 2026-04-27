@@ -78,10 +78,26 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
       if (result.length > _series) return result.sublist(0, _series);
       return result;
     }
-    return List.generate(
+    final generated = List.generate(
       _series,
-      (i) => SeriesEntry(index: i, weight: _weight, reps: _reps),
+      (i) => SeriesEntry(
+        index: i,
+        weight: _weight,
+        reps: _reps,
+        // If source was empty, make the first generated row a warm-up
+        // so the UI shows 'Aquec.' instead of default 'Trab'.
+        type: (i == 0) ? 0 : 2,
+      ),
     );
+
+    // Debug: when UI generates default entries, log the assigned types
+    if (generated.isNotEmpty) {
+      debugPrint(
+        '[ExerciseCard._buildEntries] source.empty, generated first.type=${generated[0].type} series=$_series exercise=${widget.exercise.name}',
+      );
+    }
+
+    return generated;
   }
 
   @override
