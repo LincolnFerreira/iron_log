@@ -86,7 +86,7 @@ final createActivityProvider =
         }
 
         final result = CreateActivityResponse.fromJson(
-          data as Map<String, dynamic>,
+          data,
         );
 
         // Invalida o provider de calendar para refrescar UI

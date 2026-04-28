@@ -210,7 +210,6 @@ class _ActivityButton extends StatelessWidget {
   final bool isOutlined;
 
   const _ActivityButton({
-    super.key,
     required this.icon,
     required this.iconColor,
     required this.title,

@@ -158,7 +158,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         builder: (context) => WorkoutDayScreen.create(
           routineId: routine.id,
           sessionId: selectedSession!.id,
-          subtitle: '${selectedSession!.name} - ${routine.name}',
+          subtitle: '${selectedSession.name} - ${routine.name}',
         ),
       ),
     );

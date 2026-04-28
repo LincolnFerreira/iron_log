@@ -87,28 +87,56 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   @override
   void didUpdateWidget(covariant ExerciseCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Sync all exercise fields when backend updates the exercise
-    if (widget.exercise != oldWidget.exercise) {
-      setState(() {
-        _series = widget.exercise.series;
-        _reps = widget.exercise.reps;
-        _weight = widget.exercise.weight;
-        _rir = widget.exercise.rir;
-        _restTime = widget.exercise.restTime;
-        _weightUnit = widget.exercise.weightUnit;
-        _notes = widget.exercise.notes ?? '';
-      });
-    }
-    final incoming = widget.exercise.entries;
-    // Sync when the provider delivers real entries (e.g. after async load)
-    // but only if the user hasn’t typed anything unique yet.
-    if (incoming.isNotEmpty && incoming != oldWidget.exercise.entries) {
-      final userHasEdited = _currentEntries.any(
-        (e) => e.weight != '' && e.weight != '0' && e.weight != _weight,
-      );
-      if (!userHasEdited) {
-        setState(() => _currentEntries = _buildEntries(incoming));
+    // Robust sync: compare important fields and entries content rather than
+    // relying on `==` which is identity-by-id for WorkoutExercise.
+    bool entriesDiffer(List<SeriesEntry> a, List<SeriesEntry> b) {
+      if (a.length != b.length) return true;
+      for (var i = 0; i < a.length; i++) {
+        final x = a[i];
+        final y = b[i];
+        if (x.index != y.index ||
+            x.weight != y.weight ||
+            x.reps != y.reps ||
+            x.done != y.done ||
+            x.type != y.type) {
+          return true;
+        }
       }
+      return false;
+    }
+
+    final oldEx = oldWidget.exercise;
+    final newEx = widget.exercise;
+
+    final bool significantChange =
+        !identical(newEx, oldEx) ||
+        newEx.series != oldEx.series ||
+        newEx.reps != oldEx.reps ||
+        newEx.weight != oldEx.weight ||
+        newEx.rir != oldEx.rir ||
+        newEx.restTime != oldEx.restTime ||
+        newEx.weightUnit != oldEx.weightUnit ||
+        newEx.notes != oldEx.notes ||
+        entriesDiffer(newEx.entries, oldEx.entries);
+
+    if (significantChange) {
+      setState(() {
+        _series = newEx.series;
+        _reps = newEx.reps;
+        _weight = newEx.weight;
+        _rir = newEx.rir;
+        _restTime = newEx.restTime;
+        _weightUnit = newEx.weightUnit;
+        _notes = newEx.notes ?? '';
+        // If provider supplied entries and user hasn't edited, adopt them
+        final incoming = newEx.entries;
+        final userHasEdited = _currentEntries.any(
+          (e) => e.weight != '' && e.weight != '0' && e.weight != _weight,
+        );
+        if (incoming.isNotEmpty && !userHasEdited) {
+          _currentEntries = _buildEntries(incoming);
+        }
+      });
     }
   }
 

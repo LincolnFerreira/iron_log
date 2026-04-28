@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../domain/entities/workout_summary.dart';
-import '../../domain/entities/workout_enums.dart';
 import '../../data/providers/create_activity_provider.dart';
 
 /// Página para criação rápida de cardio
@@ -334,7 +332,6 @@ class _IntensityButton extends StatelessWidget {
   final VoidCallback onTap;
 
   const _IntensityButton({
-    super.key,
     required this.label,
     required this.value,
     required this.selected,

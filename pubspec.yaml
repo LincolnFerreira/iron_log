@@ -50,6 +50,7 @@ dependencies:
   flutter_svg: ^1.1.1
   flutter_localizations:
     sdk: flutter
+  fl_chart: ^1.2.0 
 
   # Offline-first database
   drift: ^2.14.0
@@ -58,6 +59,9 @@ dependencies:
   path_provider: ^2.1.0
   path: ^1.8.3
   connectivity_plus: ^5.0.0
+
+  # On-device speech recognition (Android pt-BR)
+  speech_to_text: ^7.3.0
 
 
 dev_dependencies:

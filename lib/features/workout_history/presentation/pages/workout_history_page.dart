@@ -8,6 +8,7 @@ import 'package:iron_log/features/workout_day/presentation/pages/workout_day_scr
 import 'package:iron_log/features/workout_history/presentation/components/atoms/history_month_header.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/history_filter_tabs.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
+import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_skeleton.dart';
 import 'package:iron_log/features/workout_history/presentation/components/organisms/workout_detail_sheet.dart';
 import 'package:iron_log/features/workout_history/presentation/providers/history_filter_provider.dart';
 import 'package:iron_log/features/workout_history/presentation/providers/workout_history_provider.dart';
@@ -129,9 +130,16 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
         loading: () => CustomScrollView(
           slivers: [
             _buildAppBar(context, null, filter),
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const Padding(
+                  padding: EdgeInsets.only(bottom: 10),
+                  child: WorkoutHistorySkeleton(),
+                ),
+                childCount: 4,
+              ),
             ),
+            const SliverToBoxAdapter(child: SizedBox(height: 96)),
           ],
         ),
         error: (e, _) => CustomScrollView(
@@ -150,7 +158,8 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () => ref.invalidate(workoutHistoryProvider),
+                      onPressed: () async =>
+                          await ref.refresh(workoutHistoryProvider.future),
                       child: const Text('Tentar novamente'),
                     ),
                   ],
@@ -173,11 +182,15 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
 
           return RefreshIndicator(
             onRefresh: () async {
-              ref.invalidate(workoutHistoryProvider);
+              // Await the refreshed future so the RefreshIndicator shows
+              // while the provider is reloading and the UI can enter
+              // the loading/skeleton state.
+              await ref.refresh(workoutHistoryProvider.future);
             },
             child: CustomScrollView(
               slivers: [
                 _buildAppBar(context, filtered.length, filter),
+                const SliverToBoxAdapter(child: SizedBox(height: 8)),
                 // Filter tabs (non-sticky — avoids SliverPersistentHeader
                 // layout issues with floating SliverAppBar)
                 const SliverToBoxAdapter(child: HistoryFilterTabs()),

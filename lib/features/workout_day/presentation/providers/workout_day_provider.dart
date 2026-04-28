@@ -523,7 +523,7 @@ class WorkoutDayExercisesNotifier
       if (kDebugMode) {
         print('✅ WorkoutSession criada: $workoutSessionId');
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       if (kDebugMode) {
         print('❌ Erro ao iniciar execução: $e');
       }

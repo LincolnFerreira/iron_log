@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 
 class ExerciseReorderSheet {
@@ -23,8 +22,7 @@ class ExerciseReorderSheet {
 class _ExerciseReorderContent extends StatefulWidget {
   final List<WorkoutExercise> exercises;
 
-  const _ExerciseReorderContent({Key? key, required this.exercises})
-    : super(key: key);
+  const _ExerciseReorderContent({required this.exercises});
 
   @override
   State<_ExerciseReorderContent> createState() =>

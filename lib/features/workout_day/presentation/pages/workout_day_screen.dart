@@ -15,12 +15,14 @@ import '../components/organisms/add_exercise_bottom_sheet.dart';
 import '../components/organisms/reorderable_exercises_list.dart';
 import '../components/organisms/exercise_reorder_sheet.dart';
 import '../organisms/footer_actions.dart';
+import '../organisms/exercise_skeleton_card.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/workout_timer_provider.dart';
 import '../controllers/workout_controller.dart';
 import '../../domain/workout_mode.dart';
 import '../../domain/enums/workout_screen_mode.dart';
 import './workout_summary_screen.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/voice_input_bottom_sheet.dart';
 
 class WorkoutDayScreen extends ConsumerStatefulWidget {
   final String? routineId;
@@ -274,7 +276,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   Widget build(BuildContext context) {
     final exercisesAsync = ref.watch(workoutDayExercisesProvider);
 
-    Future<void> _openReorderSheet() async {
+    Future<void> openReorderSheet() async {
       final current = ref.read(workoutDayExercisesProvider).value ?? [];
       if (current.isEmpty) return;
       final result = await ExerciseReorderSheet.show(context, current);
@@ -296,7 +298,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     : '${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
-                onMorePressed: _openReorderSheet,
+                onMorePressed: openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
               loading: () => WorkoutDayHeader(
@@ -304,7 +306,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 subtitle: 'Carregando...',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
-                onMorePressed: _openReorderSheet,
+                onMorePressed: openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
               error: (_, __) => WorkoutDayHeader(
@@ -312,7 +314,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 subtitle: 'Erro ao carregar',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
-                onMorePressed: _openReorderSheet,
+                onMorePressed: openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
             ),
@@ -368,7 +370,14 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         //NÃO retirar esse método daqui, ele está totalmente correto aqui!
                         onAddExercise: () => _showAddExerciseBottomSheet(),
                       ),
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: 3,
+                  itemBuilder: (context, index) => const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: ExerciseSkeleton(),
+                  ),
+                ),
                 error: (error, stackTrace) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -567,6 +576,22 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
             : null,
         loading: () => null,
         error: (_, __) => null,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            builder: (_) => VoiceInputBottomSheet(sessionId: widget.sessionId),
+          );
+        },
+        child: const Icon(Icons.mic),
       ),
     );
   }

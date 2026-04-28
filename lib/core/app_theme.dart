@@ -24,14 +24,22 @@ class AppTheme {
   }
 
   static ThemeData get dark {
-    return ThemeData.dark().copyWith(
+    return ThemeData.dark(useMaterial3: true).copyWith(
+      // ← adiciona useMaterial3
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.primaryDark,
+        primary: AppColors.primaryDark, // blue40 = #99B7FF
+        onPrimary: AppColors.gray100, // texto sobre primary
         secondary: AppColors.blue30,
-        surface: AppColors.surfaceDark,
+        onSecondary: AppColors.gray100,
+        surface: AppColors.surfaceDark, // dark20
+        onSurface: AppColors.textPrimaryDark, // white
+        surfaceContainerHighest:
+            AppColors.dark30, // ← para inputs, cards elevados
+        onSurfaceVariant: AppColors.gray40, // textos secundários
+        outline: AppColors.dark40, // bordas
         error: AppColors.error,
+        onError: AppColors.white,
       ),
-
       textTheme: _textTheme(AppColors.textPrimaryDark),
       scaffoldBackgroundColor: AppColors.backgroundDark,
       appBarTheme: const AppBarTheme(
@@ -39,31 +47,39 @@ class AppTheme {
         foregroundColor: AppColors.textPrimaryDark,
         elevation: 0,
       ),
+      // InputDecoration global para TextFields e Dropdowns
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.dark30,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.dark40),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.dark40),
+        ),
+        labelStyle: const TextStyle(color: AppColors.gray50),
+        hintStyle: TextStyle(color: AppColors.gray50.withOpacity(0.6)),
+      ),
+      // PopupMenu herda surfaceDark
+      popupMenuTheme: const PopupMenuThemeData(
+        color: AppColors.dark30,
+        surfaceTintColor: Colors.transparent,
+      ),
+      // BottomSheet
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surfaceDark,
+        surfaceTintColor: Colors.transparent,
+      ),
+      // Dialog
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.dark30,
+        surfaceTintColor: Colors.transparent,
+      ),
       extensions: <ThemeExtension<dynamic>>[_darkThemeExtensions],
     );
   }
-
-  // fontFamily: 'Inter',
-  //           textTheme: const TextTheme(
-  //             displayLarge: TextStyle(fontSize: 57, fontWeight: FontWeight.w400),
-  //             displayMedium: TextStyle(fontSize: 45, fontWeight: FontWeight.w400),
-  //             displaySmall: TextStyle(fontSize: 36, fontWeight: FontWeight.w400),
-  //             headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.w400),
-  //             headlineMedium: TextStyle(
-  //               fontSize: 28,
-  //               fontWeight: FontWeight.w400,
-  //             ),
-  //             headlineSmall: TextStyle(fontSize: 24, fontWeight: FontWeight.w400),
-  //             titleLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
-  //             titleMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-  //             titleSmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-  //             bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-  //             bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-  //             bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-  //             labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-  //             labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-  //             labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-  //           ),
 
   static TextTheme _textTheme(Color textColor) {
     return TextTheme(

@@ -53,16 +53,19 @@ class AppColors {
 
   // ========== Cores Temáticas ==========
   // Light Theme
-  static const primaryLight = blue100;
+  static const primaryLight = Color(0xFF2E5BFF);
   static const backgroundLight = gray10;
   static const surfaceLight = white;
   static const textPrimaryLight = gray100;
   static const textSecondaryLight = gray50;
 
   // Dark Theme
-  static const primaryDark = blue40;
+  static const primaryDark = Color(0xFF99B7FF);
   static const backgroundDark = dark10;
-  static const surfaceDark = dark20;
+  // Prefer a slightly lighter surface than dark20 for better contrast over
+  // backgroundDark. Use dark30 to mirror the light theme's card>background
+  // separation (white over gray10).
+  static const surfaceDark = dark30;
   static const textPrimaryDark = white;
   static const textSecondaryDark = gray50;
 }
