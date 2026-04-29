@@ -71,7 +71,6 @@ android/key.properties
 
 
 # Flutter/Dart/PWA Build Outputs
-/build/
 /web-build/
 /dist/
 /out/
