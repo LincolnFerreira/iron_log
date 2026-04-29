@@ -13,9 +13,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // Initialize GoogleSignIn on mobile only. Update `_webClientId` if needed.
-  const String _webClientId = '222174717889-qcdugbpqpmebh8j86q2t0rhfjqi48s64.apps.googleusercontent.com';
+  const String webClientId =
+      '222174717889-qcdugbpqpmebh8j86q2t0rhfjqi48s64.apps.googleusercontent.com';
   if (!kIsWeb) {
-    await GoogleSignIn.instance.initialize(serverClientId: _webClientId);
+    await GoogleSignIn.instance.initialize(serverClientId: webClientId);
   }
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
 

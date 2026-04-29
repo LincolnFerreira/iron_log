@@ -371,13 +371,13 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         onAddExercise: () => _showAddExerciseBottomSheet(),
                       ),
                 loading: () => ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: 3,
-                      itemBuilder: (context, index) => const Padding(
-                        padding: EdgeInsets.only(bottom: 16),
-                        child: ExerciseSkeleton(),
-                      ),
-                    ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: 3,
+                  itemBuilder: (context, index) => const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: ExerciseSkeleton(),
+                  ),
+                ),
                 error: (error, stackTrace) => Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

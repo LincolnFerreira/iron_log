@@ -16,8 +16,10 @@ class SpeechResult {
 
 class SpeechToTextService {
   final SpeechToText _speech = SpeechToText();
-  final StreamController<SpeechResult> _controller = StreamController.broadcast();
-  final StreamController<double> _levelController = StreamController.broadcast();
+  final StreamController<SpeechResult> _controller =
+      StreamController.broadcast();
+  final StreamController<double> _levelController =
+      StreamController.broadcast();
   bool _initialized = false;
 
   // Simulation configuration
@@ -135,7 +137,10 @@ class SpeechToTextService {
       // emit a short sequence of levels to simulate ending
       try {
         _levelController.add(6.0);
-        Timer(const Duration(milliseconds: 100), () => _levelController.add(0.0));
+        Timer(
+          const Duration(milliseconds: 100),
+          () => _levelController.add(0.0),
+        );
       } catch (_) {}
       _simFinalEmitted = true;
     });
