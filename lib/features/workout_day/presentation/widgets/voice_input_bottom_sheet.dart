@@ -165,12 +165,8 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                             if (amp < 0.0) amp = 0.0;
                             if (amp > 1.0) amp = 1.0;
                           }
-                          final pulseFactor =
-                              _pulseAnim.value - 1.0; // 0.0..0.12
-                          final scale =
-                              1.0 +
-                              (amp * 0.5) +
-                              (amp < 0.02 && isRecording ? pulseFactor : 0.0);
+                          final pulseFactor = _pulseAnim.value - 1.0; // 0.0..0.12
+                          final scale = 1.0 + (amp * 0.5) + (amp < 0.02 && isRecording ? pulseFactor : 0.0);
                           return Transform.scale(
                             scale: scale,
                             child: Container(
@@ -179,16 +175,12 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                               decoration: BoxDecoration(
                                 color: isRecording
                                     ? Colors.redAccent
-                                    : (isTranscribing
-                                          ? AppColors.primaryLight
-                                          : AppColors.gray20),
+                                    : (isTranscribing ? AppColors.primaryLight : AppColors.gray20),
                                 shape: BoxShape.circle,
                                 boxShadow: isRecording
                                     ? [
                                         BoxShadow(
-                                          color: Colors.redAccent.withOpacity(
-                                            0.25,
-                                          ),
+                                          color: Colors.redAccent.withOpacity(0.25),
                                           blurRadius: 16,
                                           spreadRadius: 2,
                                         ),
@@ -246,9 +238,7 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                             height: base * scale,
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             decoration: BoxDecoration(
-                              color: isActive
-                                  ? AppColors.primaryLight
-                                  : AppColors.gray40,
+                              color: isActive ? AppColors.primaryLight : AppColors.gray40,
                               borderRadius: BorderRadius.circular(3),
                             ),
                           );
@@ -320,8 +310,7 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                   physics: const NeverScrollableScrollPhysics(),
                   itemBuilder: (ctx, idx) {
                     final resolved = state.resolved[idx];
-                    final title =
-                        resolved.matchedExerciseName ?? resolved.parsed.name;
+                    final title = resolved.matchedExerciseName ?? resolved.parsed.name;
 
                     // ensure controllers exist for this resolved index
                     if (!_weightCtrls.containsKey(idx)) {
@@ -340,9 +329,7 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                       _repCtrls[idx] = rCtrls;
                     }
 
-                    final weights = _weightCtrls[idx]!
-                        .map((c) => c.text)
-                        .join(', ');
+                    final weights = _weightCtrls[idx]!.map((c) => c.text).join(', ');
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -354,44 +341,25 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                             Row(
                               children: [
                                 resolved.isResolved
-                                    ? const Icon(
-                                        Icons.check_circle,
-                                        color: Colors.green,
-                                      )
-                                    : const Icon(
-                                        Icons.help_outline,
-                                        color: Colors.orange,
-                                      ),
+                                    ? const Icon(Icons.check_circle, color: Colors.green)
+                                    : const Icon(Icons.help_outline, color: Colors.orange),
                                 const SizedBox(width: 8),
                                 Expanded(child: Text(title)),
                                 const SizedBox(width: 8),
                                 if (!resolved.isResolved)
                                   PopupMenuButton<String>(
                                     onSelected: (id) {
-                                      final name = sessionExercises
-                                          .firstWhere((e) => e.id == id)
-                                          .name;
+                                      final name = sessionExercises.firstWhere((e) => e.id == id).name;
                                       notifier.assignExercise(idx, id, name);
                                     },
                                     itemBuilder: (_) {
-                                      final items =
-                                          resolved.candidates.isNotEmpty
+                                      final items = resolved.candidates.isNotEmpty
                                           ? resolved.candidates
                                           : sessionExercises
-                                                .map(
-                                                  (e) => {
-                                                    'id': e.id,
-                                                    'name': e.name,
-                                                  },
-                                                )
-                                                .toList();
-                                      return items.map<PopupMenuItem<String>>((
-                                        c,
-                                      ) {
-                                        return PopupMenuItem(
-                                          value: c['id']!,
-                                          child: Text(c['name']!),
-                                        );
+                                              .map((e) => {'id': e.id, 'name': e.name})
+                                              .toList();
+                                      return items.map<PopupMenuItem<String>>((c) {
+                                        return PopupMenuItem(value: c['id']!, child: Text(c['name']!));
                                       }).toList();
                                     },
                                     child: const Text('Selecionar'),
@@ -399,67 +367,47 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                               ],
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              'Séries: $weights ${resolved.parsed.weightUnit}',
-                            ),
+                            Text('Séries: $weights ${resolved.parsed.weightUnit}'),
                             const SizedBox(height: 8),
                             Column(
-                              children: List.generate(
-                                _weightCtrls[idx]!.length,
-                                (sIdx) {
-                                  final wCtrl = _weightCtrls[idx]![sIdx];
-                                  final rCtrl = _repCtrls[idx]![sIdx];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 6.0,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        SizedBox(
-                                          width: 100,
-                                          child: TextField(
-                                            controller: wCtrl,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Peso',
-                                            ),
-                                            keyboardType:
-                                                TextInputType.numberWithOptions(
-                                                  decimal: true,
-                                                ),
-                                          ),
+                              children: List.generate(_weightCtrls[idx]!.length, (sIdx) {
+                                final wCtrl = _weightCtrls[idx]![sIdx];
+                                final rCtrl = _repCtrls[idx]![sIdx];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 100,
+                                        child: TextField(
+                                          controller: wCtrl,
+                                          decoration: const InputDecoration(labelText: 'Peso'),
+                                          keyboardType: TextInputType.numberWithOptions(decimal: true),
                                         ),
-                                        const SizedBox(width: 8),
-                                        SizedBox(
-                                          width: 80,
-                                          child: TextField(
-                                            controller: rCtrl,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Reps',
-                                            ),
-                                            keyboardType: TextInputType.number,
-                                          ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      SizedBox(
+                                        width: 80,
+                                        child: TextField(
+                                          controller: rCtrl,
+                                          decoration: const InputDecoration(labelText: 'Reps'),
+                                          keyboardType: TextInputType.number,
                                         ),
-                                        const Spacer(),
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.delete_outline,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _weightCtrls[idx]!
-                                                  .removeAt(sIdx)
-                                                  .dispose();
-                                              _repCtrls[idx]!
-                                                  .removeAt(sIdx)
-                                                  .dispose();
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
+                                      ),
+                                      const Spacer(),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline),
+                                        onPressed: () {
+                                          setState(() {
+                                            _weightCtrls[idx]!.removeAt(sIdx).dispose();
+                                            _repCtrls[idx]!.removeAt(sIdx).dispose();
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
                             ),
                           ],
                         ),
@@ -493,27 +441,15 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                               try {
                                 // build overrides from local controllers
                                 final overrides = <int, List<SeriesEntry>>{};
-                                for (
-                                  var idx = 0;
-                                  idx < state.resolved.length;
-                                  idx++
-                                ) {
+                                for (var idx = 0; idx < state.resolved.length; idx++) {
                                   if (!_weightCtrls.containsKey(idx)) continue;
                                   final wList = _weightCtrls[idx]!;
                                   final rList = _repCtrls[idx]!;
                                   final entries = <SeriesEntry>[];
                                   for (var s = 0; s < wList.length; s++) {
                                     final weightText = wList[s].text.trim();
-                                    final repsText = (s < rList.length)
-                                        ? rList[s].text.trim()
-                                        : '';
-                                    entries.add(
-                                      SeriesEntry(
-                                        index: s,
-                                        weight: weightText,
-                                        reps: repsText,
-                                      ),
-                                    );
+                                    final repsText = (s < rList.length) ? rList[s].text.trim() : '';
+                                    entries.add(SeriesEntry(index: s, weight: weightText, reps: repsText));
                                   }
                                   overrides[idx] = entries;
                                 }
@@ -523,19 +459,11 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                                   seriesOverrides: overrides,
                                 );
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Campos preenchidos com sucesso',
-                                    ),
-                                  ),
+                                  const SnackBar(content: Text('Campos preenchidos com sucesso')),
                                 );
                                 Navigator.of(context).maybePop();
                               } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Erro ao aplicar: $e'),
-                                  ),
-                                );
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao aplicar: $e')));
                               }
                             },
                       child: const Text('Aplicar'),
@@ -553,27 +481,15 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                               try {
                                 // build overrides from local controllers
                                 final overrides = <int, List<SeriesEntry>>{};
-                                for (
-                                  var idx = 0;
-                                  idx < state.resolved.length;
-                                  idx++
-                                ) {
+                                for (var idx = 0; idx < state.resolved.length; idx++) {
                                   if (!_weightCtrls.containsKey(idx)) continue;
                                   final wList = _weightCtrls[idx]!;
                                   final rList = _repCtrls[idx]!;
                                   final entries = <SeriesEntry>[];
                                   for (var s = 0; s < wList.length; s++) {
                                     final weightText = wList[s].text.trim();
-                                    final repsText = (s < rList.length)
-                                        ? rList[s].text.trim()
-                                        : '';
-                                    entries.add(
-                                      SeriesEntry(
-                                        index: s,
-                                        weight: weightText,
-                                        reps: repsText,
-                                      ),
-                                    );
+                                    final repsText = (s < rList.length) ? rList[s].text.trim() : '';
+                                    entries.add(SeriesEntry(index: s, weight: weightText, reps: repsText));
                                   }
                                   overrides[idx] = entries;
                                 }
@@ -585,20 +501,14 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                                 );
 
                                 // Then persist
-                                await notifier.confirmAndSave(
-                                  sessionId: widget.sessionId,
-                                );
+                                await notifier.confirmAndSave(sessionId: widget.sessionId);
 
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Registro salvo com sucesso'),
-                                  ),
+                                  const SnackBar(content: Text('Registro salvo com sucesso')),
                                 );
                                 Navigator.of(context).maybePop();
                               } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Erro ao salvar: $e')),
-                                );
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
                               }
                             },
                       child: const Text('Salvar'),

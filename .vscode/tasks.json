@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-web",
+      "type": "shell",
+      "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\build_web_prod.ps1",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "build-web (bash)",
+      "type": "shell",
+      "command": "bash ./scripts/build_web_prod.sh",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "serve-web",
+      "type": "shell",
+      "dependsOn": ["build-web"],
+      "command": "npx serve build/web -l 8000",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "serve-web (python)",
+      "type": "shell",
+      "command": "python -m http.server 8000 --directory build/web",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

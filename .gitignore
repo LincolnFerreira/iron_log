@@ -48,3 +48,64 @@ app.*.map.json
 *.jks
 *.keystore
 android/key.properties
+
+
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+
+
+# Flutter/Dart/PWA Build Outputs
+/build/
+/web-build/
+/dist/
+/out/
+
+# Dart tool
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+
+# Flutter generated
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+
+# Generated files
+**/generated_plugin_registrant.dart
+
+# Coverage
+coverage/
+
+# Firebase
+firebase-debug.log
+firestore-debug.log
+
+# Web / PWA
+web/firebase-messaging-sw.js.map
+web/icons/*.tmp
+service-worker.js
+flutter_service_worker.js
+
+# Node (caso use tooling web)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+pnpm-lock.yaml

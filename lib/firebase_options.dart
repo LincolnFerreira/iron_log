@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -64,5 +61,15 @@ class DefaultFirebaseOptions {
     projectId: 'iron-log-7021f',
     storageBucket: 'iron-log-7021f.firebasestorage.app',
     iosBundleId: 'com.example.ironLog',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBzRuPovIQJ2GMK5DeQgYrzY2YR4l238hg',
+    authDomain: 'iron-log-7021f.firebaseapp.com',
+    projectId: 'iron-log-7021f',
+    storageBucket: 'iron-log-7021f.firebasestorage.app',
+    messagingSenderId: '222174717889',
+    appId: '1:222174717889:web:c96fe70f9b0ffccbd97140',
+    measurementId: 'G-PJK0KBR315',
   );
 }

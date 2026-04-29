@@ -4,6 +4,7 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+  
     // ─── Dev: Emulador Android (10.0.2.2 → localhost da máquina) ───────────────
     {
       "name": "Dev: Debug",
@@ -34,6 +35,23 @@
       "program": "lib/main.dart",
       "args": ["--dart-define=FLAVOR=prod"],
       "flutterMode": "release"
+    }
+    ,
+    {
+      "name": "Flutter Web: Chrome (Dev)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "args": ["--dart-define=FLAVOR=dev"]
+    },
+    {
+      "name": "PWA: Open built site in Chrome (serve build/web)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:8000",
+      "webRoot": "${workspaceFolder}/build/web",
+      "preLaunchTask": "serve-web"
     }
   ]
 }

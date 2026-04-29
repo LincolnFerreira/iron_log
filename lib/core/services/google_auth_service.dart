@@ -23,6 +23,12 @@ class GoogleAuthService {
     String? serverClientId,
   }) async {
     try {
+      // Web: use Firebase Auth popup flow to avoid google_sign_in web quirks
+      if (kIsWeb) {
+        final provider = GoogleAuthProvider();
+        return await FirebaseAuth.instance.signInWithPopup(provider);
+      }
+
       if (clearSession) {
         await _googleSignIn.signOut();
       }
@@ -68,7 +74,10 @@ class GoogleAuthService {
   }
 
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    if (!kIsWeb) {
+      await _googleSignIn.signOut();
+    }
+
     await _auth.signOut();
   }
 }
