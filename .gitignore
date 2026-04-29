@@ -31,7 +31,11 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+/build/*
+
+# Keep the PWA build output tracked: do not ignore build/web
+!/build/web/
+!/build/web/**
 
 # Symbolication related
 app.*.symbols

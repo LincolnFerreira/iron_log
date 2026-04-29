@@ -1,0 +1,11 @@
+{
+  "firebase": {
+    "apiKey": "REPLACE_WITH_WEB_API_KEY",
+    "authDomain": "iron-log-7021f.firebaseapp.com",
+    "projectId": "iron-log-7021f",
+    "storageBucket": "iron-log-7021f.firebasestorage.app",
+    "messagingSenderId": "222174717889",
+    "appId": "REPLACE_WITH_WEB_APP_ID",
+    "measurementId": "REPLACE_WITH_MEASUREMENT_ID"
+  }
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Iron Log PWA">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Iron Log</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="google-signin-client_id" content="222174717889-qcdugbpqpmebh8j86q2t0rhfjqi48s64.apps.googleusercontent.com">
+    <link rel="icon" href="icons/icon.svg">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+    <style>body{margin:0}</style>
+  </head>
+  <body>
+   
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=1085779214').catch(function(e){console.warn('SW registration failed', e)});
+      }
+    </script>
+
+    <script src="main.dart.js" type="application/javascript"></script>
+  </body>
+</html>
