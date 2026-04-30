@@ -59,6 +59,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
 
     // Determina o nome do usuário com fallbacks apropriados
     final userName = userProfile.when(
+      skipLoadingOnRefresh: false,
       data: (profile) =>
           profile?.name ??
           _getFirstName(authState.user?.displayName) ??

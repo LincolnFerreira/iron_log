@@ -18,6 +18,7 @@ class RoutineLastWorkoutSection extends ConsumerWidget {
     return ref
         .watch(routineLastWorkoutProvider(routineId))
         .when(
+          skipLoadingOnRefresh: false,
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
           data: (workout) {

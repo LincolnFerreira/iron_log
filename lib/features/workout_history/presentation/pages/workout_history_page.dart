@@ -127,6 +127,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
 
     return Scaffold(
       body: historyAsync.when(
+        skipLoadingOnRefresh: false,
         loading: () => CustomScrollView(
           slivers: [
             _buildAppBar(context, null, filter),

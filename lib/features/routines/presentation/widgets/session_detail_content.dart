@@ -207,6 +207,7 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
               ),
               // Filtros rápidos por músculo (chips)
               browseAsync.when(
+                skipLoadingOnRefresh: false,
                 data: (groups) => SizedBox(
                   height: 48,
                   child: SingleChildScrollView(

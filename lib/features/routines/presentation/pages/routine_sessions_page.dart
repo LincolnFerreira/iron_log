@@ -99,6 +99,7 @@ class _SessionEditPageState extends ConsumerState<RoutineSessionsPage>
                 ),
                 const SizedBox(height: 8),
                 lastWorkoutAsync.when(
+                  skipLoadingOnRefresh: false,
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
                   error: (_, __) => const SizedBox.shrink(),

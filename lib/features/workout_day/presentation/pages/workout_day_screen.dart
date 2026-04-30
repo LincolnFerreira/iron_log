@@ -291,6 +291,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
           children: [
             // Header
             exercisesAsync.when(
+              skipLoadingOnRefresh: false,
               data: (exercises) => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: exercises.isEmpty
@@ -322,6 +323,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
             // Content
             Expanded(
               child: exercisesAsync.when(
+                skipLoadingOnRefresh: false,
                 data: (exercises) => exercises.isEmpty
                     ? Center(
                         child: Column(
@@ -408,6 +410,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         ),
       ),
       bottomNavigationBar: exercisesAsync.when(
+        skipLoadingOnRefresh: false,
         data: (exercises) => exercises.isNotEmpty
             ? FooterActions(
                 isManual: _selectedDate != null,

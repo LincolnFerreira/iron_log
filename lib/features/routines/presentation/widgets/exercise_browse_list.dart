@@ -17,6 +17,7 @@ class ExerciseBrowseList extends ConsumerWidget {
     final browseAsync = ref.watch(exerciseBrowseProvider);
 
     return browseAsync.when(
+      skipLoadingOnRefresh: false,
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(child: CircularProgressIndicator()),
