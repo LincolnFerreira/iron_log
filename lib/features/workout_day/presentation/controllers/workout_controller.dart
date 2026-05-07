@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/workout_local_ids.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../domain/entities/workout_summary.dart';
-import '../../data/services/workout_log_service.dart';
-import '../mappers/workout_mapper.dart';
 import '../../domain/workout_mode.dart';
+import '../mappers/workout_mapper.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/workout_timer_provider.dart';
 
@@ -32,7 +32,6 @@ final workoutControllerProvider =
 
 class WorkoutController extends StateNotifier<AsyncValue<void>> {
   final Ref ref;
-  final WorkoutLogService _service = WorkoutLogService();
 
   WorkoutController(this.ref) : super(const AsyncData(null));
 
@@ -82,6 +81,8 @@ class WorkoutController extends StateNotifier<AsyncValue<void>> {
       }
 
       state = const AsyncValue.loading();
+
+      final logService = ref.read(workoutLogServiceProvider);
 
       final now = DateTime.now();
 
@@ -137,7 +138,7 @@ class WorkoutController extends StateNotifier<AsyncValue<void>> {
           return FinishResult(success: false, needSessionSelection: true);
         }
 
-        await _service.updateWorkout(
+        await logService.updateWorkout(
           workoutId: workoutId,
           exercises: exercises,
           startedAt: startedAt,
@@ -192,14 +193,32 @@ class WorkoutController extends StateNotifier<AsyncValue<void>> {
         );
       }
 
-      await _service.saveWorkout(
-        exercises: exercises,
-        routineId: routineId,
-        startedAt: startedAt,
-        endedAt: endedAt,
-        isManual: selectedDate != null,
-        sessionId: sessionId,
-      );
+      final pendingWsId = ref.read(workoutSessionIdProvider);
+
+      final usePatchExisting =
+          pendingWsId != null &&
+          pendingWsId.isNotEmpty &&
+          !WorkoutLocalIds.isLocalSession(pendingWsId) &&
+          !WorkoutLocalIds.isQueuedOutbox(pendingWsId);
+
+      if (usePatchExisting) {
+        await logService.updateWorkout(
+          workoutId: pendingWsId,
+          exercises: exercises,
+          startedAt: startedAt,
+          endedAt: endedAt,
+          sessionId: sessionId,
+        );
+      } else {
+        await logService.saveWorkout(
+          exercises: exercises,
+          routineId: routineId,
+          startedAt: startedAt,
+          endedAt: endedAt,
+          isManual: selectedDate != null,
+          sessionId: sessionId,
+        );
+      }
 
       final summary = WorkoutMapper.toSummary(
         sessionName: '',

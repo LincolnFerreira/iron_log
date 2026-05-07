@@ -14,6 +14,9 @@ class Routines extends Table {
   BoolColumn get pendingSync => boolean().withDefault(const Constant(false))();
   DateTimeColumn get syncedAt => dateTime().nullable()();
 
+  /// Full API snapshot (JSON) so offline reads preserve sessions, exercises, isActive.
+  TextColumn get cachedRoutineJson => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 

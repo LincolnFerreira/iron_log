@@ -47,9 +47,10 @@ class ExerciseHistoryChip extends StatelessWidget {
     }
 
     final lastSet = history.sets.last;
+    final label = _buildLastTimeLabel(history, lastSet);
 
     return _buildChip(
-      label: lastSet.displayText,
+      label: label,
       borderColor: const Color(0xFF9C27B0),
       backgroundColor: const Color(0xFFF3E5F5),
       textColor: const Color(0xFF7B1FA2),
@@ -75,6 +76,8 @@ class ExerciseHistoryChip extends StatelessWidget {
         ),
         child: Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
@@ -83,5 +86,41 @@ class ExerciseHistoryChip extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _buildLastTimeLabel(ExerciseSetHistory history, WorkoutSet lastSet) {
+    final reps = lastSet.reps;
+    final repsText = reps != null ? '$reps reps' : 'reps —';
+    final weightText = lastSet.weight != null
+        ? '${lastSet.weight!.toStringAsFixed(lastSet.weight! % 1 == 0 ? 0 : 1)}${lastSet.weightUnit}'
+        : 'carga —';
+
+    if (history.sessionDate == null) {
+      return 'Última vez: $repsText com $weightText';
+    }
+
+    return 'Última vez: $repsText com $weightText (${_formatShortDate(history.sessionDate!)})';
+  }
+
+  String _formatShortDate(DateTime date) {
+    const weekdays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    const months = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
+
+    final weekday = weekdays[date.weekday - 1];
+    final month = months[date.month - 1];
+    return '$weekday, ${date.day} $month';
   }
 }

@@ -37,6 +37,7 @@ class WorkoutQuickActionsGrid extends StatelessWidget {
               child: _QuickActionCard(
                 icon: Icons.library_books,
                 label: 'Minhas Rotinas',
+                subtitle: 'Acompanhe seus treinos',
                 onTap: onMyRoutinesTap,
               ),
             ),
@@ -45,6 +46,7 @@ class WorkoutQuickActionsGrid extends StatelessWidget {
               child: _QuickActionCard(
                 icon: Icons.flash_on,
                 label: 'Novas Rotinas',
+                subtitle: 'Descubra novos treinos',
                 onTap: onNewRoutinesTap,
               ),
             ),
@@ -59,16 +61,22 @@ class WorkoutQuickActionsGrid extends StatelessWidget {
 class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String subtitle;
   final VoidCallback onTap;
 
   const _QuickActionCard({
     required this.icon,
     required this.label,
+    required this.subtitle,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -84,13 +92,20 @@ class _QuickActionCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        primary.withValues(alpha: isDark ? .22 : .14),
+                        primary.withValues(alpha: isDark ? .10 : .06),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     icon,
                     size: 24,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: isDark ? primary.withValues(alpha: .92) : primary,
                   ),
                 ),
                 Text(
@@ -98,6 +113,17 @@ class _QuickActionCard extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w500,
                     height: 1.2,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: theme.textTheme.bodySmall?.color?.withValues(
+                      alpha: isDark ? .72 : .62,
+                    ),
+                    height: 1.25,
                   ),
                 ),
               ],

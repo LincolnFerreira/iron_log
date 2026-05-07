@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart' as drift;
 
 import '../../../../core/database/app_database.dart';
@@ -42,9 +44,11 @@ class RoutineLocalDataSourceImpl implements RoutineLocalDataSource {
 
   @override
   Future<List<RoutineModel>> getRoutines(String userId) async {
-    final rows = await (database.select(
-      database.routines,
-    )..where((r) => r.userId.equals(userId))).get();
+    final query = database.select(database.routines);
+    if (userId.isNotEmpty) {
+      query.where((r) => r.userId.equals(userId));
+    }
+    final rows = await query.get();
     return rows.map(_convertToModel).toList();
   }
 
@@ -80,11 +84,11 @@ class RoutineLocalDataSourceImpl implements RoutineLocalDataSource {
 
   @override
   Future<List<RoutineModel>> getPendingChanges(String userId) async {
-    final rows =
-        await (database.select(database.routines)..where(
-              (r) => r.userId.equals(userId) & r.pendingSync.equals(true),
-            ))
-            .get();
+    final rows = await (database.select(database.routines)..where((r) {
+      final pending = r.pendingSync.equals(true);
+      if (userId.isEmpty) return pending;
+      return pending & r.userId.equals(userId);
+    })).get();
     return rows.map(_convertToModel).toList();
   }
 
@@ -115,6 +119,7 @@ class RoutineLocalDataSourceImpl implements RoutineLocalDataSource {
 
   @override
   Future<void> clearRoutines(String userId) async {
+    if (userId.isEmpty) return;
     await (database.delete(
       database.routines,
     )..where((r) => r.userId.equals(userId))).go();
@@ -122,14 +127,38 @@ class RoutineLocalDataSourceImpl implements RoutineLocalDataSource {
 
   @override
   Stream<List<RoutineModel>> watchRoutines(String userId) {
-    return (database.select(database.routines)
-          ..where((r) => r.userId.equals(userId)))
-        .watch()
-        .map((rows) => rows.map(_convertToModel).toList());
+    final query = database.select(database.routines);
+    if (userId.isNotEmpty) {
+      query.where((r) => r.userId.equals(userId));
+    }
+    return query.watch().map((rows) => rows.map(_convertToModel).toList());
   }
 
   /// Convert Drift row to RoutineModel
   RoutineModel _convertToModel(Routine row) {
+    final cached = row.cachedRoutineJson;
+    if (cached != null && cached.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(cached) as Map<String, dynamic>;
+        final fromCache = RoutineModel.fromJson(decoded);
+        return RoutineModel(
+          id: fromCache.id,
+          userId: fromCache.userId,
+          name: fromCache.name,
+          division: fromCache.division,
+          isTemplate: fromCache.isTemplate,
+          isActive: fromCache.isActive,
+          createdAt: fromCache.createdAt,
+          updatedAt: fromCache.updatedAt,
+          sessions: fromCache.sessions,
+          version: row.version,
+          pendingSync: row.pendingSync,
+          syncedAt: row.syncedAt,
+        );
+      } catch (_) {
+        // fall through to header-only row
+      }
+    }
     return RoutineModel(
       id: row.id,
       userId: row.userId,
@@ -138,9 +167,8 @@ class RoutineLocalDataSourceImpl implements RoutineLocalDataSource {
       isTemplate: row.isTemplate,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
-      sessions: [],
-
-      /// Offline-first fields
+      sessions: const [],
+      isActive: false,
       version: row.version,
       pendingSync: row.pendingSync,
       syncedAt: row.syncedAt,
@@ -162,6 +190,7 @@ class RoutineLocalDataSourceImpl implements RoutineLocalDataSource {
           : const drift.Value.absent(),
       createdAt: drift.Value(routine.createdAt),
       updatedAt: drift.Value(DateTime.now()),
+      cachedRoutineJson: drift.Value(jsonEncode(routine.toJson())),
     );
   }
 }

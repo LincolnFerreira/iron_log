@@ -123,6 +123,18 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _cachedRoutineJsonMeta = const VerificationMeta(
+    'cachedRoutineJson',
+  );
+  @override
+  late final GeneratedColumn<String> cachedRoutineJson =
+      GeneratedColumn<String>(
+        'cached_routine_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -135,6 +147,7 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     version,
     pendingSync,
     syncedAt,
+    cachedRoutineJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -214,6 +227,15 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
         syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
       );
     }
+    if (data.containsKey('cached_routine_json')) {
+      context.handle(
+        _cachedRoutineJsonMeta,
+        cachedRoutineJson.isAcceptableOrUnknown(
+          data['cached_routine_json']!,
+          _cachedRoutineJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -267,6 +289,10 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}synced_at'],
       ),
+      cachedRoutineJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cached_routine_json'],
+      ),
     );
   }
 
@@ -287,6 +313,9 @@ class Routine extends DataClass implements Insertable<Routine> {
   final int version;
   final bool pendingSync;
   final DateTime? syncedAt;
+
+  /// Full API snapshot (JSON) so offline reads preserve sessions, exercises, isActive.
+  final String? cachedRoutineJson;
   const Routine({
     required this.id,
     required this.userId,
@@ -298,6 +327,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     required this.version,
     required this.pendingSync,
     this.syncedAt,
+    this.cachedRoutineJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -315,6 +345,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     map['pending_sync'] = Variable<bool>(pendingSync);
     if (!nullToAbsent || syncedAt != null) {
       map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    if (!nullToAbsent || cachedRoutineJson != null) {
+      map['cached_routine_json'] = Variable<String>(cachedRoutineJson);
     }
     return map;
   }
@@ -335,6 +368,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       syncedAt: syncedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(syncedAt),
+      cachedRoutineJson: cachedRoutineJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cachedRoutineJson),
     );
   }
 
@@ -354,6 +390,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       version: serializer.fromJson<int>(json['version']),
       pendingSync: serializer.fromJson<bool>(json['pendingSync']),
       syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      cachedRoutineJson: serializer.fromJson<String?>(
+        json['cachedRoutineJson'],
+      ),
     );
   }
   @override
@@ -370,6 +409,7 @@ class Routine extends DataClass implements Insertable<Routine> {
       'version': serializer.toJson<int>(version),
       'pendingSync': serializer.toJson<bool>(pendingSync),
       'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'cachedRoutineJson': serializer.toJson<String?>(cachedRoutineJson),
     };
   }
 
@@ -384,6 +424,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     int? version,
     bool? pendingSync,
     Value<DateTime?> syncedAt = const Value.absent(),
+    Value<String?> cachedRoutineJson = const Value.absent(),
   }) => Routine(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -395,6 +436,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     version: version ?? this.version,
     pendingSync: pendingSync ?? this.pendingSync,
     syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    cachedRoutineJson: cachedRoutineJson.present
+        ? cachedRoutineJson.value
+        : this.cachedRoutineJson,
   );
   Routine copyWithCompanion(RoutinesCompanion data) {
     return Routine(
@@ -412,6 +456,9 @@ class Routine extends DataClass implements Insertable<Routine> {
           ? data.pendingSync.value
           : this.pendingSync,
       syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      cachedRoutineJson: data.cachedRoutineJson.present
+          ? data.cachedRoutineJson.value
+          : this.cachedRoutineJson,
     );
   }
 
@@ -427,7 +474,8 @@ class Routine extends DataClass implements Insertable<Routine> {
           ..write('updatedAt: $updatedAt, ')
           ..write('version: $version, ')
           ..write('pendingSync: $pendingSync, ')
-          ..write('syncedAt: $syncedAt')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('cachedRoutineJson: $cachedRoutineJson')
           ..write(')'))
         .toString();
   }
@@ -444,6 +492,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     version,
     pendingSync,
     syncedAt,
+    cachedRoutineJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -458,7 +507,8 @@ class Routine extends DataClass implements Insertable<Routine> {
           other.updatedAt == this.updatedAt &&
           other.version == this.version &&
           other.pendingSync == this.pendingSync &&
-          other.syncedAt == this.syncedAt);
+          other.syncedAt == this.syncedAt &&
+          other.cachedRoutineJson == this.cachedRoutineJson);
 }
 
 class RoutinesCompanion extends UpdateCompanion<Routine> {
@@ -472,6 +522,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
   final Value<int> version;
   final Value<bool> pendingSync;
   final Value<DateTime?> syncedAt;
+  final Value<String?> cachedRoutineJson;
   final Value<int> rowid;
   const RoutinesCompanion({
     this.id = const Value.absent(),
@@ -484,6 +535,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.version = const Value.absent(),
     this.pendingSync = const Value.absent(),
     this.syncedAt = const Value.absent(),
+    this.cachedRoutineJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RoutinesCompanion.insert({
@@ -497,6 +549,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.version = const Value.absent(),
     this.pendingSync = const Value.absent(),
     this.syncedAt = const Value.absent(),
+    this.cachedRoutineJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
@@ -512,6 +565,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Expression<int>? version,
     Expression<bool>? pendingSync,
     Expression<DateTime>? syncedAt,
+    Expression<String>? cachedRoutineJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -525,6 +579,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       if (version != null) 'version': version,
       if (pendingSync != null) 'pending_sync': pendingSync,
       if (syncedAt != null) 'synced_at': syncedAt,
+      if (cachedRoutineJson != null) 'cached_routine_json': cachedRoutineJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -540,6 +595,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Value<int>? version,
     Value<bool>? pendingSync,
     Value<DateTime?>? syncedAt,
+    Value<String?>? cachedRoutineJson,
     Value<int>? rowid,
   }) {
     return RoutinesCompanion(
@@ -553,6 +609,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       version: version ?? this.version,
       pendingSync: pendingSync ?? this.pendingSync,
       syncedAt: syncedAt ?? this.syncedAt,
+      cachedRoutineJson: cachedRoutineJson ?? this.cachedRoutineJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -590,6 +647,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     if (syncedAt.present) {
       map['synced_at'] = Variable<DateTime>(syncedAt.value);
     }
+    if (cachedRoutineJson.present) {
+      map['cached_routine_json'] = Variable<String>(cachedRoutineJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -609,6 +669,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
           ..write('version: $version, ')
           ..write('pendingSync: $pendingSync, ')
           ..write('syncedAt: $syncedAt, ')
+          ..write('cachedRoutineJson: $cachedRoutineJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5986,6 +6047,318 @@ class RestDaysCompanion extends UpdateCompanion<RestDay> {
   }
 }
 
+class $WorkoutOutboxTable extends WorkoutOutbox
+    with TableInfo<$WorkoutOutboxTable, WorkoutOutboxData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkoutOutboxTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, userId, payloadJson, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'workout_outbox';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkoutOutboxData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WorkoutOutboxData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkoutOutboxData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      payloadJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WorkoutOutboxTable createAlias(String alias) {
+    return $WorkoutOutboxTable(attachedDatabase, alias);
+  }
+}
+
+class WorkoutOutboxData extends DataClass
+    implements Insertable<WorkoutOutboxData> {
+  final String id;
+  final String userId;
+  final String payloadJson;
+  final DateTime createdAt;
+  const WorkoutOutboxData({
+    required this.id,
+    required this.userId,
+    required this.payloadJson,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  WorkoutOutboxCompanion toCompanion(bool nullToAbsent) {
+    return WorkoutOutboxCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      payloadJson: Value(payloadJson),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory WorkoutOutboxData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkoutOutboxData(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  WorkoutOutboxData copyWith({
+    String? id,
+    String? userId,
+    String? payloadJson,
+    DateTime? createdAt,
+  }) => WorkoutOutboxData(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    payloadJson: payloadJson ?? this.payloadJson,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  WorkoutOutboxData copyWithCompanion(WorkoutOutboxCompanion data) {
+    return WorkoutOutboxData(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      payloadJson: data.payloadJson.present
+          ? data.payloadJson.value
+          : this.payloadJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutOutboxData(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, userId, payloadJson, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkoutOutboxData &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.payloadJson == this.payloadJson &&
+          other.createdAt == this.createdAt);
+}
+
+class WorkoutOutboxCompanion extends UpdateCompanion<WorkoutOutboxData> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> payloadJson;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const WorkoutOutboxCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkoutOutboxCompanion.insert({
+    required String id,
+    required String userId,
+    required String payloadJson,
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       payloadJson = Value(payloadJson);
+  static Insertable<WorkoutOutboxData> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? payloadJson,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkoutOutboxCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? payloadJson,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return WorkoutOutboxCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      payloadJson: payloadJson ?? this.payloadJson,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutOutboxCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -6000,6 +6373,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $SerieLogsTable serieLogs = $SerieLogsTable(this);
   late final $RestDaysTable restDays = $RestDaysTable(this);
+  late final $WorkoutOutboxTable workoutOutbox = $WorkoutOutboxTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -6012,6 +6386,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     workoutSessions,
     serieLogs,
     restDays,
+    workoutOutbox,
   ];
 }
 
@@ -6027,6 +6402,7 @@ typedef $$RoutinesTableCreateCompanionBuilder =
       Value<int> version,
       Value<bool> pendingSync,
       Value<DateTime?> syncedAt,
+      Value<String?> cachedRoutineJson,
       Value<int> rowid,
     });
 typedef $$RoutinesTableUpdateCompanionBuilder =
@@ -6041,6 +6417,7 @@ typedef $$RoutinesTableUpdateCompanionBuilder =
       Value<int> version,
       Value<bool> pendingSync,
       Value<DateTime?> syncedAt,
+      Value<String?> cachedRoutineJson,
       Value<int> rowid,
     });
 
@@ -6100,6 +6477,11 @@ class $$RoutinesTableFilterComposer
 
   ColumnFilters<DateTime> get syncedAt => $composableBuilder(
     column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cachedRoutineJson => $composableBuilder(
+    column: $table.cachedRoutineJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -6162,6 +6544,11 @@ class $$RoutinesTableOrderingComposer
     column: $table.syncedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get cachedRoutineJson => $composableBuilder(
+    column: $table.cachedRoutineJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RoutinesTableAnnotationComposer
@@ -6206,6 +6593,11 @@ class $$RoutinesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get syncedAt =>
       $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get cachedRoutineJson => $composableBuilder(
+    column: $table.cachedRoutineJson,
+    builder: (column) => column,
+  );
 }
 
 class $$RoutinesTableTableManager
@@ -6246,6 +6638,7 @@ class $$RoutinesTableTableManager
                 Value<int> version = const Value.absent(),
                 Value<bool> pendingSync = const Value.absent(),
                 Value<DateTime?> syncedAt = const Value.absent(),
+                Value<String?> cachedRoutineJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RoutinesCompanion(
                 id: id,
@@ -6258,6 +6651,7 @@ class $$RoutinesTableTableManager
                 version: version,
                 pendingSync: pendingSync,
                 syncedAt: syncedAt,
+                cachedRoutineJson: cachedRoutineJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -6272,6 +6666,7 @@ class $$RoutinesTableTableManager
                 Value<int> version = const Value.absent(),
                 Value<bool> pendingSync = const Value.absent(),
                 Value<DateTime?> syncedAt = const Value.absent(),
+                Value<String?> cachedRoutineJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RoutinesCompanion.insert(
                 id: id,
@@ -6284,6 +6679,7 @@ class $$RoutinesTableTableManager
                 version: version,
                 pendingSync: pendingSync,
                 syncedAt: syncedAt,
+                cachedRoutineJson: cachedRoutineJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -8756,6 +9152,193 @@ typedef $$RestDaysTableProcessedTableManager =
       RestDay,
       PrefetchHooks Function()
     >;
+typedef $$WorkoutOutboxTableCreateCompanionBuilder =
+    WorkoutOutboxCompanion Function({
+      required String id,
+      required String userId,
+      required String payloadJson,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$WorkoutOutboxTableUpdateCompanionBuilder =
+    WorkoutOutboxCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> payloadJson,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$WorkoutOutboxTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkoutOutboxTable> {
+  $$WorkoutOutboxTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WorkoutOutboxTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkoutOutboxTable> {
+  $$WorkoutOutboxTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WorkoutOutboxTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkoutOutboxTable> {
+  $$WorkoutOutboxTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$WorkoutOutboxTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkoutOutboxTable,
+          WorkoutOutboxData,
+          $$WorkoutOutboxTableFilterComposer,
+          $$WorkoutOutboxTableOrderingComposer,
+          $$WorkoutOutboxTableAnnotationComposer,
+          $$WorkoutOutboxTableCreateCompanionBuilder,
+          $$WorkoutOutboxTableUpdateCompanionBuilder,
+          (
+            WorkoutOutboxData,
+            BaseReferences<
+              _$AppDatabase,
+              $WorkoutOutboxTable,
+              WorkoutOutboxData
+            >,
+          ),
+          WorkoutOutboxData,
+          PrefetchHooks Function()
+        > {
+  $$WorkoutOutboxTableTableManager(_$AppDatabase db, $WorkoutOutboxTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkoutOutboxTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkoutOutboxTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkoutOutboxTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutOutboxCompanion(
+                id: id,
+                userId: userId,
+                payloadJson: payloadJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String payloadJson,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutOutboxCompanion.insert(
+                id: id,
+                userId: userId,
+                payloadJson: payloadJson,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WorkoutOutboxTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkoutOutboxTable,
+      WorkoutOutboxData,
+      $$WorkoutOutboxTableFilterComposer,
+      $$WorkoutOutboxTableOrderingComposer,
+      $$WorkoutOutboxTableAnnotationComposer,
+      $$WorkoutOutboxTableCreateCompanionBuilder,
+      $$WorkoutOutboxTableUpdateCompanionBuilder,
+      (
+        WorkoutOutboxData,
+        BaseReferences<_$AppDatabase, $WorkoutOutboxTable, WorkoutOutboxData>,
+      ),
+      WorkoutOutboxData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8774,4 +9357,6 @@ class $AppDatabaseManager {
       $$SerieLogsTableTableManager(_db, _db.serieLogs);
   $$RestDaysTableTableManager get restDays =>
       $$RestDaysTableTableManager(_db, _db.restDays);
+  $$WorkoutOutboxTableTableManager get workoutOutbox =>
+      $$WorkoutOutboxTableTableManager(_db, _db.workoutOutbox);
 }

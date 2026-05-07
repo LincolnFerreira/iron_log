@@ -1,10 +1,15 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/network/connectivity_utils.dart';
+import 'package:iron_log/core/providers/sync_providers.dart';
 import 'package:iron_log/features/home/state/workout_calendar_provider.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/usecases/routine_usecases.dart';
+import 'package:iron_log/features/routines/presentation/bloc/routine_provider.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/http_service.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../data/models/active_rest_dto.dart';
-import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
 import 'package:iron_log/features/home/data/models/home_metrics_dto.dart';
 
@@ -16,6 +21,9 @@ class HomeState {
   final List<Routine> userRoutines;
   final HomeMetrics? metrics;
 
+  /// Non-null when we want to inform the user about offline / cached data.
+  final String? connectivityBanner;
+
   HomeState({
     this.isLoading = true,
     this.todaysRoutine,
@@ -23,6 +31,7 @@ class HomeState {
     this.error,
     this.userRoutines = const [],
     this.metrics,
+    this.connectivityBanner,
   });
 
   HomeState copyWith({
@@ -36,6 +45,8 @@ class HomeState {
     bool clearTodaysSession = false,
     HomeMetrics? metrics,
     bool clearMetrics = false,
+    String? connectivityBanner,
+    bool clearConnectivityBanner = false,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
@@ -48,15 +59,21 @@ class HomeState {
       error: clearError ? null : (error ?? this.error),
       userRoutines: userRoutines ?? this.userRoutines,
       metrics: clearMetrics ? null : (metrics ?? this.metrics),
+      connectivityBanner: clearConnectivityBanner
+          ? null
+          : (connectivityBanner ?? this.connectivityBanner),
     );
   }
 }
 
 class HomeNotifier extends StateNotifier<HomeState> {
+  final GetRoutinesUseCase _getRoutinesUseCase;
   final HttpService _httpService;
+  final Connectivity _connectivity;
   bool _initialized = false;
 
-  HomeNotifier(this._httpService) : super(HomeState());
+  HomeNotifier(this._getRoutinesUseCase, this._httpService, this._connectivity)
+    : super(HomeState());
 
   /// Initialize once. Calling this multiple times is safe.
   Future<void> initialize() async {
@@ -72,19 +89,22 @@ class HomeNotifier extends StateNotifier<HomeState> {
 
   Future<void> _loadTodaysWorkout() async {
     try {
-      state = state.copyWith(isLoading: true, clearError: true);
+      state = state.copyWith(
+        isLoading: true,
+        clearError: true,
+        clearConnectivityBanner: true,
+      );
 
-      // Usa URL centralizada
-      final response = await _httpService.get(ApiEndpoints.routines);
+      final online = await hasLikelyInternet(_connectivity);
+      final connectivityBanner = online
+          ? null
+          : 'Sem conexão. Mostrando treinos salvos neste aparelho.';
 
-      if (response.statusCode == 200) {
-        final routinesData = response.data as List<dynamic>;
-        final routines = routinesData
-            .map((json) => Routine.fromJson(json as Map<String, dynamic>))
-            .toList();
+      final routines =
+          List<Routine>.from(await _getRoutinesUseCase.execute());
 
-        // Busca métricas em paralelo
-        HomeMetrics? metrics;
+      HomeMetrics? metrics;
+      if (online) {
         try {
           final metricsResponse = await _httpService.get(
             ApiEndpoints.meMetrics,
@@ -98,43 +118,47 @@ class HomeNotifier extends StateNotifier<HomeState> {
         } catch (_) {
           // Métricas são não-críticas, continua sem elas
         }
-
-        if (routines.isEmpty) {
-          state = state.copyWith(
-            isLoading: false,
-            userRoutines: [],
-            metrics: metrics,
-          );
-          return;
-        }
-
-        // Prefere a rotina marcada como ativa; caso nenhuma esteja,
-        // usa a primeira como fallback (comportamento anterior).
-        final todaysRoutine = routines.firstWhere(
-          (r) => r.isActive,
-          orElse: () => routines.first,
-        );
-
-        // Determina qual sessão fazer hoje baseado no dia da semana
-        final todaysSession = _getTodaysSession(todaysRoutine);
-
-        state = state.copyWith(
-          isLoading: false,
-          todaysRoutine: todaysRoutine,
-          todaysSession: todaysSession,
-          userRoutines: routines,
-          metrics: metrics,
-        );
-      } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Erro ao carregar rotinas',
-        );
       }
-    } catch (e) {
+
+      if (routines.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          userRoutines: [],
+          metrics: metrics,
+          connectivityBanner: online
+              ? null
+              : 'Sem conexão. Não há treinos salvos neste aparelho. Conecte-se online pelo menos uma vez.',
+        );
+        return;
+      }
+
+      Routine? active;
+      for (final r in routines) {
+        if (r.isActive) {
+          active = r;
+          break;
+        }
+      }
+      final todaysRoutine = active ?? routines.first;
+
+      final todaysSession = _getTodaysSession(todaysRoutine);
+
       state = state.copyWith(
         isLoading: false,
-        error: 'Erro ao carregar treino do dia: $e',
+        todaysRoutine: todaysRoutine,
+        todaysSession: todaysSession,
+        userRoutines: routines,
+        metrics: metrics,
+        connectivityBanner: connectivityBanner,
+      );
+    } catch (e) {
+      final online = await hasLikelyInternet(_connectivity);
+      state = state.copyWith(
+        isLoading: false,
+        error: online
+            ? 'Erro ao carregar treino do dia: $e'
+            : 'Sem conexão. Não foi possível carregar treinos salvos.',
+        clearConnectivityBanner: true,
       );
     }
   }
@@ -163,8 +187,10 @@ class HomeNotifier extends StateNotifier<HomeState> {
 }
 
 final homeProvider = StateNotifierProvider<HomeNotifier, HomeState>((ref) {
-  final httpService = ref.read(httpServiceProvider);
-  final notifier = HomeNotifier(httpService);
+  final getRoutines = ref.watch(getRoutinesUseCaseProvider);
+  final httpService = ref.watch(httpServiceProvider);
+  final connectivity = ref.watch(connectivityProvider);
+  final notifier = HomeNotifier(getRoutines, httpService, connectivity);
   // Schedule a single initialization run after provider creation. This avoids
   // triggering loads on widget rebuilds such as opening/closing bottom sheets.
   Future.microtask(() => notifier.initialize());

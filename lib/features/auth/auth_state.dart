@@ -1,8 +1,8 @@
 // features/auth/auth_state.dart
-import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/services/firebase_auth_token.dart';
 import 'presentation/providers/user_profile_provider.dart';
 
 class AuthState {
@@ -16,9 +16,15 @@ class AuthState {
     this.isLoading = true,
   });
 
-  AuthState copyWith({User? user, bool? onboardingCompleted, bool? isLoading}) {
+  static const _noUserChange = Object();
+
+  AuthState copyWith({
+    Object? user = _noUserChange,
+    bool? onboardingCompleted,
+    bool? isLoading,
+  }) {
     return AuthState(
-      user: user ?? this.user,
+      user: identical(user, _noUserChange) ? this.user : user as User?,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
       isLoading: isLoading ?? this.isLoading,
     );
@@ -54,12 +60,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
         print('🔐 Mudança de auth - Usuário logado: ${user.email}');
-        print('🔑 Token/ID do usuário: ${user.uid}');
-        user.getIdToken(true).then((token) {
-          log('🔑 Token de autenticação: $token');
-        });
+        print('🔑 UID: ${user.uid}');
+        // Nunca use getIdToken(true) aqui: força rede e estoura offline
+        // (`network-request-failed`). Perfil/API usam safeGetIdToken no interceptor.
+        if (kDebugMode) {
+          safeGetIdToken(user).then((token) {
+            if (token != null) {
+              debugPrint('🔑 Token (cache) length: ${token.length}');
+            } else {
+              debugPrint('🔑 Token indisponível (rede/offline), sessão local mantida');
+            }
+          });
+        }
 
-        // Invalidar o provider do perfil para buscar os dados atualizados
         _ref.invalidate(userProfileProvider);
       } else {
         print('🚪 Mudança de auth - Usuário não está logado');
@@ -76,8 +89,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(user: null, isLoading: false);
     try {
       await FirebaseAuth.instance.signOut();
-    } catch (e) {
-      // Se ocorrer erro, rethrow para ser tratado pelo chamador
+    } on FirebaseAuthException catch (e) {
+      if (isFirebaseAuthNetworkFailure(e)) {
+        return;
+      }
       rethrow;
     }
   }

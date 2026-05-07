@@ -9,7 +9,10 @@ class GetRoutinesUseCase {
   GetRoutinesUseCase(this.repository);
 
   Future<List<Routine>> execute() async {
-    return await repository.getRoutines();
+    // Lists are invariant in Dart: implementations may return `List<RoutineModel>`.
+    // Normalize so every caller sees a true `List<Routine>` (avoids firstWhere/orElse runtime type errors).
+    final list = await repository.getRoutines();
+    return List<Routine>.from(list);
   }
 }
 

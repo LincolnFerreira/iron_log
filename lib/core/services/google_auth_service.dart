@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform, kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'firebase_auth_token.dart';
+
 class GoogleAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -78,6 +80,10 @@ class GoogleAuthService {
       await _googleSignIn.signOut();
     }
 
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+    } on FirebaseAuthException catch (e) {
+      if (!isFirebaseAuthNetworkFailure(e)) rethrow;
+    }
   }
 }

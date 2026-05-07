@@ -124,7 +124,7 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
     }
   }
 
-  Future<void> createRoutine({
+  Future<Routine?> createRoutine({
     required String name,
     String? division,
     bool isTemplate = false,
@@ -142,12 +142,14 @@ class RoutineNotifier extends StateNotifier<RoutineState> {
       final updatedRoutines = [...state.routines, newRoutine];
       print('✅ Rotina criada: ${newRoutine.id}');
       state = state.copyWith(routines: updatedRoutines, isLoading: false);
+      return newRoutine;
     } catch (e) {
       print('❌ Erro ao criar rotina: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Erro ao criar rotina: $e',
       );
+      return null;
     }
   }
 

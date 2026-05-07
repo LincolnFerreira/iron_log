@@ -146,101 +146,221 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
   }
 
   void _showCreateRoutineDialog(BuildContext context, WidgetRef ref) {
+    final pageContext = context;
+    final messenger = ScaffoldMessenger.of(pageContext);
+
     final nameController = TextEditingController();
     final divisionController = TextEditingController();
+    final divisionSuggestions = <String>[
+      'Push/Pull/Legs',
+      'Upper/Lower',
+      'Full Body',
+      'ABC',
+    ];
 
     var showNameError = false;
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text('Nova Rotina'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Uma rotina agrupa sessões (ex.: Push/Pull/Legs). Você poderá adicionar sessões e exercícios depois.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: nameController,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    labelText: 'Nome da Rotina',
-                    hintText: 'Ex: Treino ABC',
-                    errorText: showNameError
-                        ? 'Por favor insira um nome para a rotina'
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: divisionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Divisão (opcional)',
-                    hintText: 'Ex: Push/Pull/Legs',
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  final name = nameController.text.trim();
-                  if (name.isEmpty) {
-                    setState(() => showNameError = true);
-                    return;
-                  }
-
-                  // Create the routine and update state
-                  await ref
-                      .read(routineNotifierProvider.notifier)
-                      .createRoutine(
-                        name: name,
-                        division: divisionController.text.isEmpty
-                            ? null
-                            : divisionController.text.trim(),
-                      );
-
-                  // Nova rotina é auto-ativada no backend — sincroniza Home.
-                  ref.read(homeProvider.notifier).refresh();
-
-                  Navigator.of(context).pop();
-
-                  // Try to find the created routine by name in current state
-                  final routines = ref.read(routineNotifierProvider).routines;
-                  final matches = routines
-                      .where((r) => r.name == name)
-                      .toList();
-                  final created = matches.isNotEmpty ? matches.last : null;
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Rotina criada'),
-                      action: SnackBarAction(
-                        label: 'Adicionar sessões',
-                        onPressed: () {
-                          if (created != null) {
-                            _navigateToRoutineDetail(context, created);
-                          }
-                        },
+    var isSubmitting = false;
+    showModalBottomSheet<void>(
+      context: pageContext,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setState) {
+          final bottomInset = MediaQuery.of(sheetContext).viewInsets.bottom;
+          return AnimatedPadding(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.only(bottom: bottomInset),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            sheetContext,
+                          ).colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.auto_awesome_rounded,
+                          color: Theme.of(sheetContext).colorScheme.primary,
+                        ),
                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Nova Rotina',
+                              style: Theme.of(sheetContext).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Comece com nome e divisão. Depois você adiciona sessões e exercícios.',
+                              style: Theme.of(sheetContext).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    textInputAction: TextInputAction.next,
+                    onChanged: (_) {
+                      if (showNameError) {
+                        setState(() => showNameError = false);
+                      }
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Nome da rotina',
+                      hintText: 'Ex: Hipertrofia 4x',
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      errorText: showNameError
+                          ? 'Por favor insira um nome para a rotina'
+                          : null,
                     ),
-                  );
-                },
-                child: const Text('Criar'),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: divisionController,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(
+                      labelText: 'Divisão (opcional)',
+                      hintText: 'Ex: Push/Pull/Legs',
+                      prefixIcon: Icon(Icons.account_tree_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: divisionSuggestions
+                        .map(
+                          (suggestion) => ActionChip(
+                            label: Text(suggestion),
+                            onPressed: () {
+                              divisionController.text = suggestion;
+                              divisionController.selection =
+                                  TextSelection.fromPosition(
+                                    TextPosition(
+                                      offset: divisionController.text.length,
+                                    ),
+                                  );
+                            },
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () => Navigator.of(sheetContext).pop(),
+                          child: const Text('Cancelar'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () async {
+                                  final name = nameController.text.trim();
+                                  if (name.isEmpty) {
+                                    setState(() => showNameError = true);
+                                    return;
+                                  }
+
+                                  setState(() => isSubmitting = true);
+
+                                  final created = await ref
+                                      .read(routineNotifierProvider.notifier)
+                                      .createRoutine(
+                                        name: name,
+                                        division:
+                                            divisionController.text.isEmpty
+                                            ? null
+                                            : divisionController.text.trim(),
+                                      );
+
+                                  if (created == null) {
+                                    if (sheetContext.mounted) {
+                                      setState(() => isSubmitting = false);
+                                    }
+                                    final err = ref
+                                        .read(routineNotifierProvider)
+                                        .error;
+                                    if (pageContext.mounted) {
+                                      messenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            err ?? 'Não foi possível criar a rotina',
+                                          ),
+                                          backgroundColor:
+                                              Theme.of(pageContext).colorScheme.error,
+                                        ),
+                                      );
+                                    }
+                                    return;
+                                  }
+
+                                  // Nova rotina é auto-ativada no backend — sincroniza Home.
+                                  ref.read(homeProvider.notifier).refresh();
+
+                                  if (sheetContext.mounted) {
+                                    Navigator.of(sheetContext).pop();
+                                  }
+
+                                  if (!pageContext.mounted) return;
+
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Rotina criada'),
+                                      action: SnackBarAction(
+                                        label: 'Adicionar sessões',
+                                        onPressed: () {
+                                          if (pageContext.mounted) {
+                                            _navigateToRoutineDetail(
+                                              pageContext,
+                                              created,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Criar rotina'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),

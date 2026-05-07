@@ -23,6 +23,13 @@
                  while the Flutter UI initializes. After that, this theme continues
                  to determine the Window background behind the Flutter UI. -->
             <meta-data
+                android:name="com.google.android.gms.credentials.API_ENABLED"
+                android:value="false" />
+
+            <meta-data
+                android:name="androidx.credentials.CREDENTIAL_SERVICE_ENABLED"
+                android:value="false" />
+            <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />

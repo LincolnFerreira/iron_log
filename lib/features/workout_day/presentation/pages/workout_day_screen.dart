@@ -145,15 +145,22 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   /// Determina o modo de operação baseado nos parâmetros do widget.
   /// - editing: se workoutId está definido (editando treino passado)
   /// - execution: se manualDate está definido (executando treino em data específica)
-  /// - template: caso contrário (editando/visualizando template de sessão)
+  /// - execution: treino ao vivo a partir do plano (home) ou retroativo com data
+  /// - template: edição de template sem sessão ligada à execução do dia
   WorkoutScreenMode _determineMode() {
     if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
       return WorkoutScreenMode.editing;
-    } else if (widget.manualDate != null) {
-      return WorkoutScreenMode.execution;
-    } else {
-      return WorkoutScreenMode.template;
     }
+    if (widget.manualDate != null) {
+      return WorkoutScreenMode.execution;
+    }
+    if (widget.sessionId != null &&
+        widget.sessionId!.isNotEmpty &&
+        widget.routineId != null &&
+        widget.routineId!.isNotEmpty) {
+      return WorkoutScreenMode.execution;
+    }
+    return WorkoutScreenMode.template;
   }
 
   // @override
@@ -177,7 +184,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     try {
       await ref
           .read(workoutDayExercisesProvider.notifier)
-          .loadSession(widget.sessionId!);
+          .loadSession(widget.sessionId!, routineId: widget.routineId);
     } catch (e) {
       // O erro já é tratado pelo AsyncValue no provider
       if (kDebugMode) {
@@ -207,7 +214,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       // Usa método que JÁ EXISTE para recarregar
       await ref
           .read(workoutDayExercisesProvider.notifier)
-          .reloadSession(widget.sessionId!);
+          .reloadSession(widget.sessionId!, routineId: widget.routineId);
     } catch (e) {
       if (kDebugMode) {
         print('Erro ao recarregar sessão: $e');

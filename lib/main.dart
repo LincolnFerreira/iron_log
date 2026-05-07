@@ -1,6 +1,9 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,18 +21,51 @@ Future<void> main() async {
   if (!kIsWeb) {
     await GoogleSignIn.instance.initialize(serverClientId: webClientId);
   }
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+  if (!kIsWeb) {
+    // Envia erros do framework Flutter para o Crashlytics.
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+    // Captura erros fora do contexto do framework (isolates/event loop).
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+
+    // Em debug local, evita "sujar" o dashboard; em release envia normalmente.
+    await FirebaseCrashlytics.instance
+        .setCrashlyticsCollectionEnabled(!kDebugMode);
+  } else {
+    // Crashlytics não possui suporte para Flutter Web.
+    FlutterError.onError = FlutterError.dumpErrorToConsole;
+  }
 
   // Inicializar AuthService
   AuthService().initialize();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        // Overrides para a feature de rotinas (deve ser aplicado ANTES de MyApp)
-        ...routineProvidersOverrides,
-      ],
-      child: const MyApp(),
-    ),
+  runZonedGuarded(
+    () {
+      runApp(
+        ProviderScope(
+          overrides: [
+            // Overrides para a feature de rotinas (deve ser aplicado ANTES de MyApp)
+            ...routineProvidersOverrides,
+          ],
+          child: const MyApp(),
+        ),
+      );
+    },
+    (error, stackTrace) async {
+      if (!kIsWeb) {
+        await FirebaseCrashlytics.instance.recordError(
+          error,
+          stackTrace,
+          fatal: true,
+        );
+      } else {
+        FlutterError.reportError(
+          FlutterErrorDetails(exception: error, stack: stackTrace),
+        );
+      }
+    },
   );
 }

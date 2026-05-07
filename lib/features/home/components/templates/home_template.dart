@@ -27,6 +27,7 @@ class HomeTemplate extends StatelessWidget {
   final List<Session> routineSessions;
   final void Function(Session)? onSelectSession;
   final int streak;
+  final String? connectivityBanner;
 
   const HomeTemplate({
     super.key,
@@ -46,6 +47,7 @@ class HomeTemplate extends StatelessWidget {
     this.routineSessions = const [],
     this.onSelectSession,
     this.streak = 0,
+    this.connectivityBanner,
   });
 
   @override
@@ -68,6 +70,8 @@ class HomeTemplate extends StatelessWidget {
               imageUrl: imageUrl,
               onAvatarTap: onAvatarTap,
             ),
+            if (connectivityBanner != null) _OfflineInfoBanner(message: connectivityBanner!),
+            if (error != null) _HomeInlineError(message: error!),
             ActiveSequenceCard(streak: streak),
             // Mini calendário — últimos 14 dias (bloco consistência)
             const MiniCalendarStrip(),
@@ -131,5 +135,73 @@ class HomeTemplate extends StatelessWidget {
       'DEZEMBRO',
     ];
     return months[DateTime.now().month - 1];
+  }
+}
+
+class _OfflineInfoBanner extends StatelessWidget {
+  final String message;
+
+  const _OfflineInfoBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.secondaryContainer.withValues(alpha: 0.65),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.wifi_off_outlined, size: 20, color: scheme.onSecondaryContainer),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: scheme.onSecondaryContainer,
+                      height: 1.35,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeInlineError extends StatelessWidget {
+  final String message;
+
+  const _HomeInlineError({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.errorContainer.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.error_outline, size: 20, color: scheme.onErrorContainer),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: scheme.onErrorContainer,
+                      height: 1.35,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

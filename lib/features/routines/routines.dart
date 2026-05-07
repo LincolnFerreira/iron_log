@@ -8,7 +8,6 @@ export 'domain/usecases/session_usecases.dart';
 
 // Data
 export 'data/models/routine_model.dart';
-export 'data/repositories/routine_repository_impl.dart';
 export 'data/repositories/session_repository_impl.dart';
 
 // Presentation

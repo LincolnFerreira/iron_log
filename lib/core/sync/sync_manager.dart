@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 
 import '../database/app_database.dart';
+import '../network/connectivity_utils.dart';
+import 'workout_outbox_sync.dart';
 
 /// Main sync manager: orchestrates offline-first sync operations
 class SyncManager {
@@ -40,9 +42,10 @@ class SyncManager {
   /// Initialize connectivity listener for auto-sync
   void _initConnectivityListener() {
     connectivity.onConnectivityChanged.listen((result) async {
-      if (result == ConnectivityResult.mobile ||
-          result == ConnectivityResult.wifi) {
-        // Internet detected, trigger auto-sync if pending changes exist
+      if (isConnectivityLikelyOnline(result)) {
+        try {
+          await flushWorkoutOutbox(database: database, dio: dio);
+        } catch (_) {}
         await syncIfNeeded();
       }
     });
@@ -65,6 +68,10 @@ class SyncManager {
     _syncStatusController.add(currentStatus);
 
     try {
+      try {
+        await flushWorkoutOutbox(database: database, dio: dio);
+      } catch (_) {}
+
       // Collect all pending changes from local database
       final changes = await _collectPendingChanges();
 
@@ -227,11 +234,16 @@ class SyncManager {
       database.restDays,
     )..where((rd) => rd.pendingSync.equals(true))).get();
 
+    final workoutOutboxRows = await database
+        .select(database.workoutOutbox)
+        .get();
+
     return routines.length +
         sessions.length +
         workouts.length +
         series.length +
-        restDays.length;
+        restDays.length +
+        workoutOutboxRows.length;
   }
 
   /// Mark entity as synced in local database

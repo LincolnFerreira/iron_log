@@ -88,6 +88,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         onSelectSession: (session) =>
             ref.read(homeProvider.notifier).selectSession(session),
         streak: streak,
+        connectivityBanner: homeState.connectivityBanner,
       ),
       bottomNavigationBar: _buildBottomNavBar(context),
     );

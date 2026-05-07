@@ -26,6 +26,9 @@ class YourMonthSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
     final progressPercentage = _getProgressPercentage();
     final remainingWorkouts = _getRemainingWorkouts();
 
@@ -67,55 +70,146 @@ class YourMonthSection extends StatelessWidget {
         ),
         // Monthly goal progress section
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).dividerColor, width: 1),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(24),
+            gradient: isDark
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1A1D26), Color(0xFF12141A)],
+                  )
+                : const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.white, Color(0xFFF4F6FB)],
+                  ),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: .04)
+                  : Colors.black.withValues(alpha: .04),
+            ),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: isDark ? 20 : 14,
+                spreadRadius: -2,
+                offset: const Offset(0, 10),
+                color: isDark
+                    ? Colors.black.withValues(alpha: .28)
+                    : Colors.black.withValues(alpha: .06),
+              ),
+            ],
           ),
           child: Column(
-            spacing: 8,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Goal header with label and progress counter
+              // Goal header with icon box + texts
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Meta mensal',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          primary.withValues(alpha: isDark ? .22 : .14),
+                          primary.withValues(alpha: isDark ? .10 : .06),
+                        ],
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.local_fire_department_rounded,
+                      color: isDark
+                          ? primary.withValues(alpha: .92)
+                          : primary,
+                      size: 28,
                     ),
                   ),
-                  Text(
-                    '$workoutsCompleted/$monthlyGoal',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Meta mensal',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            height: 1.1,
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          progressPercentage == 0
+                              ? 'Seu progresso começa no primeiro treino'
+                              : remainingWorkouts == 0
+                                  ? 'Meta concluída neste mês'
+                                  : 'Faltam $remainingWorkouts treinos para sua meta',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                            height: 1.35,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: .62)
+                                : Colors.black.withValues(alpha: .52),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
+
+              const SizedBox(height: 22),
+
               // Progress bar
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(99),
                 child: LinearProgressIndicator(
                   value: progressPercentage / 100,
-                  minHeight: 8,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).dividerColor.withOpacity(0.3),
+                  minHeight: 10,
+                  backgroundColor: isDark
+                      ? Colors.white.withValues(alpha: .06)
+                      : Colors.black.withValues(alpha: .06),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.primary,
+                    primary,
                   ),
                 ),
               ),
-              // Progress description
+
+              const SizedBox(height: 14),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '$workoutsCompleted/$monthlyGoal treinos',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    '${progressPercentage.toStringAsFixed(0)}%',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+
               Text(
-                '${progressPercentage.toStringAsFixed(0)}% concluído · faltam $remainingWorkouts treinos para bater a meta 🎯',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                'Meta de ${monthlyGoal.toString()} treinos no mês',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: .62)
+                      : Colors.black.withValues(alpha: .52),
                 ),
               ),
             ],

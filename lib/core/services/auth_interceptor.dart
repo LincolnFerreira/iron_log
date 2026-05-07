@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'firebase_auth_token.dart';
 import 'http_logging_service.dart';
 import 'http_error_handler.dart';
 
@@ -21,17 +22,16 @@ class AuthInterceptor extends Interceptor {
     // Adiciona token Firebase automaticamente se o usuário estiver logado
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      try {
-        final token = await currentUser.getIdToken();
+      final token = await safeGetIdToken(currentUser);
+      if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
-
         if (kDebugMode) {
           print('🔑 Token Firebase adicionado automaticamente');
         }
-      } catch (e) {
-        if (kDebugMode) {
-          print('❌ Erro ao obter token Firebase: $e');
-        }
+      } else if (kDebugMode) {
+        print(
+          '⚠️ Token Firebase indisponível (rede/offline) — requisição segue sem Bearer',
+        );
       }
     }
 

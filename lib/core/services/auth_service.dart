@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_auth_token.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 import 'package:iron_log/features/auth/domain/entities/user_profile.dart';
 import 'http_service.dart';
@@ -96,7 +97,11 @@ class AuthService {
     try {
       await FirebaseAuth.instance.signOut();
       print('✅ Logout realizado com sucesso');
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
+      if (isFirebaseAuthNetworkFailure(e)) {
+        print('⚠️ Logout: rede indisponível — sessão local já pode estar encerrada');
+        return;
+      }
       print('❌ Erro no logout: $e');
       throw Exception('Erro ao fazer logout: $e');
     }

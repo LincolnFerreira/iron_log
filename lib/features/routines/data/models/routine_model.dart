@@ -51,6 +51,7 @@ class RoutineModel extends Routine {
       'name': name,
       'division': division,
       'isTemplate': isTemplate,
+      'isActive': isActive,
       'version': version,
       'pendingSync': pendingSync,
       'syncedAt': syncedAt?.toIso8601String(),

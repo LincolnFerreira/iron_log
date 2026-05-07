@@ -1,12 +1,30 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../../../../core/services/http_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/api/api_endpoints.dart';
+import '../../../../core/providers/sync_providers.dart';
+import '../../../../core/services/http_error_handler.dart';
+import '../../../../core/services/http_service.dart';
+import '../../../routines/presentation/bloc/routine_provider.dart';
+import '../../data/datasources/workout_outbox_local_datasource.dart';
+import '../../data/mappers/plan_session_exercises_mapper.dart';
 import '../../data/models/session_exercise_dto.dart';
-import '../../domain/entities/workout_exercise.dart';
 import '../../data/models/workout_edit_dto.dart';
 import '../../data/services/workout_log_service.dart';
+import '../../domain/entities/workout_exercise.dart';
 import '../../domain/enums/workout_screen_mode.dart';
+
+final workoutOutboxLocalDataSourceProvider =
+    Provider<WorkoutOutboxLocalDataSource>((ref) {
+      return WorkoutOutboxLocalDataSource(ref.watch(driftDatabaseProvider));
+    });
+
+final workoutLogServiceProvider = Provider<WorkoutLogService>((ref) {
+  return WorkoutLogService(
+    outbox: ref.watch(workoutOutboxLocalDataSourceProvider),
+  );
+});
 
 // Enum para rastrear tipo de atividade
 enum WorkoutActivityType { training, cardio, rest }
@@ -61,7 +79,7 @@ class WorkoutDayExercisesNotifier
   bool _isLoading = false;
 
   // Carrega sessão específica com exercícios e dados da rotina (via expand)
-  Future<void> loadSession(String sessionId) async {
+  Future<void> loadSession(String sessionId, {String? routineId}) async {
     // Evita chamadas duplicadas
     if (_isLoading) {
       if (kDebugMode) {
@@ -114,13 +132,54 @@ class WorkoutDayExercisesNotifier
         state = AsyncValue.error('Erro ao carregar sessão', StackTrace.current);
       }
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
-      if (kDebugMode) {
-        print('❌ Erro ao carregar sessão: $e');
+      final fallback = await _tryLoadSessionFromCachedRoutine(
+        sessionId: sessionId,
+        routineId: routineId,
+        error: e,
+      );
+      if (fallback != null) {
+        state = AsyncValue.data(fallback);
+        if (kDebugMode) {
+          print(
+            '✅ Sessão carregada do cache da rotina (offline): ${fallback.length} exercícios',
+          );
+        }
+      } else {
+        state = AsyncValue.error(e, stackTrace);
+        if (kDebugMode) {
+          print('❌ Erro ao carregar sessão: $e');
+        }
       }
     } finally {
       _isLoading = false;
     }
+  }
+
+  Future<List<WorkoutExercise>?> _tryLoadSessionFromCachedRoutine({
+    required String sessionId,
+    String? routineId,
+    required Object error,
+  }) async {
+    if (routineId == null || routineId.isEmpty || _ref == null) {
+      return null;
+    }
+    if (!_isOfflineOrUnreachableError(error)) {
+      return null;
+    }
+    try {
+      final repo = _ref.read(routineRepositoryProvider);
+      final routine = await repo.getRoutine(routineId);
+      final match = routine.sessions.where((s) => s.id == sessionId).toList();
+      if (match.isEmpty) return null;
+      return workoutExercisesFromPlanSession(planSession: match.single);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isOfflineOrUnreachableError(Object error) {
+    return error is DioException &&
+        HttpErrorHandler.isConnectivityError(error);
   }
 
   // Adiciona um novo exercício à lista
@@ -382,9 +441,9 @@ class WorkoutDayExercisesNotifier
   }
 
   // Força reload da sessão (útil para atualizações)
-  Future<void> reloadSession(String sessionId) async {
+  Future<void> reloadSession(String sessionId, {String? routineId}) async {
     _isLoading = false; // Reset loading flag
-    await loadSession(sessionId);
+    await loadSession(sessionId, routineId: routineId);
   }
 
   /// Carrega um treino já registrado pelo seu ID (modo edição).
@@ -492,6 +551,11 @@ class WorkoutDayExercisesNotifier
       );
     }
 
+    final ref = _ref;
+    if (ref == null) {
+      throw Exception('startExecution requer Ref');
+    }
+
     try {
       if (kDebugMode) {
         print('🚀 Iniciando execução de treino...');
@@ -502,8 +566,7 @@ class WorkoutDayExercisesNotifier
         throw Exception('Nenhum exercício carregado para iniciar execução');
       }
 
-      // Importa o serviço de log
-      final WorkoutLogService workoutLogService = WorkoutLogService();
+      final workoutLogService = ref.read(workoutLogServiceProvider);
 
       // Cria a WorkoutSession no backend com os exercícios e timestamp inicial
       final workoutSessionId = await workoutLogService.saveWorkout(
@@ -513,12 +576,10 @@ class WorkoutDayExercisesNotifier
         endedAt: DateTime.now(), // Será atualizado no finish
         isManual: isManual,
         sessionId: sessionId,
+        skipOutboxEnqueueOnUnreachable: true,
       );
 
-      // Armazena o ID da sessão criada para referência durante execução
-      if (_ref != null) {
-        _ref.read(workoutSessionIdProvider.notifier).state = workoutSessionId;
-      }
+      ref.read(workoutSessionIdProvider.notifier).state = workoutSessionId;
 
       if (kDebugMode) {
         print('✅ WorkoutSession criada: $workoutSessionId');
@@ -637,8 +698,9 @@ class WorkoutDayExercisesNotifier
         );
       }
 
-      // Importa o serviço para converter exercícios
-      final WorkoutLogService workoutLogService = WorkoutLogService();
+      final WorkoutLogService workoutLogService = _ref!.read(
+        workoutLogServiceProvider,
+      );
 
       // Constrói payload similiar a saveWorkout mas como PATCH
       final Map<String, dynamic> payload = {
@@ -646,7 +708,7 @@ class WorkoutDayExercisesNotifier
             .asMap()
             .entries
             .map(
-              (e) => workoutLogService.exerciseToDtoForTesting(
+              (e) => workoutLogService.exerciseToWorkoutExerciseDto(
                 e.value,
                 order: e.key + 1,
               ),
