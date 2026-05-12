@@ -163,21 +163,6 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     return WorkoutScreenMode.template;
   }
 
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  //   // Auto-reload quando retornar para a tela (ex: de "organize suas sessões")
-  //   // Só aplica no modo de sessão normal — no modo edição não recarregamos.
-  //   if (widget.workoutId == null &&
-  //       widget.sessionId != null &&
-  //       widget.sessionId!.isNotEmpty) {
-  //     WidgetsBinding.instance.addPostFrameCallback((_) {
-  //       if (!mounted) return;
-  //       _reloadSessionIfNeeded();
-  //     });
-  //   }
-  // }
-
   Future<void> _loadSession() async {
     if (widget.sessionId == null) return;
 
@@ -420,6 +405,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         skipLoadingOnRefresh: false,
         data: (exercises) => exercises.isNotEmpty
             ? FooterActions(
+                exercises: exercises,
                 isManual: _selectedDate != null,
                 seriesDone: _calculateSeriesDone(exercises),
                 volumeKg: _calculateVolume(exercises),

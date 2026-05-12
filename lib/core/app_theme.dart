@@ -19,6 +19,11 @@ class AppTheme {
         foregroundColor: AppColors.textPrimaryLight,
         elevation: 0,
       ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       extensions: <ThemeExtension<dynamic>>[_lightThemeExtensions],
     );
   }
@@ -45,6 +50,11 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.surfaceDark,
         foregroundColor: AppColors.textPrimaryDark,
+        elevation: 0,
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       // InputDecoration global para TextFields e Dropdowns

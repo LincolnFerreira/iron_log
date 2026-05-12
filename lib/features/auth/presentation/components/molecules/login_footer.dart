@@ -50,14 +50,30 @@ class LoginFooter extends StatelessWidget {
         // Termos
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'Ao continuar, você concorda com nossos Termos de Uso e Política de Privacidade.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[500],
-              height: 1.4,
+          child: Text.rich(
+            TextSpan(
+              style: TextStyle(fontSize: 12, color: Colors.grey[500], height: 1.4),
+              children: [
+                const TextSpan(text: 'Ao continuar, você concorda com nossos '),
+                TextSpan(
+                  text: 'termos de Uso',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const TextSpan(text: '\ne '),
+                TextSpan(
+                  text: 'Política de Privacidade',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const TextSpan(text: '.'),
+              ],
             ),
+            textAlign: TextAlign.center,
           ),
         ),
       ],

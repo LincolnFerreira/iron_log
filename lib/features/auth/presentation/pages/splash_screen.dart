@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iron_log/core/components/app_logo.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -14,14 +15,19 @@ class SplashScreen extends StatelessWidget {
     );
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Logo ou ícone do app
-            Icon(Icons.fitness_center, size: 80, color: Colors.white),
-            SizedBox(height: 24),
-            Text(
+            AppLogo(
+              width: 168,
+              borderRadius: 22,
+              padding: const EdgeInsets.all(10),
+              backgroundColor: Theme.of(context).colorScheme.surface,
+            ),
+            const SizedBox(height: 24),
+            const Text(
               'Iron Log',
               style: TextStyle(
                 color: Colors.white,
@@ -29,10 +35,10 @@ class SplashScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 48),
-            CircularProgressIndicator(color: Colors.white),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 48),
+            const CircularProgressIndicator(color: Colors.white),
+            const SizedBox(height: 16),
+            const Text(
               'Carregando...',
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),

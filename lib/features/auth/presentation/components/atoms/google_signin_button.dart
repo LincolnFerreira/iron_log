@@ -40,14 +40,16 @@ class GoogleSignInButton extends StatelessWidget {
                 ),
               )
             : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const GoogleIcon(size: 20),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Continuar com Google',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  const Expanded(
+                    child: Text(
+                      'Continuar com Google',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
                   ),
+                  Icon(Icons.chevron_right, size: 20, color: Colors.grey[500]),
                 ],
               ),
       ),

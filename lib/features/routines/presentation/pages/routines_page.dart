@@ -9,6 +9,7 @@ import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_update.dart';
 import '../bloc/routine_provider.dart';
 import '../components/molecules/routine_card.dart';
+import '../widgets/routine_loading_skeletons.dart';
 
 class RoutinesPage extends ConsumerStatefulWidget {
   const RoutinesPage({super.key});
@@ -84,7 +85,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
 
   Widget _buildBody(RoutineState state) {
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const RoutinesListSkeleton();
     }
 
     if (state.error != null) {
@@ -150,16 +151,16 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
     final messenger = ScaffoldMessenger.of(pageContext);
 
     final nameController = TextEditingController();
-    final divisionController = TextEditingController();
     final divisionSuggestions = <String>[
       'Push/Pull/Legs',
       'Upper/Lower',
       'Full Body',
-      'ABC',
+      'Personalizado',
     ];
 
     var showNameError = false;
     var isSubmitting = false;
+    String? selectedDivision;
     showModalBottomSheet<void>(
       context: pageContext,
       isScrollControlled: true,
@@ -173,101 +174,185 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
             curve: Curves.easeOut,
             padding: EdgeInsets.only(bottom: bottomInset),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            sheetContext,
-                          ).colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.auto_awesome_rounded,
-                          color: Theme.of(sheetContext).colorScheme.primary,
-                        ),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                    decoration: BoxDecoration(
+                      color: Theme.of(sheetContext).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Theme.of(
+                          sheetContext,
+                        ).colorScheme.outline.withValues(alpha: .18),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              'Nova Rotina',
-                              style: Theme.of(sheetContext).textTheme.titleLarge,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Criar rotina',
+                                    style: Theme.of(sheetContext).textTheme.titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Monte sua divisão agora e ajuste sessões depois.',
+                                    style: Theme.of(sheetContext).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Comece com nome e divisão. Depois você adiciona sessões e exercícios.',
-                              style: Theme.of(sheetContext).textTheme.bodySmall,
+                            IconButton(
+                              onPressed: isSubmitting
+                                  ? null
+                                  : () => Navigator.of(sheetContext).pop(),
+                              icon: const Icon(Icons.close_rounded),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: nameController,
-                    autofocus: true,
-                    textInputAction: TextInputAction.next,
-                    onChanged: (_) {
-                      if (showNameError) {
-                        setState(() => showNameError = false);
-                      }
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Nome da rotina',
-                      hintText: 'Ex: Hipertrofia 4x',
-                      prefixIcon: const Icon(Icons.badge_outlined),
-                      errorText: showNameError
-                          ? 'Por favor insira um nome para a rotina'
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: divisionController,
-                    textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(
-                      labelText: 'Divisão (opcional)',
-                      hintText: 'Ex: Push/Pull/Legs',
-                      prefixIcon: Icon(Icons.account_tree_outlined),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Passo 1',
+                          style: Theme.of(sheetContext).textTheme.labelMedium?.copyWith(
+                            color: Theme.of(sheetContext).colorScheme.primary,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: .35,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Nome da rotina',
+                          style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: nameController,
+                          autofocus: true,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (_) {
+                            if (showNameError) {
+                              setState(() => showNameError = false);
+                            }
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Nome da rotina',
+                            hintText: 'Ex: Hipertrofia 2026',
+                            prefixIcon: const Icon(Icons.badge_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Theme.of(
+                                  sheetContext,
+                                ).colorScheme.outline.withValues(alpha: .3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Theme.of(sheetContext).colorScheme.primary,
+                              ),
+                            ),
+                            errorText: showNameError
+                                ? 'Por favor insira um nome para a rotina'
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Divisão',
+                          style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Como você divide seus treinos?',
+                          style: Theme.of(sheetContext).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: divisionSuggestions.map((suggestion) {
+                            final selected = selectedDivision == suggestion;
+                            return SizedBox(
+                              height: 34,
+                              child: ChoiceChip(
+                                label: Text(
+                                  suggestion,
+                                  style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                                        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                                      ),
+                                ),
+                                selected: selected,
+                                visualDensity: VisualDensity.compact,
+                                selectedColor: Theme.of(
+                                  sheetContext,
+                                ).colorScheme.primaryContainer,
+                                side: BorderSide(
+                                  color: selected
+                                      ? Theme.of(sheetContext).colorScheme.primary.withValues(alpha: .24)
+                                      : Theme.of(sheetContext).colorScheme.outline.withValues(alpha: .24),
+                                ),
+                                onSelected: (_) {
+                                  selectedDivision = selected ? null : suggestion;
+                                  setState(() {});
+                                },
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Theme.of(sheetContext).colorScheme.primaryContainer.withValues(
+                              alpha: .35,
+                            ),
+                            border: Border.all(
+                              color: Theme.of(
+                                sheetContext,
+                              ).colorScheme.primary.withValues(alpha: .22),
+                            ),
+                          ),
+                          child: Text(
+                            '✨ Você pode montar manualmente e editar sessões/exercícios depois.',
+                            style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: divisionSuggestions
-                        .map(
-                          (suggestion) => ActionChip(
-                            label: Text(suggestion),
-                            onPressed: () {
-                              divisionController.text = suggestion;
-                              divisionController.selection =
-                                  TextSelection.fromPosition(
-                                    TextPosition(
-                                      offset: divisionController.text.length,
-                                    ),
-                                  );
-                            },
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(44),
+                            side: BorderSide(
+                              color: Theme.of(sheetContext).colorScheme.outline.withValues(alpha: .3),
+                            ),
+                          ),
                           onPressed: isSubmitting
                               ? null
                               : () => Navigator.of(sheetContext).pop(),
@@ -277,6 +362,9 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                       const SizedBox(width: 10),
                       Expanded(
                         child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(44),
+                          ),
                           onPressed: isSubmitting
                               ? null
                               : () async {
@@ -292,10 +380,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                                       .read(routineNotifierProvider.notifier)
                                       .createRoutine(
                                         name: name,
-                                        division:
-                                            divisionController.text.isEmpty
-                                            ? null
-                                            : divisionController.text.trim(),
+                                        division: selectedDivision,
                                       );
 
                                   if (created == null) {
@@ -319,7 +404,6 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                                     return;
                                   }
 
-                                  // Nova rotina é auto-ativada no backend — sincroniza Home.
                                   ref.read(homeProvider.notifier).refresh();
 
                                   if (sheetContext.mounted) {
@@ -349,9 +433,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
+                                  child: CircularProgressIndicator(strokeWidth: 2),
                                 )
                               : const Text('Criar rotina'),
                         ),

@@ -70,7 +70,8 @@ class HomeTemplate extends StatelessWidget {
               imageUrl: imageUrl,
               onAvatarTap: onAvatarTap,
             ),
-            if (connectivityBanner != null) _OfflineInfoBanner(message: connectivityBanner!),
+            if (connectivityBanner != null)
+              _OfflineInfoBanner(message: connectivityBanner!),
             if (error != null) _HomeInlineError(message: error!),
             ActiveSequenceCard(streak: streak),
             // Mini calendário — últimos 14 dias (bloco consistência)
@@ -101,6 +102,7 @@ class HomeTemplate extends StatelessWidget {
               onNewRoutinesTap: () => context.push('/routines'),
               onQuickCreateTap: onQuickCreate,
             ),
+
             // Your month section with metrics and monthly goal progress
             YourMonthSection(
               workoutsCompleted: metrics?.workoutsCompleted ?? 0,
@@ -154,15 +156,19 @@ class _OfflineInfoBanner extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.wifi_off_outlined, size: 20, color: scheme.onSecondaryContainer),
+            Icon(
+              Icons.wifi_off_outlined,
+              size: 20,
+              color: scheme.onSecondaryContainer,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.onSecondaryContainer,
-                      height: 1.35,
-                    ),
+                  color: scheme.onSecondaryContainer,
+                  height: 1.35,
+                ),
               ),
             ),
           ],
@@ -194,9 +200,9 @@ class _HomeInlineError extends StatelessWidget {
               child: Text(
                 message,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.onErrorContainer,
-                      height: 1.35,
-                    ),
+                  color: scheme.onErrorContainer,
+                  height: 1.35,
+                ),
               ),
             ),
           ],

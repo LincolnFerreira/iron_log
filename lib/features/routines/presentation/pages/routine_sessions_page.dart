@@ -6,8 +6,10 @@ import 'package:iron_log/core/widgets/page_header_title.dart';
 import '../../domain/entities/routine.dart';
 import '../bloc/routine_provider.dart';
 import '../widgets/reorderable_session_list.dart';
+import '../widgets/routine_loading_skeletons.dart';
 import '../widgets/session_section_title.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
+import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_skeleton.dart';
 import '../providers/routine_last_workout_provider.dart';
 
 class RoutineSessionsPage extends ConsumerStatefulWidget {
@@ -55,6 +57,8 @@ class _SessionEditPageState extends ConsumerState<RoutineSessionsPage>
     final routineState = ref.watch(routineNotifierProvider);
     final routine = routineState.selectedRoutine ?? widget.routine;
     final lastWorkoutAsync = ref.watch(routineLastWorkoutProvider(routine.id));
+    final isLoadingSessions =
+        routineState.isLoading && routineState.selectedRoutine == null;
 
     return Scaffold(
       appBar: AppBar(
@@ -75,10 +79,12 @@ class _SessionEditPageState extends ConsumerState<RoutineSessionsPage>
       body: Column(
         children: [
           Expanded(
-            child: ReorderableSessionList(
-              routine: routine,
-              // onSaveCallback: (fn) => _saveSessions = fn,
-            ),
+            child: isLoadingSessions
+                ? const SessionsListSkeleton()
+                : ReorderableSessionList(
+                    routine: routine,
+                    // onSaveCallback: (fn) => _saveSessions = fn,
+                  ),
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
@@ -100,8 +106,7 @@ class _SessionEditPageState extends ConsumerState<RoutineSessionsPage>
                 const SizedBox(height: 8),
                 lastWorkoutAsync.when(
                   skipLoadingOnRefresh: false,
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading: () => const WorkoutHistorySkeleton(),
                   error: (_, __) => const SizedBox.shrink(),
                   data: (workout) {
                     if (workout == null) {

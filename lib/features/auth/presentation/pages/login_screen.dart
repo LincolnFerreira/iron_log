@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/services/http_service.dart';
 import 'package:iron_log/core/services/google_auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:iron_log/features/auth/presentation/components/atoms/app_icon_widget.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/auth_buttons_section.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/login_footer.dart';
-import 'package:iron_log/features/auth/presentation/components/molecules/title_section.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -29,13 +27,55 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             children: [
               const Spacer(flex: 2),
 
-              // Ícone do app
-              const AppIconWidget(),
+              // Logo + título lado a lado
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/app_logo.png',
+                    width: 84,
+                    height: 84,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Iron Log',
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey[900],
+                      letterSpacing: -1.2,
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 12),
 
-              // Título e tagline
-              const TitleSection(),
+              // Tagline com "Progresso real." em azul
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Registro preciso. ',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  Text(
+                    'Progresso real.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 64),
 
@@ -60,57 +100,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildAppIcon() {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: const Icon(Icons.fitness_center, size: 40, color: Colors.white),
-    );
-  }
-
-  Widget _buildTitleSection() {
-    return Column(
-      children: [
-        Text(
-          'Iron Log',
-          style: TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.w700,
-            color: Colors.grey[900],
-            letterSpacing: -1.2,
-            height: 1.1,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Registro preciso. Progresso real.',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0.2,
-          ),
-        ),
-      ],
     );
   }
 

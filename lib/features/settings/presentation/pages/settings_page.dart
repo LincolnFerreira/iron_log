@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import '../../../auth/auth_state.dart';
 import '../../../auth/utils/logout_utils.dart';
 
@@ -236,13 +237,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
   void _comingSoon() {
     HapticFeedback.lightImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Em breve!'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: IronTokens.s2(_isDark),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
+    AppSnackbar.warning(
+      context: context,
+      title: 'Em breve',
+      message: 'Esse recurso ainda está em construção.',
     );
   }
 }

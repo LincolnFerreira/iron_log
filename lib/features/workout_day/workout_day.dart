@@ -1,4 +1,5 @@
 export 'presentation/pages/workout_day_screen.dart';
+export 'presentation/pages/workout_session_screen.dart';
 export 'presentation/organisms/exercise_card.dart';
 export 'presentation/organisms/workout_card.dart';
 export 'presentation/organisms/footer_actions.dart';

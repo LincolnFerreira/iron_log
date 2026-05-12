@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import '../auth_state.dart';
 
 class LogoutUtils {
@@ -51,27 +52,6 @@ class LogoutUtils {
     WidgetRef ref,
   ) async {
     try {
-      // Mostrar loading
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                SizedBox(width: 12),
-                Text('Fazendo logout...'),
-              ],
-            ),
-            duration: const Duration(seconds: 2),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-        );
-      }
-
       // Executar logout através do AuthNotifier
       // Isso atualizará o authStateProvider, fazendo isLoggedIn = false
       await ref.read(authStateProvider.notifier).signOut();
@@ -82,45 +62,16 @@ class LogoutUtils {
       // O GoRouter automaticamente redirecionará para /login
       // graças ao listener que monitora mudanças no authStateProvider
       // e à lógica de redirect que verifica isLoggedIn
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Logout realizado com sucesso!'),
-              ],
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 1),
-          ),
-        );
-
-        // Fallback removido: confiar no redirect do GoRouter via authStateProvider
-      }
     } catch (e) {
       // Mostrar erro
       if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(child: Text('Erro ao fazer logout: $e')),
-              ],
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-            duration: const Duration(seconds: 3),
-            action: SnackBarAction(
-              label: 'Tentar novamente',
-              textColor: Colors.white,
-              onPressed: () => _performLogout(context, ref),
-            ),
-          ),
+        AppSnackbar.show(
+          context: context,
+          type: AppSnackbarType.error,
+          title: 'Erro ao sair',
+          message: 'Não foi possível concluir o logout. Tente novamente.',
+          actionLabel: 'Tentar',
+          onAction: () => _performLogout(context, ref),
         );
       }
     }

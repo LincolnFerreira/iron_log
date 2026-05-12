@@ -203,6 +203,11 @@ class WorkoutDayExercisesNotifier
     }
   }
 
+  // Limpa todos os exercícios apenas em memória (sem tocar template/backend).
+  void clearExercises() {
+    state = const AsyncValue.data(<WorkoutExercise>[]);
+  }
+
   // Remove um exercício da sessão no backend
   Future<void> removeExerciseFromSession(
     String sessionId,
