@@ -25,20 +25,19 @@ class AppLogo extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(borderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.16),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withValues(alpha: 0.16),
+        //     blurRadius: 16,
+        //     offset: const Offset(0, 8),
+        //   ),
+        //   BoxShadow(
+        //     color: Colors.black.withValues(alpha: 0.06),
+        //     blurRadius: 6,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius * 0.7),
