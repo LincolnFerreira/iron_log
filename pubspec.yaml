@@ -59,6 +59,7 @@ dependencies:
   path_provider: ^2.1.0
   path: ^1.8.3
   connectivity_plus: ^5.0.0
+  package_info_plus: ^8.3.0
 
   # On-device speech recognition (Android pt-BR)
   speech_to_text: ^7.3.0
@@ -72,6 +73,7 @@ dev_dependencies:
   drift_dev: ^2.14.0
   flutter_native_splash: ^2.4.3
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -89,6 +91,7 @@ flutter:
     - assets/fonts/barlow/
     - assets/fire-sequence.svg
     - assets/images/
+    - assets/images/app_logo.svg
 
   fonts:
     - family: Barlow
@@ -123,8 +126,28 @@ flutter:
           style: italic
 
 flutter_native_splash:
-  color: "#2E5BFF"
+  color: "#FFFFFF"
+  # Canvas quadrado + logo centralizada (proporção preservada) para evitar estico no nativo
+  image: assets/images/app_logo_splash.png
   android: true
   ios: true
+  android_gravity: center
+  ios_content_mode: scaleAspectFit
+  web_image_mode: contain
   android_12:
-    color: "#2E5BFF"
+    color: "#FFFFFF"
+    icon_background_color: "#FFFFFF"
+    image: assets/images/app_logo_splash.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: assets/images/app_logo.png
+    background_color: "#FFFFFF"
+    theme_color: "#FFFFFF"
+  remove_alpha_ios: true
+  image_path: assets/images/app_logo.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/images/app_logo.png

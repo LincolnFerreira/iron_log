@@ -14,6 +14,8 @@ class SeriesInputRow extends StatefulWidget {
   final ValueNotifier<int>? activateWeightToken;
   final VoidCallback? onRepsDone;
   final bool isLastRow;
+  /// Notifica o pai (ex.: foco no rodapé) quando o usuário toca ou edita a linha.
+  final VoidCallback? onInteract;
 
   const SeriesInputRow({
     super.key,
@@ -24,6 +26,7 @@ class SeriesInputRow extends StatefulWidget {
     this.activateWeightToken,
     this.onRepsDone,
     this.isLastRow = false,
+    this.onInteract,
   });
 
   @override
@@ -55,6 +58,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
   }
 
   void _onActivateWeight() {
+    widget.onInteract?.call();
     setState(() {
       _editingWeight = true;
       _editingReps = false;
@@ -63,6 +67,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
 
   void _updateEntry(SeriesEntry updated) {
     widget.onChanged(updated);
+    widget.onInteract?.call();
   }
 
   /// Propagates the weight on every keystroke so the parent always has the
@@ -233,6 +238,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                   )
                 : GestureDetector(
                     onTap: () {
+                      widget.onInteract?.call();
                       setState(() {
                         _editingWeight = true;
                         _editingReps = false;
@@ -294,6 +300,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
                   )
                 : GestureDetector(
                     onTap: () {
+                      widget.onInteract?.call();
                       setState(() {
                         _editingReps = true;
                         _editingWeight = false;

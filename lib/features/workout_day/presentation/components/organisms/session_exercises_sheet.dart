@@ -64,6 +64,11 @@ class SessionExercisesSheet extends ConsumerStatefulWidget {
 }
 
 class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
+  static const double _sheetMin = 0.34;
+  static const double _sheetMax = 0.92;
+
+  late final DraggableScrollableController _sheetCtrl;
+
   double _selectedWeight = 0;
   bool _showExerciseList = false;
 
@@ -71,48 +76,146 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
       widget.exercises.isNotEmpty ? widget.exercises.first : null;
 
   @override
+  void initState() {
+    super.initState();
+    _sheetCtrl = DraggableScrollableController();
+  }
+
+  @override
+  void dispose() {
+    _sheetCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(SessionExercisesSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.workoutStarted &&
+        !oldWidget.workoutStarted &&
+        _sheetCtrl.isAttached) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _sheetCtrl.isAttached) {
+          _sheetCtrl.animateTo(
+            _sheetMax,
+            duration: const Duration(milliseconds: 340),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
+  }
+
+  void _toggleSheetExtent() {
+    if (!_sheetCtrl.isAttached) return;
+    final s = _sheetCtrl.size;
+    final mid = (_sheetMin + _sheetMax) / 2;
+    final target = s < mid ? _sheetMax : _sheetMin;
+    _sheetCtrl.animateTo(
+      target,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _setShowExerciseList(bool value) {
+    setState(() => _showExerciseList = value);
+    if (value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _sheetCtrl.isAttached) {
+          _sheetCtrl.animateTo(
+            _sheetMax,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final height = MediaQuery.of(context).size.height * 0.88;
+    final initial =
+        widget.workoutStarted ? _sheetMax : _sheetMin;
 
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.5 : 0.08),
-            blurRadius: 32,
-            offset: const Offset(0, -8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildHandle(isDark),
-          _buildHeader(theme, isDark),
-          const SizedBox(height: 4),
-          if (!_showExerciseList) ...[
-            _buildSessionStats(theme, isDark),
-            const SizedBox(height: 16),
-            if (_nextExercise != null) ...[
-              _buildNextExerciseCard(theme, isDark),
-              const SizedBox(height: 16),
-              _buildAiSuggestion(theme, isDark),
+    return DraggableScrollableSheet(
+      controller: _sheetCtrl,
+      initialChildSize: initial,
+      minChildSize: _sheetMin,
+      maxChildSize: _sheetMax,
+      snap: true,
+      snapSizes: const [_sheetMin, _sheetMax],
+      expand: true,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.surfaceDark : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.5 : 0.08),
+                blurRadius: 32,
+                offset: const Offset(0, -8),
+              ),
             ],
-            const Spacer(),
-            _buildShowListToggle(theme, isDark),
-            const SizedBox(height: 8),
-          ] else ...[
-            _buildShowListToggle(theme, isDark),
-            const SizedBox(height: 8),
-            Expanded(child: _buildExerciseList(isDark)),
-          ],
-          _buildFooter(theme, isDark),
-        ],
-      ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _toggleSheetExtent,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: _buildHandle(isDark),
+                ),
+              ),
+              _buildHeader(theme, isDark),
+              const SizedBox(height: 4),
+              Expanded(
+                child: _showExerciseList
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildShowListToggle(theme, isDark),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: _buildExerciseList(
+                              isDark,
+                              scrollController,
+                            ),
+                          ),
+                        ],
+                      )
+                    : SingleChildScrollView(
+                        controller: scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildSessionStats(theme, isDark),
+                              const SizedBox(height: 16),
+                              if (_nextExercise != null) ...[
+                                _buildNextExerciseCard(theme, isDark),
+                                const SizedBox(height: 16),
+                                _buildAiSuggestion(theme, isDark),
+                              ],
+                              const SizedBox(height: 24),
+                              _buildShowListToggle(theme, isDark),
+                            ],
+                          ),
+                        ),
+                      ),
+              ),
+              _buildFooter(theme, isDark),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -761,7 +864,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: GestureDetector(
-        onTap: () => setState(() => _showExerciseList = !_showExerciseList),
+        onTap: () => _setShowExerciseList(!_showExerciseList),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
           decoration: BoxDecoration(
@@ -806,7 +909,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
 
   // ─── Exercise list ──────────────────────────────────────────────────
 
-  Widget _buildExerciseList(bool isDark) {
+  Widget _buildExerciseList(bool isDark, ScrollController scrollController) {
     if (widget.exercises.isEmpty) {
       return Center(
         child: Column(
@@ -830,6 +933,8 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
     }
 
     return ReorderableListView.builder(
+      scrollController: scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
       buildDefaultDragHandles: false,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       onReorder: (oldIndex, newIndex) {

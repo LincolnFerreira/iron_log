@@ -406,10 +406,9 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         data: (exercises) => exercises.isNotEmpty
             ? FooterActions(
                 exercises: exercises,
+                sessionTitle: widget.subtitle,
+                onMoreOptions: openReorderSheet,
                 isManual: _selectedDate != null,
-                seriesDone: _calculateSeriesDone(exercises),
-                volumeKg: _calculateVolume(exercises),
-                completionPercent: _calculateCompletion(exercises),
                 workoutStarted: _workoutStarted,
                 isLoading:
                     ref.watch(workoutControllerProvider).isLoading ||
@@ -574,19 +573,26 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         error: (_, __) => null,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            builder: (_) => VoiceInputBottomSheet(sessionId: widget.sessionId),
-          );
-        },
+        tooltip: _workoutStarted
+            ? 'Buscar exercício por voz'
+            : 'Inicie o treino para usar o microfone',
+        heroTag: 'workout_day_voice_fab',
+        onPressed: _workoutStarted
+            ? () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  builder: (_) =>
+                      VoiceInputBottomSheet(sessionId: widget.sessionId),
+                );
+              }
+            : null,
         child: const Icon(Icons.mic),
       ),
     );
@@ -771,28 +777,6 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       );
       Navigator.pop(context);
     }
-  }
-
-  int _calculateSeriesDone(List<WorkoutExercise> exercises) {
-    // TODO: Implementar cálculo real baseado no histórico de séries completadas
-    // Por enquanto, retorna o total de séries configuradas
-    return exercises.fold<int>(0, (sum, exercise) => sum + exercise.series);
-  }
-
-  double _calculateVolume(List<WorkoutExercise> exercises) {
-    // TODO: Implementar cálculo real baseado no peso registrado
-    // Por enquanto, tenta extrair valor numérico do campo weight
-    return exercises.fold<double>(0.0, (sum, exercise) {
-      final weightStr = exercise.weight.replaceAll(RegExp(r'[^0-9.]'), '');
-      final weight = double.tryParse(weightStr) ?? 0.0;
-      return sum + (weight * exercise.series);
-    });
-  }
-
-  int _calculateCompletion(List<WorkoutExercise> exercises) {
-    // TODO: Implementar cálculo real baseado no progresso do treino
-    // Por enquanto, retorna 0% pois é um novo treino
-    return 0;
   }
 
   /// Constrói a lista de ExerciseSummary a partir da lista de WorkoutExercise

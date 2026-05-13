@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/app_version.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../auth/auth_state.dart';
 import '../../../auth/utils/logout_utils.dart';
 
@@ -73,10 +75,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animCtrl;
   late List<Animation<double>> _fadeAnims;
+  PackageInfo? _packageInfo;
 
   @override
   void initState() {
     super.initState();
+    _loadPackageInfo();
     _animCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -96,6 +100,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     });
 
     _animCtrl.forward();
+  }
+
+  Future<void> _loadPackageInfo() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) setState(() => _packageInfo = info);
+    } catch (e, _) {
+      if (mounted) setState(() => _packageInfo = null);
+    }
   }
 
   @override
@@ -123,13 +136,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             _IronSliverHeader(dark: dark, anim: _fadeAnims[0]),
 
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // ── PROFILE CARD ──
                   _FadeSlide(
                     animation: _fadeAnims[1],
-                    child: _ProfileCard(user: user, dark: dark),
+                    child: _ProfileCard(
+                      user: user,
+                      dark: dark,
+                      onEditTap: () => _comingSoon(),
+                    ),
                   ),
                   const SizedBox(height: 28),
 
@@ -149,6 +166,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                           label: 'Notificações',
                           sublabel: 'Lembretes de treino',
                           dark: dark,
+                          comingSoon: true,
                           onTap: () => _comingSoon(),
                         ),
                         _SettingItem(
@@ -156,14 +174,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                           label: 'Tema',
                           sublabel: 'Claro · Escuro · Automático',
                           dark: dark,
+                          comingSoon: true,
                           onTap: () => _comingSoon(),
-                          trailing: _ThemeToggleChip(dark: dark),
                         ),
                         _SettingItem(
                           icon: Icons.language_outlined,
                           label: 'Idioma',
                           sublabel: 'Português (Brasil)',
                           dark: dark,
+                          comingSoon: true,
                           onTap: () => _comingSoon(),
                         ),
                       ],
@@ -187,6 +206,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                           label: 'Backup de Dados',
                           sublabel: 'Sincronizar com a nuvem',
                           dark: dark,
+                          comingSoon: true,
                           onTap: () => _comingSoon(),
                         ),
                         _SettingItem(
@@ -194,6 +214,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                           label: 'Privacidade',
                           sublabel: 'Controle seus dados',
                           dark: dark,
+                          comingSoon: true,
                           onTap: () => _comingSoon(),
                         ),
                       ],
@@ -216,11 +237,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     animation: _fadeAnims[4],
                     child: Center(
                       child: Text(
-                        'IronLog v1.0.0',
+                        _packageInfo == null
+                            ? AppVersion.label
+                            : 'IronLog v${_packageInfo!.version} (${_packageInfo!.buildNumber})',
                         style: TextStyle(
                           fontSize: 11,
                           color: IronTokens.text3(dark),
-                          letterSpacing: 1.2,
+                          letterSpacing: 0.8,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -256,16 +279,19 @@ class _IronSliverHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 110,
-      collapsedHeight: 60,
       pinned: true,
+      toolbarHeight: 56,
+      primary: true,
       backgroundColor: IronTokens.bg(dark),
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      leadingWidth: 56,
       leading: GestureDetector(
         onTap: () => Navigator.of(context).maybePop(),
         child: Container(
-          margin: const EdgeInsets.all(8),
+          margin: const EdgeInsets.fromLTRB(12, 10, 4, 10),
           decoration: BoxDecoration(
             color: IronTokens.s2(dark),
             borderRadius: BorderRadius.circular(50),
@@ -278,25 +304,30 @@ class _IronSliverHeader extends StatelessWidget {
           ),
         ),
       ),
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 14),
-        title: FadeTransition(
-          opacity: anim,
+      titleSpacing: 0,
+      centerTitle: false,
+      title: FadeTransition(
+        opacity: anim,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8),
           child: Text(
             'Configurações',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontFamily: 'BarlowCondensed',
-              fontSize: 26,
+              fontSize: 22,
               fontWeight: FontWeight.w900,
               color: IronTokens.text(dark),
-              letterSpacing: 0.3,
+              letterSpacing: 0.2,
+              height: 1.1,
             ),
           ),
         ),
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Divider(height: 1, color: IronTokens.border(dark)),
+        child: Divider(height: 1, thickness: 1, color: IronTokens.border(dark)),
       ),
     );
   }
@@ -308,7 +339,13 @@ class _IronSliverHeader extends StatelessWidget {
 class _ProfileCard extends StatelessWidget {
   final dynamic user;
   final bool dark;
-  const _ProfileCard({required this.user, required this.dark});
+  final VoidCallback onEditTap;
+
+  const _ProfileCard({
+    required this.user,
+    required this.dark,
+    required this.onEditTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -388,18 +425,25 @@ class _ProfileCard extends StatelessWidget {
           ),
 
           // Edit hint
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: IronTokens.s2(dark),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onEditTap,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: IronTokens.border2(dark)),
-            ),
-            child: Icon(
-              Icons.edit_outlined,
-              size: 16,
-              color: IronTokens.text3(dark),
+              child: Ink(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: IronTokens.s2(dark),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: IronTokens.border2(dark)),
+                ),
+                child: Icon(
+                  Icons.edit_outlined,
+                  size: 16,
+                  color: IronTokens.text3(dark),
+                ),
+              ),
             ),
           ),
         ],
@@ -440,24 +484,41 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: IronTokens.s1(dark),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: IronTokens.border(dark)),
-      ),
-      child: Column(
-        children: List.generate(items.length, (i) {
-          final item = items[i];
-          final isLast = i == items.length - 1;
-          return Column(
-            children: [
-              item,
-              if (!isLast)
-                Divider(height: 1, indent: 56, color: IronTokens.border(dark)),
-            ],
-          );
-        }),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        decoration: BoxDecoration(
+          color: IronTokens.s1(dark),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: IronTokens.border(dark)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(items.length, (i) {
+            final item = items[i];
+            final isLast = i == items.length - 1;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                item,
+                if (!isLast) ...[
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 50,
+                      endIndent: 0,
+                      color: IronTokens.border(dark),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                ],
+              ],
+            );
+          }),
+        ),
       ),
     );
   }
@@ -472,7 +533,7 @@ class _SettingItem extends StatefulWidget {
   final String sublabel;
   final bool dark;
   final VoidCallback onTap;
-  final Widget? trailing;
+  final bool comingSoon;
 
   const _SettingItem({
     required this.icon,
@@ -480,7 +541,7 @@ class _SettingItem extends StatefulWidget {
     required this.sublabel,
     required this.dark,
     required this.onTap,
-    this.trailing,
+    this.comingSoon = false,
   });
 
   @override
@@ -506,8 +567,9 @@ class _SettingItemState extends State<_SettingItem> {
           color: _pressed ? IronTokens.s2(widget.dark) : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Icon box
             Container(
@@ -553,12 +615,14 @@ class _SettingItemState extends State<_SettingItem> {
             ),
 
             // Trailing
-            widget.trailing ??
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: IronTokens.text3(widget.dark),
-                ),
+            if (widget.comingSoon)
+              _ComingSoonChip(dark: widget.dark)
+            else
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 22,
+                color: IronTokens.text3(widget.dark),
+              ),
           ],
         ),
       ),
@@ -567,39 +631,30 @@ class _SettingItemState extends State<_SettingItem> {
 }
 
 // ─────────────────────────────────────────────
-//  THEME TOGGLE CHIP  (inline no item de Tema)
+//  "Em breve" chip
 // ─────────────────────────────────────────────
-class _ThemeToggleChip extends StatelessWidget {
+class _ComingSoonChip extends StatelessWidget {
   final bool dark;
-  const _ThemeToggleChip({required this.dark});
+  const _ComingSoonChip({required this.dark});
 
   @override
   Widget build(BuildContext context) {
+    final fg = IronTokens.text3(dark);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: IronTokens.accent(dark).withOpacity(0.12),
+        color: IronTokens.s2(dark),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: IronTokens.accent(dark).withOpacity(0.3)),
+        border: Border.all(color: IronTokens.border2(dark)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            dark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-            size: 13,
-            color: IronTokens.accent(dark),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            dark ? 'Dark' : 'Light',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: IronTokens.accent(dark),
-            ),
-          ),
-        ],
+      child: Text(
+        'Em breve',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: fg,
+          letterSpacing: 0.2,
+        ),
       ),
     );
   }

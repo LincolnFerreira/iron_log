@@ -45,6 +45,20 @@ final cardioMetadataProvider =
       (ref) => (type: null, intensity: null, duration: null),
     );
 
+// Foco do assistente no rodapé (exercício + índice da série, 0-based).
+// [exerciseId] null = primeiro exercício da lista; [seriesIndex] é limitado ao nº de séries do exercício.
+@immutable
+class WorkoutFooterFocus {
+  const WorkoutFooterFocus({this.exerciseId, this.seriesIndex = 0});
+
+  final String? exerciseId;
+  final int seriesIndex;
+}
+
+final workoutFooterFocusProvider = StateProvider<WorkoutFooterFocus>(
+  (ref) => const WorkoutFooterFocus(),
+);
+
 // Provider para rastrear o modo atual da tela de treino
 // Diferencia entre template (editando rotina), execution (fazendo treino) e editing (editando log)
 final workoutScreenModeProvider = StateProvider<WorkoutScreenMode?>(

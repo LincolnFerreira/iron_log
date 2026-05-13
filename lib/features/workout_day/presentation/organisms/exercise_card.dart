@@ -176,13 +176,23 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                 ),
               if (widget.index != null) const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  widget.exercise.name.toTitleCase(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    ref.read(workoutFooterFocusProvider.notifier).state =
+                        WorkoutFooterFocus(
+                      exerciseId: widget.exercise.id,
+                      seriesIndex: 0,
+                    );
+                  },
+                  child: Text(
+                    widget.exercise.name.toTitleCase(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
@@ -306,6 +316,13 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
             reps: _reps,
             weightUnit: _weightUnit,
             entries: _currentEntries,
+            onSeriesRowInteract: (rowIndex) {
+              ref.read(workoutFooterFocusProvider.notifier).state =
+                  WorkoutFooterFocus(
+                exerciseId: widget.exercise.id,
+                seriesIndex: rowIndex,
+              );
+            },
             onEntriesChanged: (entries) {
               setState(() => _currentEntries = List<SeriesEntry>.from(entries));
               _updateExercise();

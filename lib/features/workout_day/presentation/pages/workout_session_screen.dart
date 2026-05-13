@@ -96,7 +96,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
   DateTime? _selectedDate;
 
   final TextEditingController _searchController = TextEditingController();
-  List<SearchExercise> _addedExercises = [];
+  final List<SearchExercise> _addedExercises = [];
 
   @override
   void initState() {

@@ -19,6 +19,9 @@ class SeriesTable extends StatefulWidget {
   /// Called with the full updated entries list whenever any row changes.
   final void Function(List<SeriesEntry> entries)? onEntriesChanged;
 
+  /// Called when o usuário interage com uma linha (foco no rodapé / reatividade).
+  final ValueChanged<int>? onSeriesRowInteract;
+
   const SeriesTable({
     super.key,
     required this.count,
@@ -28,6 +31,7 @@ class SeriesTable extends StatefulWidget {
     this.onToggleDone,
     this.weightUnit = WeightUnit.kg,
     this.onEntriesChanged,
+    this.onSeriesRowInteract,
   });
 
   @override
@@ -84,10 +88,6 @@ class _SeriesTableState extends State<SeriesTable> {
     }
     if (result.length > widget.count) return result.sublist(0, widget.count);
 
-    print('  resolved result.length: ${result.length}');
-    if (result.isNotEmpty) {
-      print('  ✓ first resolved entry.weight: "${result[0].weight}"');
-    }
     return result;
   }
 
@@ -182,6 +182,7 @@ class _SeriesTableState extends State<SeriesTable> {
               weightUnit: widget.weightUnit,
               activateWeightToken: _activateWeightTokens[index],
               isLastRow: isLast,
+              onInteract: () => widget.onSeriesRowInteract?.call(index),
               onRepsDone: isLast
                   ? null
                   : () => _activateWeightTokens[index + 1].value++,
