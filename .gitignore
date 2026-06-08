@@ -48,6 +48,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Patrol generated
+integration_test/test_bundle.dart
+patrol_test/test_bundle.dart
+
 # Signing - never commit these
 *.jks
 *.keystore

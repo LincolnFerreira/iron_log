@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
+import 'package:iron_log/features/workout_day/presentation/series_visual_style.dart';
+import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 
-
-/// A single input row in the SeriesTable for editing series during workout.
-/// Manages its own editing state with TextControllers for weight and reps entry.
+/// Uma linha da mini-tabela de séries (tipo, peso, reps, feito).
 class SeriesInputRow extends StatefulWidget {
   final SeriesEntry entry;
   final ValueChanged<SeriesEntry> onChanged;
@@ -13,9 +14,16 @@ class SeriesInputRow extends StatefulWidget {
   final WeightUnit weightUnit;
   final ValueNotifier<int>? activateWeightToken;
   final VoidCallback? onRepsDone;
+  final bool isFirstRow;
   final bool isLastRow;
-  /// Notifica o pai (ex.: foco no rodapé) quando o usuário toca ou edita a linha.
   final VoidCallback? onInteract;
+  final String? seriesLabelOverride;
+  final String? stepSubtitle;
+  final bool showTypeColumn;
+  final int? seriesKeyIndex;
+  final SeriesVisualStyle visualStyle;
+  /// True quando a linha é um mini-set filho de um cluster.
+  final bool isClusterMiniSet;
 
   const SeriesInputRow({
     super.key,
@@ -25,8 +33,15 @@ class SeriesInputRow extends StatefulWidget {
     this.weightUnit = WeightUnit.kg,
     this.activateWeightToken,
     this.onRepsDone,
+    this.isFirstRow = true,
     this.isLastRow = false,
     this.onInteract,
+    this.seriesLabelOverride,
+    this.stepSubtitle,
+    this.showTypeColumn = true,
+    this.seriesKeyIndex,
+    this.visualStyle = SeriesVisualStyle.standard,
+    this.isClusterMiniSet = false,
   });
 
   @override
@@ -70,8 +85,6 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     widget.onInteract?.call();
   }
 
-  /// Propagates the weight on every keystroke so the parent always has the
-  /// latest value — even if the user dismisses the keyboard without pressing Done.
   void _handleWeightChanged(String val) {
     if (val.isEmpty) return;
     _updateEntry(widget.entry.copyWith(weight: _cleanValue(val)));
@@ -86,7 +99,6 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     });
   }
 
-  /// Propagates reps on every keystroke.
   void _handleRepsChanged(String val) {
     if (val.isEmpty) return;
     _updateEntry(widget.entry.copyWith(reps: _cleanValue(val)));
@@ -110,226 +122,277 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     widget.onToggleDone(newDone);
   }
 
-  /// Extract a number (integer or decimal) from a value string.
   String _cleanValue(String value) {
-    // Extract only numeric part (handles decimals like 1.5)
     final digits = RegExp(r'\d+\.?\d*').firstMatch(value);
-    final result = digits?.group(0) ?? '0';
-    return result;
+    return digits?.group(0) ?? '0';
   }
 
-  /// Format value for display: show "-" if the value is "0", otherwise show the cleaned value.
-  /// For placa: if it's an integer (like 1.0), display as integer (1)
-  /// Never send '-' to backend — backend always receives numeric values from _cleanValue().
   String _displayValue(String value) {
     final clean = _cleanValue(value);
-    if (clean == '0') {
-      return '-';
-    }
+    if (clean == '0') return '-';
 
-    // For placa unit, if value is integer (e.g., 1.0, 20.0), show without decimal
-    final isPlaca = widget.weightUnit == WeightUnit.placa;
-    if (isPlaca) {
+    if (widget.weightUnit == WeightUnit.placa) {
       try {
         final parsed = double.parse(clean);
         if (parsed == parsed.toInt()) {
           return parsed.toInt().toString();
         }
-      } catch (e) {
-        // If parsing fails, just return clean value
-      }
+      } catch (_) {}
     }
 
     return clean;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      decoration: BoxDecoration(color: Colors.grey.shade50),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+  bool get _compact => widget.visualStyle == SeriesVisualStyle.compactExecution;
+
+  double get _fieldHeight => _compact
+      ? ExerciseCardStyles.compactFieldHeight
+      : ExerciseCardStyles.fieldHeight;
+
+  TextStyle get _fieldTextStyle => _compact
+      ? ExerciseCardStyles.compactFieldTextStyle
+      : ExerciseCardStyles.fieldTextStyle;
+
+  TextStyle get _unitHintStyle => _compact
+      ? ExerciseCardStyles.compactUnitHintStyle
+      : ExerciseCardStyles.unitHintStyle;
+
+  Widget _fieldShell({required Widget child, VoidCallback? onTap}) {
+    final box = Container(
+      height: _fieldHeight,
+      alignment: Alignment.center,
+      decoration: ExerciseCardStyles.fieldBoxDecoration(compact: _compact),
+      child: child,
+    );
+
+    if (onTap == null) return box;
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: box,
+    );
+  }
+
+  Widget _buildTypeField() {
+    const itemStyle = ExerciseCardStyles.fieldTextStyle;
+
+    return SizedBox(
+      height: ExerciseCardStyles.fieldHeight,
+      child: DropdownButtonFormField<int>(
+        initialValue: widget.entry.type,
+        isExpanded: true,
+        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+        iconSize: 20,
+        style: itemStyle,
+        dropdownColor: Colors.white,
+        borderRadius: BorderRadius.circular(ExerciseCardStyles.fieldRadius),
+        menuMaxHeight: 240,
+        items: const [
+          DropdownMenuItem(value: 0, child: Text('Aquec.', style: itemStyle)),
+          DropdownMenuItem(value: 1, child: Text('Prep.', style: itemStyle)),
+          DropdownMenuItem(value: 2, child: Text('Trab', style: itemStyle)),
+          DropdownMenuItem(value: 3, child: Text('Falha', style: itemStyle)),
+        ],
+        onChanged: _handleTypeChanged,
+        decoration: ExerciseCardStyles.dropdownDecoration(),
+      ),
+    );
+  }
+
+  Widget _buildWeightField() {
+    final fieldKey = widget.seriesKeyIndex != null
+        ? WorkoutTestKeys.seriesWeight(widget.seriesKeyIndex!)
+        : null;
+
+    if (_editingWeight) {
+      return SizedBox(
+        height: _fieldHeight,
+        child: TextField(
+          key: fieldKey,
+          controller: _weightController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          textInputAction: TextInputAction.next,
+          autofocus: true,
+          style: _fieldTextStyle,
+          onChanged: _handleWeightChanged,
+          onSubmitted: _handleWeightSubmitted,
+          decoration: ExerciseCardStyles.fieldDecoration(
+            hintText: _cleanValue(widget.entry.weight),
+            compact: _compact,
+          ),
+        ),
+      );
+    }
+
+    return KeyedSubtree(
+      key: fieldKey,
+      child: _fieldShell(
+        onTap: () {
+          widget.onInteract?.call();
+          setState(() {
+            _editingWeight = true;
+            _editingReps = false;
+          });
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_displayValue(widget.entry.weight), style: _fieldTextStyle),
+            const SizedBox(width: 4),
+            Text(widget.weightUnit.label, style: _unitHintStyle),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRepsField() {
+    final fieldKey = widget.seriesKeyIndex != null
+        ? WorkoutTestKeys.seriesReps(widget.seriesKeyIndex!)
+        : null;
+
+    if (_editingReps) {
+      return SizedBox(
+        height: _fieldHeight,
+        child: TextField(
+          key: fieldKey,
+          controller: _repController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          textInputAction: widget.isLastRow
+              ? TextInputAction.done
+              : TextInputAction.next,
+          autofocus: true,
+          style: _fieldTextStyle,
+          onChanged: _handleRepsChanged,
+          onSubmitted: _handleRepsSubmitted,
+          decoration: ExerciseCardStyles.fieldDecoration(
+            hintText: widget.entry.reps,
+            compact: _compact,
+          ),
+        ),
+      );
+    }
+
+    return KeyedSubtree(
+      key: fieldKey,
+      child: _fieldShell(
+        onTap: () {
+          widget.onInteract?.call();
+          setState(() {
+            _editingReps = true;
+            _editingWeight = false;
+          });
+        },
+        child: Text(_displayValue(widget.entry.reps), style: _fieldTextStyle),
+      ),
+    );
+  }
+
+  Widget _buildDoneCheckbox() {
+    final doneKey = widget.seriesKeyIndex != null
+        ? WorkoutTestKeys.seriesDone(widget.seriesKeyIndex!)
+        : null;
+
+    final checkboxSize = _compact
+        ? ExerciseCardStyles.compactCheckboxSize
+        : ExerciseCardStyles.checkboxSize;
+
+    return Theme(
+      data: ExerciseCardStyles.checkboxTheme(context),
+      child: SizedBox(
+        width: checkboxSize,
+        height: checkboxSize,
+        child: Checkbox(
+          key: doneKey,
+          value: widget.entry.done,
+          onChanged: _handleDoneToggled,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSeriesLabel() {
+    final label =
+        widget.seriesLabelOverride ?? 'Série ${widget.entry.index + 1}';
+
+    return SizedBox(
+      width: ExerciseCardStyles.seriesLabelWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Série label + Tipo select (side by side) - matches flex: 3 from header
-          Expanded(
-            flex: 4,
-            child: Row(
-              spacing: 2,
-              children: [
-                Flexible(
-                  flex: 2,
-                  child: SizedBox(
-                    height: 32,
-                    child: DropdownButtonFormField<int>(
-                      initialValue: widget.entry.type,
-                      items: const [
-                        DropdownMenuItem(
-                          value: 0,
-                          child: Text('Aquec.', style: TextStyle(fontSize: 12)),
-                        ),
-                        DropdownMenuItem(
-                          value: 1,
-                          child: Text('Prep.', style: TextStyle(fontSize: 12)),
-                        ),
-                        DropdownMenuItem(
-                          value: 2,
-                          child: Text('Trab', style: TextStyle(fontSize: 12)),
-                        ),
-                        DropdownMenuItem(
-                          value: 3,
-                          child: Text('Falha', style: TextStyle(fontSize: 12)),
-                        ),
-                      ],
-                      onChanged: _handleTypeChanged,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 6,
-                        ),
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Série ${widget.entry.index + 1}',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
+          Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: ExerciseCardStyles.seriesLabelStyle.copyWith(
+              color: ExerciseCardStyles.textPrimary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: 8),
-
-          // Weight field (click to edit) - matches flex: 1 from header
-          Expanded(
-            flex: 2,
-            child: _editingWeight
-                ? TextField(
-                    controller: _weightController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: [
-                      // FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                    ],
-                    textInputAction: TextInputAction.next,
-                    autofocus: true,
-                    onChanged: _handleWeightChanged,
-                    onSubmitted: _handleWeightSubmitted,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                      border: const OutlineInputBorder(),
-                      hintText: _cleanValue(widget.entry.weight),
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: () {
-                      widget.onInteract?.call();
-                      setState(() {
-                        _editingWeight = true;
-                        _editingReps = false;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.transparent),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _displayValue(widget.entry.weight),
-                            style: TextStyle(color: Colors.grey.shade800),
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            widget.weightUnit.label,
-                            style: TextStyle(
-                              color: Colors.grey.shade400,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-          ),
-          const SizedBox(width: 8),
-
-          // Reps field (click to edit) - matches flex: 1 from header
-          Expanded(
-            flex: 1,
-            child: _editingReps
-                ? TextField(
-                    controller: _repController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    textInputAction: widget.isLastRow
-                        ? TextInputAction.done
-                        : TextInputAction.next,
-                    autofocus: true,
-                    onChanged: _handleRepsChanged,
-                    onSubmitted: _handleRepsSubmitted,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                      border: const OutlineInputBorder(),
-                      hintText: widget.entry.reps,
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: () {
-                      widget.onInteract?.call();
-                      setState(() {
-                        _editingReps = true;
-                        _editingWeight = false;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 8,
-                      ),
-                      child: Text(
-                        _displayValue(widget.entry.reps),
-                        style: TextStyle(color: Colors.grey.shade800),
-                      ),
-                    ),
-                  ),
-          ),
-          const SizedBox(width: 8),
-
-          // Done checkbox - matches SizedBox(width: 48) from header
-          SizedBox(
-            width: 48,
-            child: Checkbox(
-              value: widget.entry.done,
-              onChanged: _handleDoneToggled,
+          if (widget.stepSubtitle != null && widget.stepSubtitle!.isNotEmpty)
+            Text(
+              widget.stepSubtitle!,
+              overflow: TextOverflow.ellipsis,
+              style: ExerciseCardStyles.seriesLabelStyle,
             ),
-          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRowContent() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        _buildSeriesLabel(),
+        const SizedBox(width: ExerciseCardStyles.columnGap),
+        if (widget.showTypeColumn) ...[
+          Expanded(flex: 2, child: _buildTypeField()),
+          const SizedBox(width: ExerciseCardStyles.columnGap),
+        ],
+        Expanded(child: _buildWeightField()),
+        const SizedBox(width: ExerciseCardStyles.columnGap),
+        Expanded(child: _buildRepsField()),
+        const SizedBox(width: ExerciseCardStyles.columnGap),
+        SizedBox(
+          width: ExerciseCardStyles.doneColumnWidth,
+          child: Center(child: _buildDoneCheckbox()),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.isClusterMiniSet) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 6,
+        ),
+        decoration: ExerciseCardStyles.clusterMiniRowDecoration(),
+        child: _buildRowContent(),
+      );
+    }
+
+    final rowPadding = _compact
+        ? ExerciseCardStyles.compactRowPaddingV
+        : ExerciseCardStyles.rowPaddingV;
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: rowPadding),
+      decoration: BoxDecoration(
+        border: widget.isFirstRow
+            ? null
+            : const Border(
+                top: BorderSide(color: ExerciseCardStyles.rowDivider),
+              ),
+      ),
+      child: _buildRowContent(),
     );
   }
 }

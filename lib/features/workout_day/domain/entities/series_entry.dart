@@ -6,6 +6,10 @@ class SeriesEntry {
   final String weight;
   final String reps;
   final bool done;
+  final bool isDerived;
+  final int? miniSetIndex;
+  final String? setType;
+  final String? techniqueBlockId;
 
   SeriesEntry({
     required this.index,
@@ -13,6 +17,10 @@ class SeriesEntry {
     required this.weight,
     required this.reps,
     this.done = false,
+    this.isDerived = false,
+    this.miniSetIndex,
+    this.setType,
+    this.techniqueBlockId,
   });
 
   SeriesEntry copyWith({
@@ -21,6 +29,10 @@ class SeriesEntry {
     String? weight,
     String? reps,
     bool? done,
+    bool? isDerived,
+    int? miniSetIndex,
+    String? setType,
+    String? techniqueBlockId,
   }) {
     return SeriesEntry(
       index: index ?? this.index,
@@ -28,6 +40,10 @@ class SeriesEntry {
       weight: weight ?? this.weight,
       reps: reps ?? this.reps,
       done: done ?? this.done,
+      isDerived: isDerived ?? this.isDerived,
+      miniSetIndex: miniSetIndex ?? this.miniSetIndex,
+      setType: setType ?? this.setType,
+      techniqueBlockId: techniqueBlockId ?? this.techniqueBlockId,
     );
   }
 

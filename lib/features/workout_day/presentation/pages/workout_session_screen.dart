@@ -204,12 +204,12 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
           // Main content: search results / empty / added list
           Column(
             children: [
-              if (_selectedDate != null)
-                _buildDateBadge(context, isDark),
+              if (_selectedDate != null) _buildDateBadge(context, isDark),
               Expanded(
                 child: exercisesAsync.when(
                   skipLoadingOnRefresh: false,
-                  data: (_) => _buildSearchContent(context, searchState, isDark),
+                  data: (_) =>
+                      _buildSearchContent(context, searchState, isDark),
                   loading: () => ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: 3,
@@ -330,9 +330,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                   ),
                 ),
                 onChanged: (value) {
-                  ref
-                      .read(exerciseSearchProvider.notifier)
-                      .updateQuery(value);
+                  ref.read(exerciseSearchProvider.notifier).updateQuery(value);
                   setState(() {});
                 },
               ),
@@ -355,7 +353,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                   child: Icon(
                     Icons.mic,
                     size: 22,
-                    color: isDark ? AppColors.primaryDark : AppColors.primaryLight,
+                    color: isDark
+                        ? AppColors.primaryDark
+                        : AppColors.primaryLight,
                   ),
                 ),
               ),
@@ -607,8 +607,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       sessionId: widget.sessionId,
       sessionName: widget.subtitle,
       workoutStarted: _workoutStarted,
-      isLoading: ref.read(workoutControllerProvider).isLoading ||
-          _isStartingWorkout,
+      isLoading:
+          ref.read(workoutControllerProvider).isLoading || _isStartingWorkout,
       onReorder: (oldIndex, newIndex) {
         ref
             .read(workoutDayExercisesProvider.notifier)
@@ -626,9 +626,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
                     .saveSessionExercises(widget.sessionId!);
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Treino salvo com sucesso'),
-                    ),
+                    const SnackBar(content: Text('Treino salvo com sucesso')),
                   );
                 }
               } catch (e) {

@@ -14,6 +14,7 @@ import '../../data/models/workout_edit_dto.dart';
 import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../domain/enums/workout_screen_mode.dart';
+import '../../domain/mappers/technique_block_mapper.dart';
 
 final workoutOutboxLocalDataSourceProvider =
     Provider<WorkoutOutboxLocalDataSource>((ref) {
@@ -26,24 +27,9 @@ final workoutLogServiceProvider = Provider<WorkoutLogService>((ref) {
   );
 });
 
-// Enum para rastrear tipo de atividade
-enum WorkoutActivityType { training, cardio, rest }
-
 // Provider para armazenar a duração original de um treino em edição
 // Usado para preservar a duração ao mudar a data do treino
 final workoutOriginalDurationProvider = StateProvider<Duration?>((ref) => null);
-
-// Provider para rastrear o tipo de atividade atual (training, cardio, rest)
-// Padrão: training (treino normal com séries)
-final workoutActivityTypeProvider = StateProvider<WorkoutActivityType>(
-  (ref) => WorkoutActivityType.training,
-);
-
-// Provider para armazenar metadata de cardio (tipo, intensidade, duração)
-final cardioMetadataProvider =
-    StateProvider<({String? type, String? intensity, int? duration})>(
-      (ref) => (type: null, intensity: null, duration: null),
-    );
 
 // Foco do assistente no rodapé (exercício + índice da série, 0-based).
 // [exerciseId] null = primeiro exercício da lista; [seriesIndex] é limitado ao nº de séries do exercício.
@@ -468,7 +454,7 @@ class WorkoutDayExercisesNotifier
   /// Carrega um treino já registrado pelo seu ID (modo edição).
   ///
   /// Chama GET /workout/:workoutId, converte a lista plana de SerieLog em
-  /// [WorkoutExercise] via [WorkoutDataMapper.fromSerieLogList], e popula o
+  /// [WorkoutExercise] via [WorkoutEditDto], e popula o
   /// estado para que a tela de treino exiba os dados pré-preenchidos.
   Future<void> loadExistingWorkout(String workoutId) async {
     if (_isLoading) return;
@@ -526,7 +512,8 @@ class WorkoutDayExercisesNotifier
           }
         }
 
-        final exercises = dto.toWorkoutExercises();
+        final exercises =
+            dto.toWorkoutExercises().map(TechniqueBlockMapper.normalize).toList();
         state = AsyncValue.data(exercises);
 
         if (kDebugMode) {
@@ -669,8 +656,9 @@ class WorkoutDayExercisesNotifier
     String exerciseId,
     WorkoutExercise updatedExercise,
   ) {
+    final normalized = TechniqueBlockMapper.normalize(updatedExercise);
     debugPrint(
-      '[Provider._updateExerciseInMemory] exerciseId=$exerciseId, entries: ${updatedExercise.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+      '[Provider._updateExerciseInMemory] exerciseId=$exerciseId, entries: ${normalized.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
     );
     final currentState = state;
     if (currentState is AsyncData<List<WorkoutExercise>>) {
@@ -679,7 +667,7 @@ class WorkoutDayExercisesNotifier
         '[Provider._updateExerciseInMemory] BEFORE: ${currentExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
       );
       final updatedExercises = currentExercises.map((exercise) {
-        return exercise.id == exerciseId ? updatedExercise : exercise;
+        return exercise.id == exerciseId ? normalized : exercise;
       }).toList();
       debugPrint(
         '[Provider._updateExerciseInMemory] AFTER: ${updatedExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',

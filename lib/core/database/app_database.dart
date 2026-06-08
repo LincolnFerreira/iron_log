@@ -8,6 +8,7 @@ import 'session_exercises_table.dart';
 import 'exercises_table.dart';
 import 'workout_sessions_table.dart';
 import 'serie_logs_table.dart';
+import 'technique_blocks_table.dart';
 import 'rest_days_table.dart';
 import 'workout_outbox_table.dart';
 
@@ -21,6 +22,7 @@ part 'app_database.g.dart';
     Exercises,
     WorkoutSessions,
     SerieLogs,
+    TechniqueBlocks,
     RestDays,
     WorkoutOutbox,
   ],
@@ -29,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -42,6 +44,13 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(workoutOutbox);
+          }
+          if (from < 4) {
+            await m.createTable(techniqueBlocks);
+            await m.addColumn(serieLogs, serieLogs.techniqueBlockId);
+            await m.addColumn(serieLogs, serieLogs.miniSetIndex);
+            await m.addColumn(serieLogs, serieLogs.setType);
+            await m.addColumn(serieLogs, serieLogs.isDerived);
           }
         },
       );

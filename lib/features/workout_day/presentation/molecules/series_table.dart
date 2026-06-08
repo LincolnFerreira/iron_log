@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
+import 'package:iron_log/features/workout_day/presentation/series_visual_style.dart';
+import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 import 'series_input_row.dart';
 
-/// A table displaying workout series with type, weight, reps, and completion status.
-/// Controlled component — the caller owns the entries list via [onEntriesChanged].
+/// Mini-tabela de séries com colunas alinhadas: tipo, peso, reps, feito.
 class SeriesTable extends StatefulWidget {
   final int count;
-  final String weight; // default weight for auto-generated rows
-  final String reps; // default reps for auto-generated rows
-
-  /// The authoritative list of series entries maintained by the parent.
+  final String weight;
+  final String reps;
   final List<SeriesEntry> entries;
-
   final void Function(int index, bool done)? onToggleDone;
   final WeightUnit weightUnit;
-
-  /// Called with the full updated entries list whenever any row changes.
   final void Function(List<SeriesEntry> entries)? onEntriesChanged;
-
-  /// Called when o usuário interage com uma linha (foco no rodapé / reatividade).
   final ValueChanged<int>? onSeriesRowInteract;
+  final bool showColumnHeader;
+  final bool hideTypeForDerived;
+  final bool hideTypeForCluster;
+  final int? clusterRestSeconds;
+  final int seriesKeyOffset;
+  final SeriesVisualStyle visualStyle;
+  final bool showTerminateCluster;
+  final bool clusterTerminatedEarly;
+  final VoidCallback? onTerminateCluster;
 
   const SeriesTable({
     super.key,
@@ -32,6 +38,15 @@ class SeriesTable extends StatefulWidget {
     this.weightUnit = WeightUnit.kg,
     this.onEntriesChanged,
     this.onSeriesRowInteract,
+    this.showColumnHeader = true,
+    this.hideTypeForDerived = false,
+    this.hideTypeForCluster = false,
+    this.clusterRestSeconds,
+    this.seriesKeyOffset = 0,
+    this.visualStyle = SeriesVisualStyle.standard,
+    this.showTerminateCluster = false,
+    this.clusterTerminatedEarly = false,
+    this.onTerminateCluster,
   });
 
   @override
@@ -39,8 +54,12 @@ class SeriesTable extends StatefulWidget {
 }
 
 class _SeriesTableState extends State<SeriesTable> {
-  // Only UI state lives here — no data copies.
   late List<ValueNotifier<int>> _activateWeightTokens;
+
+  bool get _compact => widget.visualStyle == SeriesVisualStyle.compactExecution;
+
+  bool get _isClusterMiniSets =>
+      widget.hideTypeForCluster && widget.clusterRestSeconds != null;
 
   @override
   void initState() {
@@ -73,8 +92,6 @@ class _SeriesTableState extends State<SeriesTable> {
     }
   }
 
-  /// Returns the effective display list: fills to [count] with defaults,
-  /// or trims if the parent passed more than [count] entries.
   List<SeriesEntry> _resolvedEntries() {
     final result = List<SeriesEntry>.from(widget.entries);
     while (result.length < widget.count) {
@@ -87,14 +104,10 @@ class _SeriesTableState extends State<SeriesTable> {
       );
     }
     if (result.length > widget.count) return result.sublist(0, widget.count);
-
     return result;
   }
 
   void _handleEntryChanged(int index, SeriesEntry updated) {
-    // Merge only the changed index into the parent-owned list.
-    // Never call _resolvedEntries() here — that would inject defaults into
-    // entries the user hasn't touched yet, corrupting the payload.
     final result = List<SeriesEntry>.from(widget.entries);
     while (result.length <= index) {
       result.add(
@@ -113,86 +126,161 @@ class _SeriesTableState extends State<SeriesTable> {
     widget.onToggleDone?.call(index, done);
   }
 
+  String? _seriesLabel(SeriesEntry entry, int rowIndex) {
+    if (entry.isDerived) return '↓';
+    if (widget.hideTypeForCluster) {
+      final clusterIndex = entry.miniSetIndex ?? rowIndex;
+      return 'C${clusterIndex + 1}';
+    }
+    return null;
+  }
+
+  bool _showTypeColumn(SeriesEntry entry) {
+    if (widget.hideTypeForCluster) return false;
+    if (widget.hideTypeForDerived && entry.isDerived) return false;
+    return true;
+  }
+
+  String? _clusterStepSubtitle(int index, int count) {
+    if (!_isClusterMiniSets) return null;
+    final rest =
+        widget.clusterRestSeconds ??
+        TechniqueBlockMapper.defaultClusterRestSeconds;
+    return TechniqueBlockMapper.clusterStepSubtitle(index, count, rest);
+  }
+
+  Widget _buildTerminateClusterButton() {
+    if (!widget.showTerminateCluster || widget.clusterTerminatedEarly) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: SizedBox(
+        width: double.infinity,
+        child: TextButton.icon(
+          key: WorkoutTestKeys.terminateCluster,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            widget.onTerminateCluster?.call();
+          },
+          icon: const Icon(Icons.stop_circle_outlined, size: 16),
+          label: const Text('Encerrar cluster'),
+          style: TextButton.styleFrom(
+            foregroundColor: ExerciseCardStyles.labelMuted,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            textStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTableBody() {
+    final entries = _resolvedEntries();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.showColumnHeader)
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: 4,
+              left: _compact ? 8 : 0,
+              right: _compact ? 8 : 0,
+            ),
+            child: Row(
+              children: [
+                SizedBox(width: ExerciseCardStyles.seriesLabelWidth),
+                const SizedBox(width: ExerciseCardStyles.columnGap),
+                if (!widget.hideTypeForCluster) ...[
+                  const Expanded(
+                    flex: 3,
+                    child: Text('TIPO', style: ExerciseCardStyles.headerStyle),
+                  ),
+                  const SizedBox(width: ExerciseCardStyles.columnGap),
+                ],
+                Expanded(
+                  child: Text(
+                    'PESO (${widget.weightUnit.label.toUpperCase()})',
+                    style: ExerciseCardStyles.headerStyle,
+                  ),
+                ),
+                const SizedBox(width: ExerciseCardStyles.columnGap),
+                const Expanded(
+                  child: Text('REPS', style: ExerciseCardStyles.headerStyle),
+                ),
+                const SizedBox(width: ExerciseCardStyles.columnGap),
+                const SizedBox(
+                  width: ExerciseCardStyles.doneColumnWidth,
+                  child: Center(
+                    child: Text('FEITO', style: ExerciseCardStyles.headerStyle),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          alignment: Alignment.topCenter,
+          child: Column(
+            children: entries.asMap().entries.expand((entry) {
+              final index = entry.key;
+              final seriesEntry = entry.value;
+              final isLast = index == entries.length - 1;
+              final row = SeriesInputRow(
+                key: ValueKey(
+                  '${seriesEntry.index}_${seriesEntry.isDerived}_${seriesEntry.miniSetIndex}',
+                ),
+                entry: seriesEntry,
+                isFirstRow: index == 0,
+                isLastRow: isLast,
+                onChanged: (updated) => _handleEntryChanged(index, updated),
+                onToggleDone: (done) => _handleToggleDone(index, done),
+                weightUnit: widget.weightUnit,
+                activateWeightToken: _activateWeightTokens[index],
+                onInteract: () => widget.onSeriesRowInteract?.call(index),
+                onRepsDone: isLast
+                    ? null
+                    : () => _activateWeightTokens[index + 1].value++,
+                seriesLabelOverride: _seriesLabel(seriesEntry, index),
+                stepSubtitle: _clusterStepSubtitle(index, entries.length),
+                showTypeColumn: _showTypeColumn(seriesEntry),
+                seriesKeyIndex: widget.seriesKeyOffset + index,
+                visualStyle: widget.visualStyle,
+                isClusterMiniSet: widget.hideTypeForCluster,
+              );
+
+              return [row];
+            }).toList(),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: _compact ? 8 : 0),
+          child: _buildTerminateClusterButton(),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.count == 0) {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Text(
-                  'TIPO',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'PESO (${widget.weightUnit.label.toUpperCase()})',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'REPS',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
-              ),
-              SizedBox(
-                width: 48,
-                child: Center(
-                  child: Text(
-                    'FEITO',
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    final body = _buildTableBody();
 
-        // Series rows
-        ...() {
-          final entries = _resolvedEntries();
-          return entries.asMap().entries.map((entry) {
-            final index = entry.key;
-            final seriesEntry = entry.value;
-            final isLast = index == entries.length - 1;
-            return SeriesInputRow(
-              key: ValueKey(index),
-              entry: seriesEntry,
-              onChanged: (updated) => _handleEntryChanged(index, updated),
-              onToggleDone: (done) => _handleToggleDone(index, done),
-              weightUnit: widget.weightUnit,
-              activateWeightToken: _activateWeightTokens[index],
-              isLastRow: isLast,
-              onInteract: () => widget.onSeriesRowInteract?.call(index),
-              onRepsDone: isLast
-                  ? null
-                  : () => _activateWeightTokens[index + 1].value++,
-            );
-          }).toList();
-        }(),
+    if (!_compact) return body;
 
-        // TODO: When per-series data persistence is needed, wire onToggleDone
-        // callback to the provider/backend and store individual series state.
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      decoration: ExerciseCardStyles.techniqueExecutionTableDecoration(),
+      child: body,
     );
   }
 }

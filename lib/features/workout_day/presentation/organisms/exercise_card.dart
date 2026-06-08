@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
+import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
 import '../atoms/custom_badge.dart';
 import '../atoms/exercise_history_chip.dart';
 import '../atoms/ai_suggestion_chip.dart';
-import '../molecules/series_table.dart';
+import '../atoms/dashed_action_button.dart';
+import '../exercise_card_styles.dart';
+import '../workout_test_keys.dart';
+import '../widgets/technique/technique_block_list.dart';
 import '../molecules/exercise_history_modal.dart';
 import '../molecules/quick_fill_chips.dart';
 import '../../domain/entities/workout_exercise.dart';
@@ -43,9 +49,8 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   late WeightUnit _weightUnit;
   late String _notes;
 
-  /// Authoritative list of per-series data. ExerciseCard is the single owner;
-  /// SeriesTable is a controlled component that reads from this and reports changes.
-  List<SeriesEntry> _currentEntries = const [];
+  /// Authoritative technique blocks. ExerciseCard is the single owner.
+  List<TechniqueBlock> _blocks = const [];
 
   bool _isSuggestionLoading = false;
   bool _isSuggestionExpanded = false;
@@ -61,27 +66,24 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     _restTime = widget.exercise.restTime;
     _weightUnit = widget.exercise.weightUnit;
     _notes = widget.exercise.notes ?? '';
-    _currentEntries = _buildEntries(widget.exercise.entries);
+    _blocks = _buildBlocks(widget.exercise);
+    _series = TechniqueBlockMapper.flattenBlocks(_blocks).length;
   }
 
-  /// Builds the authoritative entries list from [source].
-  /// If [source] is non-empty, uses it (extending/trimming to [_series]).
-  /// Otherwise generates defaults from exercise weight/reps.
-  List<SeriesEntry> _buildEntries(List<SeriesEntry> source) {
-    if (source.isNotEmpty) {
-      final result = List<SeriesEntry>.from(source);
-      while (result.length < _series) {
-        result.add(
-          SeriesEntry(index: result.length, weight: _weight, reps: _reps),
-        );
-      }
-      if (result.length > _series) return result.sublist(0, _series);
-      return result;
-    }
-    return List.generate(
-      _series,
-      (i) => SeriesEntry(index: i, weight: _weight, reps: _reps),
-    );
+  List<TechniqueBlock> _buildBlocks(WorkoutExercise exercise) {
+    return TechniqueBlockMapper.ensureBlocks(exercise);
+  }
+
+  void _syncSeriesCount() {
+    _series = TechniqueBlockMapper.flattenBlocks(_blocks).length;
+  }
+
+  List<SeriesEntry> get _currentEntries =>
+      TechniqueBlockMapper.flattenBlocks(_blocks);
+
+  void _setBlocks(List<TechniqueBlock> blocks) {
+    _blocks = blocks;
+    _syncSeriesCount();
   }
 
   @override
@@ -89,16 +91,18 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     super.didUpdateWidget(oldWidget);
     // Robust sync: compare important fields and entries content rather than
     // relying on `==` which is identity-by-id for WorkoutExercise.
-    bool entriesDiffer(List<SeriesEntry> a, List<SeriesEntry> b) {
-      if (a.length != b.length) return true;
-      for (var i = 0; i < a.length; i++) {
-        final x = a[i];
-        final y = b[i];
-        if (x.index != y.index ||
-            x.weight != y.weight ||
+    bool blocksDiffer(List<TechniqueBlock> a, List<TechniqueBlock> b) {
+      final flatA = TechniqueBlockMapper.flattenBlocks(a);
+      final flatB = TechniqueBlockMapper.flattenBlocks(b);
+      if (flatA.length != flatB.length) return true;
+      for (var i = 0; i < flatA.length; i++) {
+        final x = flatA[i];
+        final y = flatB[i];
+        if (x.weight != y.weight ||
             x.reps != y.reps ||
             x.done != y.done ||
-            x.type != y.type) {
+            x.type != y.type ||
+            x.isDerived != y.isDerived) {
           return true;
         }
       }
@@ -117,7 +121,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         newEx.restTime != oldEx.restTime ||
         newEx.weightUnit != oldEx.weightUnit ||
         newEx.notes != oldEx.notes ||
-        entriesDiffer(newEx.entries, oldEx.entries);
+        blocksDiffer(newEx.blocks.isNotEmpty ? newEx.blocks : TechniqueBlockMapper.ensureBlocks(newEx), _blocks);
 
     if (significantChange) {
       setState(() {
@@ -128,13 +132,13 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         _restTime = newEx.restTime;
         _weightUnit = newEx.weightUnit;
         _notes = newEx.notes ?? '';
-        // If provider supplied entries and user hasn't edited, adopt them
-        final incoming = newEx.entries;
+        final incomingBlocks = TechniqueBlockMapper.ensureBlocks(newEx);
         final userHasEdited = _currentEntries.any(
           (e) => e.weight != '' && e.weight != '0' && e.weight != _weight,
         );
-        if (incoming.isNotEmpty && !userHasEdited) {
-          _currentEntries = _buildEntries(incoming);
+        if (incomingBlocks.isNotEmpty && !userHasEdited) {
+          _blocks = incomingBlocks;
+          _syncSeriesCount();
         }
       });
     }
@@ -142,7 +146,9 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return KeyedSubtree(
+      key: WorkoutTestKeys.exerciseCard(widget.exercise.id),
+      child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -179,8 +185,9 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    ref.read(workoutFooterFocusProvider.notifier).state =
-                        WorkoutFooterFocus(
+                    ref
+                        .read(workoutFooterFocusProvider.notifier)
+                        .state = WorkoutFooterFocus(
                       exerciseId: widget.exercise.id,
                       seriesIndex: 0,
                     );
@@ -198,7 +205,9 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               const SizedBox(width: 8),
               CustomBadge(
                 text: widget.exercise.tag.label,
-                backgroundColor: widget.exercise.tag.color.withOpacity(0.1),
+                backgroundColor: widget.exercise.tag.color.withValues(
+                  alpha: 0.12,
+                ),
                 textColor: widget.exercise.tag.color,
               ),
               // Menu button
@@ -310,22 +319,22 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               ),
             ),
           //TODO: verificar no back-end pq aqui não está vindo o nome dos musculos e sim um id, pra isso vamos precisar verificar bem provavelmente talvez um log no back-end pra ver o que está passando aqui
-          SeriesTable(
-            count: _series,
+          TechniqueBlockList(
+            blocks: _blocks,
             weight: _weight,
             reps: _reps,
             weightUnit: _weightUnit,
-            entries: _currentEntries,
+            onBlocksChanged: (blocks) {
+              setState(() => _setBlocks(blocks));
+              _updateExercise();
+            },
             onSeriesRowInteract: (rowIndex) {
-              ref.read(workoutFooterFocusProvider.notifier).state =
-                  WorkoutFooterFocus(
+              ref
+                  .read(workoutFooterFocusProvider.notifier)
+                  .state = WorkoutFooterFocus(
                 exerciseId: widget.exercise.id,
                 seriesIndex: rowIndex,
               );
-            },
-            onEntriesChanged: (entries) {
-              setState(() => _currentEntries = List<SeriesEntry>.from(entries));
-              _updateExercise();
             },
             onToggleDone: (index, done) {
               if (mounted) {
@@ -341,40 +350,34 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               }
             },
           ),
-          TextButton.icon(
+          DashedActionButton(
             onPressed: () {
               setState(() {
-                _series += 1;
-                _currentEntries = [
-                  ..._currentEntries,
-                  SeriesEntry(
-                    index: _currentEntries.length,
-                    weight: _weight,
-                    reps: _reps,
-                  ),
-                ];
+                _blocks = TechniqueBlockMapper.appendExerciseSeries(
+                  _blocks,
+                  weight: _weight,
+                  reps: _reps,
+                );
+                _syncSeriesCount();
               });
               _updateExercise();
             },
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Adicionar série'),
+            icon: Icons.add_rounded,
+            label: 'Adicionar série',
           ),
           const SizedBox(height: 12),
           GestureDetector(
             onTap: _showObservationsModal,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
-                color: Colors.white,
-              ),
+              height: ExerciseCardStyles.fieldHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: ExerciseCardStyles.fieldBoxDecoration(),
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.chat_bubble_outline,
                     size: 18,
-                    color: Colors.grey.shade500,
+                    color: ExerciseCardStyles.labelMuted,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -385,8 +388,8 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                       style: TextStyle(
                         fontSize: 13,
                         color: _notes.isEmpty
-                            ? Colors.grey.shade400
-                            : Colors.grey.shade800,
+                            ? ExerciseCardStyles.labelMuted
+                            : ExerciseCardStyles.textPrimary,
                       ),
                     ),
                   ),
@@ -396,6 +399,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -451,19 +455,16 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         ? weight.toInt().toString()
         : weight.toStringAsFixed(1);
 
-    final baseEntries = _currentEntries.isNotEmpty
-        ? _currentEntries
-        : List.generate(
-            _series,
-            (i) => SeriesEntry(index: i, weight: _weight, reps: _reps),
-          );
-
-    final updated = baseEntries
-        .map((e) => e.done ? e : e.copyWith(weight: weightStr))
-        .toList();
+    final updatedBlocks = _blocks.map((block) {
+      return block.copyWith(
+        entries: block.entries
+            .map((e) => e.done ? e : e.copyWith(weight: weightStr))
+            .toList(),
+      );
+    }).toList();
 
     setState(() {
-      _currentEntries = updated;
+      _blocks = updatedBlocks;
       _weight = weightStr;
       _isSuggestionExpanded = false;
     });
@@ -856,14 +857,16 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     debugPrint(
       '[ExerciseCard._updateExercise] _currentEntries before copyWith: ${_currentEntries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
     );
-    final updated = widget.exercise.copyWith(
-      series: _series,
-      reps: _reps,
-      weight: _weight,
-      rir: _rir,
-      restTime: _restTime,
-      entries: List<SeriesEntry>.from(_currentEntries),
-      notes: _notes.isEmpty ? null : _notes,
+    final updated = TechniqueBlockMapper.withBlocks(
+      widget.exercise.copyWith(
+        series: _series,
+        reps: _reps,
+        weight: _weight,
+        rir: _rir,
+        restTime: _restTime,
+        notes: _notes.isEmpty ? null : _notes,
+      ),
+      _blocks,
     );
     debugPrint(
       '[ExerciseCard._updateExercise] updated.entries: ${updated.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
@@ -891,24 +894,5 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
       // Mesmo com erro, tenta atualizar com o método legado para não bloquear UI
       notifier.updateExercise(widget.exercise.id, updated);
     }
-  }
-
-  void _showRirHelp() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('O que é RIR?'),
-        content: const Text(
-          'RIR (Repetitions In Reserve) é o número de repetições que você acredita que ainda poderia fazer no final de uma série.\n\n'
-          'Por exemplo, RIR 0 significa que a série foi feita até a falha; RIR 2 significa que você ainda teria cerca de 2 repetições no tanque.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fechar'),
-          ),
-        ],
-      ),
-    );
   }
 }

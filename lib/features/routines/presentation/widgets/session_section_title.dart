@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iron_log/core/app_colors.dart';
+import 'session_screen_styles.dart';
 
 class SessionSectionTitle extends StatelessWidget {
   final String text;
@@ -8,11 +8,8 @@ class SessionSectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      text,
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        fontWeight: FontWeight.w500,
-        color: AppColors.textSecondaryLight,
-      ),
+      text.toUpperCase(),
+      style: SessionScreenStyles.sectionLabel(context),
     );
   }
 }

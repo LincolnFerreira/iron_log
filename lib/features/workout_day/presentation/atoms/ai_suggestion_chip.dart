@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../exercise_card_styles.dart';
 
 class AiSuggestionChip extends StatelessWidget {
   final bool isLoading;
@@ -6,19 +7,15 @@ class AiSuggestionChip extends StatelessWidget {
 
   const AiSuggestionChip({super.key, this.isLoading = false, this.onTap});
 
-  static const _purple = Color(0xFF7B1FA2);
-  static const _lightPurple = Color(0xFFF3E5F5);
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: isLoading ? null : onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: _lightPurple,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _purple, width: 1),
+          color: ExerciseCardStyles.accentChipBg,
+          borderRadius: BorderRadius.circular(999),
         ),
         child: isLoading
             ? const SizedBox(
@@ -26,7 +23,9 @@ class AiSuggestionChip extends StatelessWidget {
                 height: 14,
                 child: CircularProgressIndicator(
                   strokeWidth: 1.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(_purple),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    ExerciseCardStyles.accent,
+                  ),
                 ),
               )
             : const Text(
@@ -34,7 +33,7 @@ class AiSuggestionChip extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: _purple,
+                  color: ExerciseCardStyles.accent,
                 ),
               ),
       ),

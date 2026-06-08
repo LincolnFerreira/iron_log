@@ -58,7 +58,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.1.0
   path: ^1.8.3
-  connectivity_plus: ^5.0.0
+  connectivity_plus: ^6.1.0
   package_info_plus: ^8.3.0
 
   # On-device speech recognition (Android pt-BR)
@@ -74,6 +74,17 @@ dev_dependencies:
   flutter_native_splash: ^2.4.3
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.4
+  patrol: ^4.4.0
+  integration_test:
+    sdk: flutter
+
+patrol:
+  app_name: Iron Log
+  test_directory: integration_test
+  android:
+    package_name: com.example.iron_log
+  ios:
+    bundle_id: com.example.ironLog
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -92,6 +103,7 @@ flutter:
     - assets/fire-sequence.svg
     - assets/images/
     - assets/images/app_logo.svg
+    - assets/type-muscles/
 
   fonts:
     - family: Barlow

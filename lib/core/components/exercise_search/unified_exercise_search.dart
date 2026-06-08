@@ -179,6 +179,8 @@ final exerciseSearchLoadingProvider = Provider<bool>((ref) {
 // COMPONENTE
 // ============================================================================
 
+enum ExerciseSearchAppearance { outlined, soft }
+
 /// Componente unificado de busca de exercícios
 /// Substitui as implementações duplicadas espalhadas pelo projeto
 class UnifiedExerciseSearch extends ConsumerStatefulWidget {
@@ -186,6 +188,7 @@ class UnifiedExerciseSearch extends ConsumerStatefulWidget {
   final Function(SearchExercise)? onExerciseSelected;
   final bool useSearchAnchor;
   final Widget Function(List<SearchExercise>, String)? resultsBuilder;
+  final ExerciseSearchAppearance appearance;
 
   const UnifiedExerciseSearch({
     super.key,
@@ -193,6 +196,7 @@ class UnifiedExerciseSearch extends ConsumerStatefulWidget {
     this.onExerciseSelected,
     this.useSearchAnchor = false,
     this.resultsBuilder,
+    this.appearance = ExerciseSearchAppearance.outlined,
   });
 
   @override
@@ -222,14 +226,24 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
 
   Widget _buildTextField() {
     final searchState = ref.watch(exerciseSearchProvider);
+    final isSoft = widget.appearance == ExerciseSearchAppearance.soft;
 
-    return TextField(
+    final field = TextField(
       controller: _controller,
       onChanged: (value) {
         ref.read(exerciseSearchProvider.notifier).updateQuery(value);
       },
+      style: TextStyle(
+        fontSize: isSoft ? 16 : null,
+        color: isSoft ? const Color(0xFF1E2A42) : null,
+      ),
       decoration: InputDecoration(
         hintText: widget.hintText,
+        hintStyle: TextStyle(
+          color: isSoft ? const Color(0xFF97A4C6) : null,
+          fontSize: isSoft ? 16 : null,
+          fontWeight: isSoft ? FontWeight.w400 : null,
+        ),
         prefixIcon: searchState.isLoading
             ? const Padding(
                 padding: EdgeInsets.all(12.0),
@@ -239,10 +253,16 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
-            : const Icon(Icons.search),
+            : Icon(
+                Icons.search_rounded,
+                color: isSoft ? const Color(0xFF94A0BC) : null,
+              ),
         suffixIcon: searchState.query.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear),
+                icon: Icon(
+                  Icons.clear_rounded,
+                  color: isSoft ? const Color(0xFF94A0BC) : null,
+                ),
                 onPressed: () {
                   _controller.clear();
                   ref.read(exerciseSearchProvider.notifier).clearSearch();
@@ -250,24 +270,49 @@ class _UnifiedExerciseSearchState extends ConsumerState<UnifiedExerciseSearch> {
               )
             : null,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(isSoft ? 16 : 12),
+          borderSide: isSoft
+              ? BorderSide.none
+              : BorderSide(color: Colors.grey.shade300),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(isSoft ? 16 : 12),
+          borderSide: isSoft
+              ? BorderSide.none
+              : BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+          borderRadius: BorderRadius.circular(isSoft ? 16 : 12),
+          borderSide: isSoft
+              ? BorderSide.none
+              : BorderSide(color: Theme.of(context).primaryColor),
         ),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: isSoft ? 16 : 12,
         ),
       ),
+    );
+
+    if (!isSoft) return field;
+
+    return Container(
+      height: 54,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F1E2A42),
+            blurRadius: 0,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: field,
     );
   }
 

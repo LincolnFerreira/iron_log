@@ -4,6 +4,7 @@ import 'package:iron_log/core/app_colors.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/search_exercise.dart';
 import 'selected_exercise_card.dart';
+import 'session_section_title.dart';
 import '../providers/session_selection_provider.dart';
 import '../providers/session_provider.dart';
 
@@ -30,24 +31,18 @@ class _SelectedExercisesSectionState
         // Header — mesmo estilo dos outros labels da página
         Row(
           children: [
-            Text(
-              'EXERCÍCIOS SELECIONADOS',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondaryLight,
-              ),
-            ),
+            SessionSectionTitle('Exercícios selecionados'),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.12),
+                color: AppColors.blue100.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
                 '${selectedExercises.length}',
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.primary,
+                  color: AppColors.blue100,
                   fontWeight: FontWeight.w700,
                 ),
               ),

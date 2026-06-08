@@ -1,50 +1,28 @@
-import '../../domain/entities/exercise_muscle_group.dart';
+import '../../domain/entities/exercise_browse_result.dart';
 import '../../domain/entities/search_exercise.dart';
 
-/// DTO for exercise browse response - list of muscle groups with exercises
 class ExerciseBrowseDto {
-  final List<ExerciseMuscleGroupDto> groups;
-
-  ExerciseBrowseDto({required this.groups});
-
-  /// Factory constructor to deserialize from API response
-  factory ExerciseBrowseDto.fromJson(List<dynamic> json) {
-    return ExerciseBrowseDto(
-      groups: json
-          .map(
-            (g) => ExerciseMuscleGroupDto.fromJson(g as Map<String, dynamic>),
-          )
-          .toList(),
-    );
-  }
-
-  /// Convert DTOs to domain entities
-  List<ExerciseMuscleGroup> toEntities() {
-    return groups.map((g) => g.toEntity()).toList();
-  }
-}
-
-/// DTO for a single muscle group
-class ExerciseMuscleGroupDto {
-  final String muscle;
   final List<Map<String, dynamic>> exercises;
+  final List<String> muscles;
 
-  ExerciseMuscleGroupDto({required this.muscle, required this.exercises});
+  ExerciseBrowseDto({required this.exercises, required this.muscles});
 
-  factory ExerciseMuscleGroupDto.fromJson(Map<String, dynamic> json) {
-    return ExerciseMuscleGroupDto(
-      muscle: json['muscle']?.toString() ?? '',
-      exercises:
-          (json['exercises'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
-          [],
+  factory ExerciseBrowseDto.fromJson(Map<String, dynamic> json) {
+    final rawExercises = json['exercises'] as List<dynamic>? ?? [];
+    final rawMuscles = json['muscles'] as List<dynamic>? ?? [];
+
+    return ExerciseBrowseDto(
+      exercises: rawExercises.cast<Map<String, dynamic>>(),
+      muscles: rawMuscles.map((m) => m.toString()).where((m) => m.isNotEmpty).toList(),
     );
   }
 
-  /// Convert to domain entity
-  ExerciseMuscleGroup toEntity() {
-    return ExerciseMuscleGroup(
-      muscle: muscle,
-      exercises: exercises.map((e) => SearchExercise.fromJson(e)).toList(),
+  ExerciseBrowseResult toEntity() {
+    return ExerciseBrowseResult(
+      exercises: exercises
+          .map((e) => SearchExercise.fromJson(e))
+          .toList(),
+      muscles: muscles,
     );
   }
 }

@@ -179,6 +179,21 @@ class SyncManager {
       });
     }
 
+    // ExerciseTechniqueBlocks (must sync before SerieLogs — FK dependency)
+    final techniqueBlocks = await (database.select(
+      database.techniqueBlocks,
+    )..where((b) => b.pendingSync.equals(true))).get();
+
+    for (final block in techniqueBlocks) {
+      changes.add({
+        'entity': 'ExerciseTechniqueBlock',
+        'entityId': block.id,
+        'operation': block.version == 1 ? 'create' : 'update',
+        'localVersion': block.version,
+        'data': _techniqueBlockToJson(block),
+      });
+    }
+
     // SerieLogs
     final series = await (database.select(
       database.serieLogs,
@@ -230,6 +245,10 @@ class SyncManager {
       database.serieLogs,
     )..where((s) => s.pendingSync.equals(true))).get();
 
+    final techniqueBlocks = await (database.select(
+      database.techniqueBlocks,
+    )..where((b) => b.pendingSync.equals(true))).get();
+
     final restDays = await (database.select(
       database.restDays,
     )..where((rd) => rd.pendingSync.equals(true))).get();
@@ -241,6 +260,7 @@ class SyncManager {
     return routines.length +
         sessions.length +
         workouts.length +
+        techniqueBlocks.length +
         series.length +
         restDays.length +
         workoutOutboxRows.length;
@@ -276,6 +296,16 @@ class SyncManager {
           database.workoutSessions,
         )..where((w) => w.id.equals(entityId))).write(
           WorkoutSessionsCompanion(
+            pendingSync: const Value(false),
+            syncedAt: Value(now),
+          ),
+        );
+        break;
+      case 'ExerciseTechniqueBlock':
+        await (database.update(
+          database.techniqueBlocks,
+        )..where((b) => b.id.equals(entityId))).write(
+          TechniqueBlocksCompanion(
             pendingSync: const Value(false),
             syncedAt: Value(now),
           ),
@@ -343,6 +373,19 @@ class SyncManager {
     'syncedAt': w.syncedAt?.toIso8601String(),
   };
 
+  Map<String, dynamic> _techniqueBlockToJson(TechniqueBlock b) => {
+    'id': b.id,
+    'sessionExerciseId': b.sessionExerciseId,
+    'workoutSessionId': b.workoutSessionId,
+    'type': b.type,
+    'order': b.order,
+    'label': b.label,
+    'restBetweenMiniSets': b.restBetweenMiniSets,
+    'version': b.version,
+    'pendingSync': b.pendingSync,
+    'syncedAt': b.syncedAt?.toIso8601String(),
+  };
+
   Map<String, dynamic> _serieLogToJson(SerieLog s) => {
     'id': s.id,
     'sessionId': s.sessionId,
@@ -355,6 +398,10 @@ class SyncManager {
     'rir': s.rir,
     'restTime': s.restTime,
     'isFailure': s.isFailure,
+    'techniqueBlockId': s.techniqueBlockId,
+    'miniSetIndex': s.miniSetIndex,
+    'setType': s.setType,
+    'isDerived': s.isDerived,
     'version': s.version,
     'pendingSync': s.pendingSync,
     'syncedAt': s.syncedAt?.toIso8601String(),

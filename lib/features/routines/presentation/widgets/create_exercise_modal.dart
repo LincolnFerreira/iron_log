@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iron_log/core/api/endpoints.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/services/auth_service.dart';
-import '../../domain/entities/exercise_muscle_group.dart';
+import '../../data/models/exercise_browse_dto.dart';
 import '../../domain/entities/search_exercise.dart';
 
 class CreateExerciseModal extends StatefulWidget {
@@ -46,12 +46,10 @@ class _CreateExerciseModalState extends State<CreateExerciseModal> {
   Future<void> _fetchMuscleGroups() async {
     try {
       final response = await AuthService().get(ApiEndpoints.exerciseBrowse);
-      final data = response.data as List<dynamic>;
-      final groups = data
-          .map((e) => ExerciseMuscleGroup.fromJson(e as Map<String, dynamic>))
-          .map((g) => g.muscle)
-          .where((m) => m.isNotEmpty)
-          .toList();
+      final dto = ExerciseBrowseDto.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+      final groups = dto.muscles;
       if (mounted) {
         setState(() {
           _muscleGroups = groups;

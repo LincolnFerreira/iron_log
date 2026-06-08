@@ -1,7 +1,10 @@
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
 
 /// DTO for deserializing a workout session for edit/load operations
 class WorkoutEditDto {
@@ -46,7 +49,7 @@ class WorkoutEditDto {
   /// Convert the flat series list into grouped WorkoutExercise list.
   ///
   /// Groups by [sessionExerciseId] (one card = one SessionExercise).
-  /// Maintains correct order with exerciseOrder from backend.
+  /// Reconstructs technique blocks when present in API response.
   List<WorkoutExercise> toWorkoutExercises() {
     final grouped = <String, List<WorkoutEditSerieLogDto>>{};
     final insertionOrder = <String>[];
@@ -54,10 +57,10 @@ class WorkoutEditDto {
     for (final s in series) {
       final seId = s.sessionExerciseId;
       if (seId.isEmpty) continue;
-      if (!grouped.containsKey(seId)) {
-        grouped[seId] = [];
+      grouped.putIfAbsent(seId, () {
         insertionOrder.add(seId);
-      }
+        return [];
+      });
       grouped[seId]!.add(s);
     }
 
@@ -65,19 +68,8 @@ class WorkoutEditDto {
       final group = grouped[seId]!;
       final first = group.first;
 
-      final entries = group
-          .asMap()
-          .entries
-          .map(
-            (e) => SeriesEntry(
-              index: e.value.setIndex, // Use actual setIndex from backend
-              type: _labelToType(e.value.label),
-              weight: e.value.weight > 0 ? e.value.weight.toString() : '0',
-              reps: e.value.reps > 0 ? e.value.reps.toString() : '0',
-              done: true,
-            ),
-          )
-          .toList();
+      final blocks = _buildBlocksFromGroup(group);
+      final entries = TechniqueBlockMapper.flattenBlocks(blocks);
 
       final weight = first.weight;
       final reps = first.reps;
@@ -95,7 +87,71 @@ class WorkoutEditDto {
         restTime: first.restTime ?? 0,
         weightUnit: WeightUnit.fromString(first.weightUnit ?? 'kg'),
         entries: entries,
+        blocks: blocks,
         notes: first.exerciseNotes,
+      );
+    }).toList();
+  }
+
+  List<TechniqueBlock> _buildBlocksFromGroup(List<WorkoutEditSerieLogDto> group) {
+    final hasBlocks = group.any((s) => s.techniqueBlock != null);
+
+    if (!hasBlocks) {
+      final entries = group
+          .map(
+            (s) => SeriesEntry(
+              index: s.setIndex,
+              type: _labelToType(s.label),
+              weight: s.weight > 0 ? s.weight.toString() : '0',
+              reps: s.reps > 0 ? s.reps.toString() : '0',
+              done: true,
+            ),
+          )
+          .toList();
+      return [
+        TechniqueBlock(type: TechniqueType.normal, order: 0, entries: entries),
+      ];
+    }
+
+    final blockMap = <String, List<WorkoutEditSerieLogDto>>{};
+    final blockOrder = <String>[];
+
+    for (final s in group) {
+      final blockId = s.techniqueBlock?.id ?? '_implicit_normal';
+      blockMap.putIfAbsent(blockId, () {
+        blockOrder.add(blockId);
+        return [];
+      });
+      blockMap[blockId]!.add(s);
+    }
+
+    return blockOrder.asMap().entries.map((entry) {
+      final blockId = entry.value;
+      final sets = blockMap[blockId]!;
+      final meta = sets.first.techniqueBlock;
+      final entries = sets
+          .map(
+            (s) => SeriesEntry(
+              index: s.setIndex,
+              type: _labelToType(s.label),
+              weight: s.weight > 0 ? s.weight.toString() : '0',
+              reps: s.reps > 0 ? s.reps.toString() : '0',
+              done: true,
+              isDerived: s.isDerived,
+              miniSetIndex: s.miniSetIndex,
+              setType: s.setType,
+              techniqueBlockId: s.techniqueBlock?.id,
+            ),
+          )
+          .toList();
+
+      return TechniqueBlock(
+        id: meta?.id,
+        type: TechniqueType.fromApi(meta?.type),
+        order: meta?.order ?? entry.key,
+        label: meta?.label,
+        restBetweenMiniSets: meta?.restBetweenMiniSets,
+        entries: entries,
       );
     }).toList();
   }
@@ -112,6 +168,33 @@ class WorkoutEditDto {
       default:
         return 2;
     }
+  }
+}
+
+/// DTO for a single series log in workout edit
+class WorkoutEditTechniqueBlockDto {
+  final String id;
+  final String type;
+  final int order;
+  final String? label;
+  final int? restBetweenMiniSets;
+
+  WorkoutEditTechniqueBlockDto({
+    required this.id,
+    required this.type,
+    required this.order,
+    this.label,
+    this.restBetweenMiniSets,
+  });
+
+  factory WorkoutEditTechniqueBlockDto.fromJson(Map<String, dynamic> json) {
+    return WorkoutEditTechniqueBlockDto(
+      id: json['id']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'NORMAL',
+      order: (json['order'] as num?)?.toInt() ?? 0,
+      label: json['label']?.toString(),
+      restBetweenMiniSets: (json['restBetweenMiniSets'] as num?)?.toInt(),
+    );
   }
 }
 
@@ -134,6 +217,10 @@ class WorkoutEditSerieLogDto {
   final int? restTime;
   final String? notes;
   final String? exerciseNotes;
+  final WorkoutEditTechniqueBlockDto? techniqueBlock;
+  final bool isDerived;
+  final int? miniSetIndex;
+  final String? setType;
 
   WorkoutEditSerieLogDto({
     required this.id,
@@ -153,6 +240,10 @@ class WorkoutEditSerieLogDto {
     required this.restTime,
     required this.notes,
     required this.exerciseNotes,
+    this.techniqueBlock,
+    this.isDerived = false,
+    this.miniSetIndex,
+    this.setType,
   });
 
   factory WorkoutEditSerieLogDto.fromJson(Map<String, dynamic> json) {
@@ -231,6 +322,14 @@ class WorkoutEditSerieLogDto {
       restTime: parseToInt(json['restTime'], 'restTime'),
       notes: json['notes']?.toString(),
       exerciseNotes: json['exerciseNotes']?.toString(),
+      techniqueBlock: json['techniqueBlock'] != null
+          ? WorkoutEditTechniqueBlockDto.fromJson(
+              json['techniqueBlock'] as Map<String, dynamic>,
+            )
+          : null,
+      isDerived: (json['isDerived'] as bool?) ?? false,
+      miniSetIndex: parseToInt(json['miniSetIndex'], 'miniSetIndex'),
+      setType: json['setType']?.toString(),
     );
   }
 

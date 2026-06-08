@@ -1,5 +1,6 @@
 import 'exercise_tag.dart';
 import 'series_entry.dart';
+import 'technique_block.dart';
 import 'weight_unit.dart';
 
 // Sentinel used in copyWith to distinguish "not provided" from explicit null.
@@ -24,6 +25,9 @@ class WorkoutExercise {
   /// only as defaults when initialising new rows.
   final List<SeriesEntry> entries;
 
+  /// Technique blocks grouping sets by training technique.
+  final List<TechniqueBlock> blocks;
+
   /// Optional observation the user may add for this exercise.
   final String? notes;
 
@@ -41,6 +45,7 @@ class WorkoutExercise {
     this.weightUnit = WeightUnit.kg,
     this.order,
     this.entries = const [],
+    this.blocks = const [],
     this.notes,
   });
 
@@ -128,6 +133,7 @@ class WorkoutExercise {
     WeightUnit? weightUnit,
     int? order,
     List<SeriesEntry>? entries,
+    List<TechniqueBlock>? blocks,
     Object? notes = _notSet,
   }) {
     return WorkoutExercise(
@@ -144,6 +150,7 @@ class WorkoutExercise {
       weightUnit: weightUnit ?? this.weightUnit,
       order: order ?? this.order,
       entries: entries ?? this.entries,
+      blocks: blocks ?? this.blocks,
       notes: notes == _notSet ? this.notes : notes as String?,
     );
   }

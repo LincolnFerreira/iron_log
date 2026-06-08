@@ -6,6 +6,7 @@ import '../../domain/entities/series_entry.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../providers/exercise_suggestion_provider.dart';
 import '../providers/exercise_last_sets_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 import '../providers/workout_day_provider.dart';
 import '../../domain/enums/workout_screen_mode.dart';
 
@@ -761,6 +762,7 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
           child: SizedBox(
             height: 50,
             child: ElevatedButton(
+              key: WorkoutTestKeys.finishWorkout,
               onPressed: widget.isLoading ? null : widget.onFinishWorkout,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.success,
@@ -861,6 +863,7 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
           child: SizedBox(
             height: h,
             child: ElevatedButton(
+              key: WorkoutTestKeys.startWorkout,
               onPressed: widget.isLoading ? null : widget.onStartWorkout,
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,

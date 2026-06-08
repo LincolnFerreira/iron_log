@@ -5,7 +5,7 @@ import '../../core/routes/app_router.dart';
 import '../auth/auth.dart';
 import '../auth/utils/logout_utils.dart';
 import '../routines/domain/entities/routine.dart';
-import '../workout_day/workout_day.dart';
+import '../workout_day/presentation/pages/workout_day_screen.dart';
 import 'components/organisms/session_picker_sheet.dart';
 import 'components/templates/home_template.dart';
 import 'state/home_provider.dart';

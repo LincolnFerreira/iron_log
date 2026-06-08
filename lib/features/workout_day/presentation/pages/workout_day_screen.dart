@@ -1,14 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../home/components/organisms/session_picker_sheet.dart';
-import '../../../home/state/home_provider.dart';
-import '../../../routines/domain/entities/routine.dart';
 import '../../../routines/domain/entities/search_exercise.dart';
 import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/exercise_tag.dart';
-import '../../domain/entities/exercise_summary.dart';
-import '../../domain/entities/serie_log.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../components/molecules/workout_day_header.dart';
 import '../components/organisms/add_exercise_bottom_sheet.dart';
@@ -19,9 +14,8 @@ import '../organisms/exercise_skeleton_card.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/workout_timer_provider.dart';
 import '../controllers/workout_controller.dart';
-import '../../domain/workout_mode.dart';
+import '../controllers/workout_finish_flow.dart';
 import '../../domain/enums/workout_screen_mode.dart';
-import './workout_summary_screen.dart';
 import 'package:iron_log/features/workout_day/presentation/widgets/voice_input_bottom_sheet.dart';
 
 class WorkoutDayScreen extends ConsumerStatefulWidget {
@@ -417,118 +411,25 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 onFinishWorkout: () async {
                   final exercises =
                       ref.read(workoutDayExercisesProvider).value ?? [];
-                  final timerStartTime = ref.read(workoutTimerProvider);
-
-                  final mode =
-                      (widget.workoutId != null && widget.workoutId!.isNotEmpty)
-                      ? WorkoutMode.edit
-                      : (widget.manualDate != null
-                            ? WorkoutMode.manual
-                            : WorkoutMode.create);
-
-                  final controller = ref.read(
-                    workoutControllerProvider.notifier,
+                  final mode = WorkoutFinishFlow.resolveMode(
+                    workoutId: widget.workoutId,
+                    manualDate: widget.manualDate,
                   );
 
-                  var result = await controller.finishWorkout(
+                  await WorkoutFinishFlow.run(
+                    context: context,
+                    ref: ref,
                     mode: mode,
                     exercises: exercises,
                     routineId: widget.routineId,
                     sessionId: widget.sessionId,
                     workoutId: widget.workoutId,
                     selectedDate: _selectedDate,
-                    timerStartTime: timerStartTime,
-                  );
-
-                  if (result.needDuration) {
-                    final picked = await _pickDuration(context);
-                    if (!mounted) return;
-                    if (picked == null) {
+                    isMounted: () => mounted,
+                    onWorkoutNotStarted: () {
                       if (mounted) setState(() => _workoutStarted = false);
-                      return;
-                    }
-                    result = await controller.finishWorkout(
-                      mode: mode,
-                      exercises: exercises,
-                      routineId: widget.routineId,
-                      sessionId: widget.sessionId,
-                      workoutId: widget.workoutId,
-                      selectedDate: _selectedDate,
-                      timerStartTime: timerStartTime,
-                      manualDuration: picked,
-                    );
-                  }
-
-                  if (result.needSessionSelection) {
-                    final homeState = ref.read(homeProvider);
-                    final routine = homeState.todaysRoutine;
-                    if (routine != null && routine.sessions.isNotEmpty) {
-                      if (!mounted) return;
-                      Session? selectedSession = await SessionPickerSheet.show(
-                        context,
-                        sessions: routine.sessions,
-                        onSelectSession: (_) {},
-                      );
-                      if (selectedSession == null || !mounted) {
-                        if (mounted) setState(() => _workoutStarted = false);
-                        return;
-                      }
-                      result = await controller.finishWorkout(
-                        mode: mode,
-                        exercises: exercises,
-                        routineId: widget.routineId,
-                        sessionId: selectedSession.id,
-                        workoutId: widget.workoutId,
-                        selectedDate: _selectedDate,
-                        timerStartTime: timerStartTime,
-                      );
-                    } else {
-                      if (mounted) {
-                        setState(() => _workoutStarted = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Nenhuma sessão disponível para selecionar.',
-                            ),
-                          ),
-                        );
-                      }
-                      return;
-                    }
-                  }
-
-                  if (result.success && result.summary != null) {
-                    if (mode == WorkoutMode.edit) {
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Treino atualizado com sucesso!'),
-                        ),
-                      );
-                      Navigator.of(context).pop();
-                    } else {
-                      if (!mounted) return;
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => WorkoutSummaryScreen(
-                            workoutSummary: result.summary!,
-                          ),
-                        ),
-                      );
-                    }
-                  } else {
-                    if (mounted) {
-                      setState(() => _workoutStarted = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Erro ao finalizar treino: ${result.error ?? 'unknown'}',
-                          ),
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                      );
-                    }
-                  }
+                    },
+                  );
                 },
                 onDiscard: () => _discardWorkout(),
                 onSaveTrain: () async {
@@ -655,59 +556,6 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     }
   }
 
-  /// Exibe um dialog para o usuário informar a duração estimada do treino.
-  /// Retorna null se o usuário cancelar.
-  Future<Duration?> _pickDuration(BuildContext context) async {
-    final hoursCtrl = TextEditingController(text: '1');
-    final minutesCtrl = TextEditingController(text: '0');
-
-    return showDialog<Duration>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Duração do treino'),
-        content: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: hoursCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Horas',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: minutesCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Minutos',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final h = int.tryParse(hoursCtrl.text) ?? 0;
-              final m = int.tryParse(minutesCtrl.text) ?? 0;
-              Navigator.pop(ctx, Duration(hours: h, minutes: m));
-            },
-            child: const Text('Confirmar'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showAddExerciseBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -777,41 +625,5 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       );
       Navigator.pop(context);
     }
-  }
-
-  /// Constrói a lista de ExerciseSummary a partir da lista de WorkoutExercise
-  List<ExerciseSummary> _buildExerciseSummaries(
-    List<WorkoutExercise> exercises,
-  ) {
-    return exercises.map((exercise) {
-      // Para cada exercício, cria séries de mock baseado no número de séries configuradas
-      // TODO: Buscar dados reais de séries completadas do backend/banco de dados
-      final series = List<SerieLog>.generate(exercise.series, (index) {
-        final serieNumber = index + 1;
-        // Determina o tipo da série
-        String serieType = 'work';
-        if (serieNumber == 1) {
-          serieType = 'warmup'; // Primeira série é aquecimento
-        }
-
-        // Por enquanto, todas as séries são marcadas como "completed"
-        // TODO: Buscar status real do banco de dados
-        return SerieLog(
-          serieNumber: serieNumber,
-          type: serieType,
-          weight: exercise.weight,
-          reps: exercise.reps,
-          rir: exercise.rir.toString(),
-          status: 'completed', // TODO: Buscar status real
-        );
-      });
-
-      return ExerciseSummary(
-        id: exercise.id,
-        name: exercise.name,
-        muscleGroup: exercise.muscles,
-        series: series,
-      );
-    }).toList();
   }
 }

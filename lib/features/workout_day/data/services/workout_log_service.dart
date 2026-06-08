@@ -6,6 +6,7 @@ import 'package:iron_log/core/services/http_error_handler.dart';
 import 'package:iron_log/features/workout_day/data/datasources/workout_outbox_local_datasource.dart';
 import 'package:iron_log/features/workout_day/data/workout_local_ids.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
 
 /// Serviço responsável por persistir sessões de treino no backend.
 /// Converte os dados locais do [WorkoutExercise] para o formato
@@ -22,16 +23,8 @@ class WorkoutLogService {
 
   /// Salva uma sessão de treino no backend.
   ///
-  /// [exercises]          lista de exercícios executados
-  /// [routineId]          ID da rotina associada
-  /// [startedAt]          início do treino
-  /// [endedAt]            término do treino (DateTime.now() para tempo real, custom para manual)
-  /// [isManual]           true quando o treino foi registrado retroativamente
-  /// [exercises]          lista de exercícios executados (cada um carrega sua própria weightUnit)
-  /// [routineId]          ID da rotina associada
-  /// [startedAt]          início do treino
-  /// [endedAt]            término do treino
-  /// [isManual]           true quando o treino foi registrado retroativamente
+  /// [exercises] — lista executada (cada item pode carregar [WorkoutExercise.entries]).
+  /// [routineId], [startedAt], [endedAt], [isManual], [sessionId] conforme o fluxo.
   ///
   /// [skipOutboxEnqueueOnUnreachable] — em falha de rede, devolve um id `local_…`
   /// sem gravar fila (uso no “Iniciar treino”). Caso false, enfileira POST em Drift.
@@ -85,43 +78,23 @@ class WorkoutLogService {
     WorkoutExercise exercise, {
     int order = 1,
   }) {
-    final entries = exercise.entries;
-    final sets = entries.isNotEmpty
-        ? entries.length
+    final blocks = TechniqueBlockMapper.ensureBlocks(exercise);
+    final flatEntries = TechniqueBlockMapper.flattenBlocks(blocks);
+    final sets = flatEntries.isNotEmpty
+        ? flatEntries.length
         : (exercise.series > 0 ? exercise.series : 1);
 
-    final List<int> repsList;
-    final List<double> weightList;
-    final List<String> labelList;
+    final repsList = flatEntries.map((e) => _parseReps(e.reps)).toList();
+    final weightList = flatEntries.map((e) => _parseWeight(e.weight)).toList();
+    final labelList = flatEntries.map((e) => e.backendLabel).toList();
+
     List<int>? rirList;
     List<int>? restSecondsList;
-
-    if (entries.isNotEmpty) {
-      // Use the actual values typed by the user in each row.
-      repsList = entries.map((e) => _parseReps(e.reps)).toList();
-      weightList = entries.map((e) => _parseWeight(e.weight)).toList();
-      labelList = entries.map((e) => e.backendLabel).toList();
-
-      if (exercise.rir > 0) {
-        rirList = List.filled(sets, exercise.rir);
-      }
-      if (exercise.restTime > 0) {
-        restSecondsList = List.filled(sets, exercise.restTime);
-      }
-    } else {
-      // Fallback: all series use the exercise default values.
-      final parsedReps = _parseReps(exercise.reps);
-      final parsedWeight = _parseWeight(exercise.weight);
-      repsList = List.filled(sets, parsedReps);
-      weightList = List.filled(sets, parsedWeight);
-      labelList = List.filled(sets, 'Top Set');
-
-      if (exercise.rir > 0) {
-        rirList = List.filled(sets, exercise.rir);
-      }
-      if (exercise.restTime > 0) {
-        restSecondsList = List.filled(sets, exercise.restTime);
-      }
+    if (exercise.rir > 0) {
+      rirList = List.filled(sets, exercise.rir);
+    }
+    if (exercise.restTime > 0) {
+      restSecondsList = List.filled(sets, exercise.restTime);
     }
 
     return {
@@ -136,14 +109,17 @@ class WorkoutLogService {
       if (rirList != null) 'rir': rirList,
       if (restSecondsList != null) 'restSeconds': restSecondsList,
       if (exercise.notes != null) 'notes': exercise.notes,
+      'techniqueBlocks': TechniqueBlockMapper.blocksToDto(
+        blocks,
+        exerciseRir: exercise.rir,
+        exerciseRestTime: exercise.restTime,
+      ),
     };
   }
 
-  int _parseReps(String value) =>
-      int.tryParse(RegExp(r'\d+').firstMatch(value)?.group(0) ?? '') ?? 0;
+  int _parseReps(String value) => TechniqueBlockMapper.parseReps(value);
 
-  double _parseWeight(String value) =>
-      double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+  double _parseWeight(String value) => TechniqueBlockMapper.parseWeight(value);
 
   /// Formato de exercício em POST/PATCH `/workout` (séries, reps, peso, etc.).
   Map<String, dynamic> exerciseToWorkoutExerciseDto(

@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 
 // ─── Réplicas da lógica de produção (SeriesInputRow) ──────────────────────────
@@ -34,6 +36,7 @@ String _handleWeightSubmitted(String val, String entryWeight) {
 
 WorkoutExercise _makeExercise({
   required List<SeriesEntry> entries,
+  List<TechniqueBlock> blocks = const [],
   String weight = '10',
   String reps = '10',
   int series = 4,
@@ -50,6 +53,7 @@ WorkoutExercise _makeExercise({
   rir: rir,
   restTime: 0,
   entries: entries,
+  blocks: blocks,
 );
 
 // ─── Testes ───────────────────────────────────────────────────────────────────
@@ -216,5 +220,44 @@ void main() {
         expect(dto['weight'], equals([82.5]));
       },
     );
+
+    test('techniqueBlocks sempre incluído no DTO', () {
+      final exercise = _makeExercise(
+        entries: [
+          SeriesEntry(index: 0, weight: '10', reps: '8'),
+        ],
+      );
+
+      final dto = service.exerciseToDtoForTesting(exercise);
+      expect(dto['techniqueBlocks'], isNotNull);
+      expect(dto['techniqueBlocks'], hasLength(1));
+      expect(dto['techniqueBlocks'][0]['type'], 'NORMAL');
+    });
+
+    test('techniqueBlocks incluído no DTO quando há DROP set', () {
+      final exercise = _makeExercise(
+        entries: const [],
+        blocks: [
+          TechniqueBlock(
+            type: TechniqueType.drop,
+            order: 0,
+            entries: [
+              SeriesEntry(index: 0, weight: '34', reps: '8'),
+              SeriesEntry(
+                index: 1,
+                weight: '24',
+                reps: '12',
+                isDerived: true,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      final dto = service.exerciseToDtoForTesting(exercise);
+      expect(dto['techniqueBlocks'], isNotNull);
+      expect(dto['techniqueBlocks'], hasLength(1));
+      expect(dto['techniqueBlocks'][0]['type'], 'DROP');
+    });
   });
 }

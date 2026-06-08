@@ -19,6 +19,10 @@ class SerieLogs extends Table {
   IntColumn get restTime => integer().nullable()();
   TextColumn get cadence => text().nullable()(); // "2-0-2"
   BoolColumn get isFailure => boolean().withDefault(const Constant(false))();
+  TextColumn get techniqueBlockId => text().nullable()();
+  IntColumn get miniSetIndex => integer().nullable()();
+  TextColumn get setType => text().nullable()();
+  BoolColumn get isDerived => boolean().withDefault(const Constant(false))();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

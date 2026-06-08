@@ -1,13 +1,3 @@
 export 'presentation/pages/workout_day_screen.dart';
+// UI alternativa (search-first + barra flutuante); rotas ainda usam WorkoutDayScreen.
 export 'presentation/pages/workout_session_screen.dart';
-export 'presentation/organisms/exercise_card.dart';
-export 'presentation/organisms/workout_card.dart';
-export 'presentation/organisms/footer_actions.dart';
-export 'presentation/molecules/search_bar.dart';
-export 'presentation/molecules/metrics_row.dart';
-export 'presentation/molecules/series_selector.dart';
-export 'presentation/atoms/custom_button.dart';
-export 'presentation/atoms/custom_badge.dart';
-export 'presentation/atoms/custom_input_field.dart';
-export 'presentation/atoms/custom_stepper.dart';
-export 'presentation/atoms/custom_chip.dart';

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:iron_log/core/widgets/page_header_title.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/app_colors.dart';
 import '../../domain/entities/routine.dart';
 import '../widgets/session_detail_content.dart';
+import '../widgets/session_save_button.dart';
+import '../widgets/session_screen_styles.dart';
+import '../providers/session_editor_state.dart';
 import '../providers/session_selection_provider.dart';
 
 class SessionEditorPage extends ConsumerStatefulWidget {
@@ -20,6 +22,7 @@ class SessionEditorPage extends ConsumerStatefulWidget {
 class _SessionDetailPageState extends ConsumerState<SessionEditorPage> {
   late final TextEditingController _sessionNameController;
   Future<void> Function()? _externalSave;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _SessionDetailPageState extends ConsumerState<SessionEditorPage> {
 
   @override
   void dispose() {
+    ref.read(sessionExerciseSelectionNotifierProvider.notifier).clearAll();
     _sessionNameController.dispose();
     super.dispose();
   }
@@ -46,40 +50,40 @@ class _SessionDetailPageState extends ConsumerState<SessionEditorPage> {
           )
         : null;
 
-    final selectedExerciseIds = ref.watch(sessionAllExerciseIdsProvider);
-    final hasSelectedExercises = selectedExerciseIds.isNotEmpty;
+    final canSave = ref.watch(sessionEditorCanSaveProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: SessionScreenStyles.screenBackground,
       appBar: AppBar(
-        title: ValueListenableBuilder<TextEditingValue>(
-          valueListenable: _sessionNameController,
-          builder: (context, value, child) {
-            final displayName = value.text.trim();
-            return PageHeaderTitle(
-              title: session != null ? 'Editar Sessão' : 'Nova Sessão',
-              subtitle: displayName,
-            );
-          },
+        backgroundColor: AppColors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleSpacing: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: SessionScreenStyles.divider),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
+          color: AppColors.textPrimaryLight,
           onPressed: () => context.pop(),
         ),
+        title: Text(
+          session != null ? 'Editar sessão' : 'Nova sessão',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimaryLight,
+          ),
+        ),
         actions: [
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: _sessionNameController,
-            builder: (context, value, child) {
-              final hasName = value.text.trim().isNotEmpty;
-              final canSave =
-                  hasSelectedExercises && hasName && _externalSave != null;
-              return IconButton(
-                color: AppColors.primaryDark,
-                icon: const Icon(Icons.save_rounded),
-                onPressed: canSave ? () => _externalSave!.call() : null,
-                tooltip: 'Salvar Sessão',
-              );
-            },
+          SessionSaveButton(
+            enabled: canSave && _externalSave != null,
+            isLoading: _isSaving,
+            onPressed: canSave && _externalSave != null
+                ? () => _externalSave!.call()
+                : null,
           ),
         ],
       ),
@@ -88,6 +92,11 @@ class _SessionDetailPageState extends ConsumerState<SessionEditorPage> {
         session: session,
         sessionNameController: _sessionNameController,
         registerSaveCallback: (fn) => _externalSave = fn,
+        onSavingChanged: (isSaving) {
+          if (_isSaving != isSaving) {
+            setState(() => _isSaving = isSaving);
+          }
+        },
       ),
     );
   }

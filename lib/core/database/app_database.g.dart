@@ -4335,6 +4335,54 @@ class $SerieLogsTable extends SerieLogs
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _techniqueBlockIdMeta = const VerificationMeta(
+    'techniqueBlockId',
+  );
+  @override
+  late final GeneratedColumn<String> techniqueBlockId = GeneratedColumn<String>(
+    'technique_block_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _miniSetIndexMeta = const VerificationMeta(
+    'miniSetIndex',
+  );
+  @override
+  late final GeneratedColumn<int> miniSetIndex = GeneratedColumn<int>(
+    'mini_set_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _setTypeMeta = const VerificationMeta(
+    'setType',
+  );
+  @override
+  late final GeneratedColumn<String> setType = GeneratedColumn<String>(
+    'set_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isDerivedMeta = const VerificationMeta(
+    'isDerived',
+  );
+  @override
+  late final GeneratedColumn<bool> isDerived = GeneratedColumn<bool>(
+    'is_derived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_derived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -4414,6 +4462,10 @@ class $SerieLogsTable extends SerieLogs
     restTime,
     cadence,
     isFailure,
+    techniqueBlockId,
+    miniSetIndex,
+    setType,
+    isDerived,
     createdAt,
     updatedAt,
     version,
@@ -4531,6 +4583,36 @@ class $SerieLogsTable extends SerieLogs
         isFailure.isAcceptableOrUnknown(data['is_failure']!, _isFailureMeta),
       );
     }
+    if (data.containsKey('technique_block_id')) {
+      context.handle(
+        _techniqueBlockIdMeta,
+        techniqueBlockId.isAcceptableOrUnknown(
+          data['technique_block_id']!,
+          _techniqueBlockIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mini_set_index')) {
+      context.handle(
+        _miniSetIndexMeta,
+        miniSetIndex.isAcceptableOrUnknown(
+          data['mini_set_index']!,
+          _miniSetIndexMeta,
+        ),
+      );
+    }
+    if (data.containsKey('set_type')) {
+      context.handle(
+        _setTypeMeta,
+        setType.isAcceptableOrUnknown(data['set_type']!, _setTypeMeta),
+      );
+    }
+    if (data.containsKey('is_derived')) {
+      context.handle(
+        _isDerivedMeta,
+        isDerived.isAcceptableOrUnknown(data['is_derived']!, _isDerivedMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -4633,6 +4715,22 @@ class $SerieLogsTable extends SerieLogs
         DriftSqlType.bool,
         data['${effectivePrefix}is_failure'],
       )!,
+      techniqueBlockId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}technique_block_id'],
+      ),
+      miniSetIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mini_set_index'],
+      ),
+      setType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}set_type'],
+      ),
+      isDerived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_derived'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -4678,6 +4776,10 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
   final int? restTime;
   final String? cadence;
   final bool isFailure;
+  final String? techniqueBlockId;
+  final int? miniSetIndex;
+  final String? setType;
+  final bool isDerived;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int version;
@@ -4699,6 +4801,10 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     this.restTime,
     this.cadence,
     required this.isFailure,
+    this.techniqueBlockId,
+    this.miniSetIndex,
+    this.setType,
+    required this.isDerived,
     required this.createdAt,
     required this.updatedAt,
     required this.version,
@@ -4747,6 +4853,16 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       map['cadence'] = Variable<String>(cadence);
     }
     map['is_failure'] = Variable<bool>(isFailure);
+    if (!nullToAbsent || techniqueBlockId != null) {
+      map['technique_block_id'] = Variable<String>(techniqueBlockId);
+    }
+    if (!nullToAbsent || miniSetIndex != null) {
+      map['mini_set_index'] = Variable<int>(miniSetIndex);
+    }
+    if (!nullToAbsent || setType != null) {
+      map['set_type'] = Variable<String>(setType);
+    }
+    map['is_derived'] = Variable<bool>(isDerived);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['version'] = Variable<int>(version);
@@ -4791,6 +4907,16 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           ? const Value.absent()
           : Value(cadence),
       isFailure: Value(isFailure),
+      techniqueBlockId: techniqueBlockId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(techniqueBlockId),
+      miniSetIndex: miniSetIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(miniSetIndex),
+      setType: setType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(setType),
+      isDerived: Value(isDerived),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       version: Value(version),
@@ -4826,6 +4952,10 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       restTime: serializer.fromJson<int?>(json['restTime']),
       cadence: serializer.fromJson<String?>(json['cadence']),
       isFailure: serializer.fromJson<bool>(json['isFailure']),
+      techniqueBlockId: serializer.fromJson<String?>(json['techniqueBlockId']),
+      miniSetIndex: serializer.fromJson<int?>(json['miniSetIndex']),
+      setType: serializer.fromJson<String?>(json['setType']),
+      isDerived: serializer.fromJson<bool>(json['isDerived']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       version: serializer.fromJson<int>(json['version']),
@@ -4856,6 +4986,10 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       'restTime': serializer.toJson<int?>(restTime),
       'cadence': serializer.toJson<String?>(cadence),
       'isFailure': serializer.toJson<bool>(isFailure),
+      'techniqueBlockId': serializer.toJson<String?>(techniqueBlockId),
+      'miniSetIndex': serializer.toJson<int?>(miniSetIndex),
+      'setType': serializer.toJson<String?>(setType),
+      'isDerived': serializer.toJson<bool>(isDerived),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'version': serializer.toJson<int>(version),
@@ -4880,6 +5014,10 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     Value<int?> restTime = const Value.absent(),
     Value<String?> cadence = const Value.absent(),
     bool? isFailure,
+    Value<String?> techniqueBlockId = const Value.absent(),
+    Value<int?> miniSetIndex = const Value.absent(),
+    Value<String?> setType = const Value.absent(),
+    bool? isDerived,
     DateTime? createdAt,
     DateTime? updatedAt,
     int? version,
@@ -4905,6 +5043,12 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     restTime: restTime.present ? restTime.value : this.restTime,
     cadence: cadence.present ? cadence.value : this.cadence,
     isFailure: isFailure ?? this.isFailure,
+    techniqueBlockId: techniqueBlockId.present
+        ? techniqueBlockId.value
+        : this.techniqueBlockId,
+    miniSetIndex: miniSetIndex.present ? miniSetIndex.value : this.miniSetIndex,
+    setType: setType.present ? setType.value : this.setType,
+    isDerived: isDerived ?? this.isDerived,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     version: version ?? this.version,
@@ -4936,6 +5080,14 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       restTime: data.restTime.present ? data.restTime.value : this.restTime,
       cadence: data.cadence.present ? data.cadence.value : this.cadence,
       isFailure: data.isFailure.present ? data.isFailure.value : this.isFailure,
+      techniqueBlockId: data.techniqueBlockId.present
+          ? data.techniqueBlockId.value
+          : this.techniqueBlockId,
+      miniSetIndex: data.miniSetIndex.present
+          ? data.miniSetIndex.value
+          : this.miniSetIndex,
+      setType: data.setType.present ? data.setType.value : this.setType,
+      isDerived: data.isDerived.present ? data.isDerived.value : this.isDerived,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       version: data.version.present ? data.version.value : this.version,
@@ -4964,6 +5116,10 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           ..write('restTime: $restTime, ')
           ..write('cadence: $cadence, ')
           ..write('isFailure: $isFailure, ')
+          ..write('techniqueBlockId: $techniqueBlockId, ')
+          ..write('miniSetIndex: $miniSetIndex, ')
+          ..write('setType: $setType, ')
+          ..write('isDerived: $isDerived, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('version: $version, ')
@@ -4974,7 +5130,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     sessionId,
     sessionExerciseSessionId,
@@ -4990,12 +5146,16 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     restTime,
     cadence,
     isFailure,
+    techniqueBlockId,
+    miniSetIndex,
+    setType,
+    isDerived,
     createdAt,
     updatedAt,
     version,
     pendingSync,
     syncedAt,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -5015,6 +5175,10 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           other.restTime == this.restTime &&
           other.cadence == this.cadence &&
           other.isFailure == this.isFailure &&
+          other.techniqueBlockId == this.techniqueBlockId &&
+          other.miniSetIndex == this.miniSetIndex &&
+          other.setType == this.setType &&
+          other.isDerived == this.isDerived &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.version == this.version &&
@@ -5038,6 +5202,10 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
   final Value<int?> restTime;
   final Value<String?> cadence;
   final Value<bool> isFailure;
+  final Value<String?> techniqueBlockId;
+  final Value<int?> miniSetIndex;
+  final Value<String?> setType;
+  final Value<bool> isDerived;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> version;
@@ -5060,6 +5228,10 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     this.restTime = const Value.absent(),
     this.cadence = const Value.absent(),
     this.isFailure = const Value.absent(),
+    this.techniqueBlockId = const Value.absent(),
+    this.miniSetIndex = const Value.absent(),
+    this.setType = const Value.absent(),
+    this.isDerived = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.version = const Value.absent(),
@@ -5083,6 +5255,10 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     this.restTime = const Value.absent(),
     this.cadence = const Value.absent(),
     this.isFailure = const Value.absent(),
+    this.techniqueBlockId = const Value.absent(),
+    this.miniSetIndex = const Value.absent(),
+    this.setType = const Value.absent(),
+    this.isDerived = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.version = const Value.absent(),
@@ -5108,6 +5284,10 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     Expression<int>? restTime,
     Expression<String>? cadence,
     Expression<bool>? isFailure,
+    Expression<String>? techniqueBlockId,
+    Expression<int>? miniSetIndex,
+    Expression<String>? setType,
+    Expression<bool>? isDerived,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? version,
@@ -5133,6 +5313,10 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       if (restTime != null) 'rest_time': restTime,
       if (cadence != null) 'cadence': cadence,
       if (isFailure != null) 'is_failure': isFailure,
+      if (techniqueBlockId != null) 'technique_block_id': techniqueBlockId,
+      if (miniSetIndex != null) 'mini_set_index': miniSetIndex,
+      if (setType != null) 'set_type': setType,
+      if (isDerived != null) 'is_derived': isDerived,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (version != null) 'version': version,
@@ -5158,6 +5342,10 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     Value<int?>? restTime,
     Value<String?>? cadence,
     Value<bool>? isFailure,
+    Value<String?>? techniqueBlockId,
+    Value<int?>? miniSetIndex,
+    Value<String?>? setType,
+    Value<bool>? isDerived,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? version,
@@ -5183,6 +5371,10 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       restTime: restTime ?? this.restTime,
       cadence: cadence ?? this.cadence,
       isFailure: isFailure ?? this.isFailure,
+      techniqueBlockId: techniqueBlockId ?? this.techniqueBlockId,
+      miniSetIndex: miniSetIndex ?? this.miniSetIndex,
+      setType: setType ?? this.setType,
+      isDerived: isDerived ?? this.isDerived,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       version: version ?? this.version,
@@ -5244,6 +5436,18 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     if (isFailure.present) {
       map['is_failure'] = Variable<bool>(isFailure.value);
     }
+    if (techniqueBlockId.present) {
+      map['technique_block_id'] = Variable<String>(techniqueBlockId.value);
+    }
+    if (miniSetIndex.present) {
+      map['mini_set_index'] = Variable<int>(miniSetIndex.value);
+    }
+    if (setType.present) {
+      map['set_type'] = Variable<String>(setType.value);
+    }
+    if (isDerived.present) {
+      map['is_derived'] = Variable<bool>(isDerived.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -5283,11 +5487,736 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
           ..write('restTime: $restTime, ')
           ..write('cadence: $cadence, ')
           ..write('isFailure: $isFailure, ')
+          ..write('techniqueBlockId: $techniqueBlockId, ')
+          ..write('miniSetIndex: $miniSetIndex, ')
+          ..write('setType: $setType, ')
+          ..write('isDerived: $isDerived, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('version: $version, ')
           ..write('pendingSync: $pendingSync, ')
           ..write('syncedAt: $syncedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TechniqueBlocksTable extends TechniqueBlocks
+    with TableInfo<$TechniqueBlocksTable, TechniqueBlock> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TechniqueBlocksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sessionExerciseIdMeta = const VerificationMeta(
+    'sessionExerciseId',
+  );
+  @override
+  late final GeneratedColumn<String> sessionExerciseId =
+      GeneratedColumn<String>(
+        'session_exercise_id',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _workoutSessionIdMeta = const VerificationMeta(
+    'workoutSessionId',
+  );
+  @override
+  late final GeneratedColumn<String> workoutSessionId = GeneratedColumn<String>(
+    'workout_session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _orderMeta = const VerificationMeta('order');
+  @override
+  late final GeneratedColumn<int> order = GeneratedColumn<int>(
+    'order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _restBetweenMiniSetsMeta =
+      const VerificationMeta('restBetweenMiniSets');
+  @override
+  late final GeneratedColumn<int> restBetweenMiniSets = GeneratedColumn<int>(
+    'rest_between_mini_sets',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _pendingSyncMeta = const VerificationMeta(
+    'pendingSync',
+  );
+  @override
+  late final GeneratedColumn<bool> pendingSync = GeneratedColumn<bool>(
+    'pending_sync',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pending_sync" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sessionExerciseId,
+    workoutSessionId,
+    type,
+    order,
+    label,
+    restBetweenMiniSets,
+    version,
+    pendingSync,
+    syncedAt,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'technique_blocks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TechniqueBlock> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('session_exercise_id')) {
+      context.handle(
+        _sessionExerciseIdMeta,
+        sessionExerciseId.isAcceptableOrUnknown(
+          data['session_exercise_id']!,
+          _sessionExerciseIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionExerciseIdMeta);
+    }
+    if (data.containsKey('workout_session_id')) {
+      context.handle(
+        _workoutSessionIdMeta,
+        workoutSessionId.isAcceptableOrUnknown(
+          data['workout_session_id']!,
+          _workoutSessionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_workoutSessionIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('order')) {
+      context.handle(
+        _orderMeta,
+        order.isAcceptableOrUnknown(data['order']!, _orderMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_orderMeta);
+    }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    }
+    if (data.containsKey('rest_between_mini_sets')) {
+      context.handle(
+        _restBetweenMiniSetsMeta,
+        restBetweenMiniSets.isAcceptableOrUnknown(
+          data['rest_between_mini_sets']!,
+          _restBetweenMiniSetsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('pending_sync')) {
+      context.handle(
+        _pendingSyncMeta,
+        pendingSync.isAcceptableOrUnknown(
+          data['pending_sync']!,
+          _pendingSyncMeta,
+        ),
+      );
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TechniqueBlock map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TechniqueBlock(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      sessionExerciseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_exercise_id'],
+      )!,
+      workoutSessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}workout_session_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      order: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order'],
+      )!,
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      ),
+      restBetweenMiniSets: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}rest_between_mini_sets'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      pendingSync: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pending_sync'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TechniqueBlocksTable createAlias(String alias) {
+    return $TechniqueBlocksTable(attachedDatabase, alias);
+  }
+}
+
+class TechniqueBlock extends DataClass implements Insertable<TechniqueBlock> {
+  final String id;
+  final String sessionExerciseId;
+  final String workoutSessionId;
+  final String type;
+  final int order;
+  final String? label;
+  final int? restBetweenMiniSets;
+  final int version;
+  final bool pendingSync;
+  final DateTime? syncedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const TechniqueBlock({
+    required this.id,
+    required this.sessionExerciseId,
+    required this.workoutSessionId,
+    required this.type,
+    required this.order,
+    this.label,
+    this.restBetweenMiniSets,
+    required this.version,
+    required this.pendingSync,
+    this.syncedAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['session_exercise_id'] = Variable<String>(sessionExerciseId);
+    map['workout_session_id'] = Variable<String>(workoutSessionId);
+    map['type'] = Variable<String>(type);
+    map['order'] = Variable<int>(order);
+    if (!nullToAbsent || label != null) {
+      map['label'] = Variable<String>(label);
+    }
+    if (!nullToAbsent || restBetweenMiniSets != null) {
+      map['rest_between_mini_sets'] = Variable<int>(restBetweenMiniSets);
+    }
+    map['version'] = Variable<int>(version);
+    map['pending_sync'] = Variable<bool>(pendingSync);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TechniqueBlocksCompanion toCompanion(bool nullToAbsent) {
+    return TechniqueBlocksCompanion(
+      id: Value(id),
+      sessionExerciseId: Value(sessionExerciseId),
+      workoutSessionId: Value(workoutSessionId),
+      type: Value(type),
+      order: Value(order),
+      label: label == null && nullToAbsent
+          ? const Value.absent()
+          : Value(label),
+      restBetweenMiniSets: restBetweenMiniSets == null && nullToAbsent
+          ? const Value.absent()
+          : Value(restBetweenMiniSets),
+      version: Value(version),
+      pendingSync: Value(pendingSync),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TechniqueBlock.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TechniqueBlock(
+      id: serializer.fromJson<String>(json['id']),
+      sessionExerciseId: serializer.fromJson<String>(json['sessionExerciseId']),
+      workoutSessionId: serializer.fromJson<String>(json['workoutSessionId']),
+      type: serializer.fromJson<String>(json['type']),
+      order: serializer.fromJson<int>(json['order']),
+      label: serializer.fromJson<String?>(json['label']),
+      restBetweenMiniSets: serializer.fromJson<int?>(
+        json['restBetweenMiniSets'],
+      ),
+      version: serializer.fromJson<int>(json['version']),
+      pendingSync: serializer.fromJson<bool>(json['pendingSync']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'sessionExerciseId': serializer.toJson<String>(sessionExerciseId),
+      'workoutSessionId': serializer.toJson<String>(workoutSessionId),
+      'type': serializer.toJson<String>(type),
+      'order': serializer.toJson<int>(order),
+      'label': serializer.toJson<String?>(label),
+      'restBetweenMiniSets': serializer.toJson<int?>(restBetweenMiniSets),
+      'version': serializer.toJson<int>(version),
+      'pendingSync': serializer.toJson<bool>(pendingSync),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TechniqueBlock copyWith({
+    String? id,
+    String? sessionExerciseId,
+    String? workoutSessionId,
+    String? type,
+    int? order,
+    Value<String?> label = const Value.absent(),
+    Value<int?> restBetweenMiniSets = const Value.absent(),
+    int? version,
+    bool? pendingSync,
+    Value<DateTime?> syncedAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => TechniqueBlock(
+    id: id ?? this.id,
+    sessionExerciseId: sessionExerciseId ?? this.sessionExerciseId,
+    workoutSessionId: workoutSessionId ?? this.workoutSessionId,
+    type: type ?? this.type,
+    order: order ?? this.order,
+    label: label.present ? label.value : this.label,
+    restBetweenMiniSets: restBetweenMiniSets.present
+        ? restBetweenMiniSets.value
+        : this.restBetweenMiniSets,
+    version: version ?? this.version,
+    pendingSync: pendingSync ?? this.pendingSync,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TechniqueBlock copyWithCompanion(TechniqueBlocksCompanion data) {
+    return TechniqueBlock(
+      id: data.id.present ? data.id.value : this.id,
+      sessionExerciseId: data.sessionExerciseId.present
+          ? data.sessionExerciseId.value
+          : this.sessionExerciseId,
+      workoutSessionId: data.workoutSessionId.present
+          ? data.workoutSessionId.value
+          : this.workoutSessionId,
+      type: data.type.present ? data.type.value : this.type,
+      order: data.order.present ? data.order.value : this.order,
+      label: data.label.present ? data.label.value : this.label,
+      restBetweenMiniSets: data.restBetweenMiniSets.present
+          ? data.restBetweenMiniSets.value
+          : this.restBetweenMiniSets,
+      version: data.version.present ? data.version.value : this.version,
+      pendingSync: data.pendingSync.present
+          ? data.pendingSync.value
+          : this.pendingSync,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TechniqueBlock(')
+          ..write('id: $id, ')
+          ..write('sessionExerciseId: $sessionExerciseId, ')
+          ..write('workoutSessionId: $workoutSessionId, ')
+          ..write('type: $type, ')
+          ..write('order: $order, ')
+          ..write('label: $label, ')
+          ..write('restBetweenMiniSets: $restBetweenMiniSets, ')
+          ..write('version: $version, ')
+          ..write('pendingSync: $pendingSync, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sessionExerciseId,
+    workoutSessionId,
+    type,
+    order,
+    label,
+    restBetweenMiniSets,
+    version,
+    pendingSync,
+    syncedAt,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TechniqueBlock &&
+          other.id == this.id &&
+          other.sessionExerciseId == this.sessionExerciseId &&
+          other.workoutSessionId == this.workoutSessionId &&
+          other.type == this.type &&
+          other.order == this.order &&
+          other.label == this.label &&
+          other.restBetweenMiniSets == this.restBetweenMiniSets &&
+          other.version == this.version &&
+          other.pendingSync == this.pendingSync &&
+          other.syncedAt == this.syncedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TechniqueBlocksCompanion extends UpdateCompanion<TechniqueBlock> {
+  final Value<String> id;
+  final Value<String> sessionExerciseId;
+  final Value<String> workoutSessionId;
+  final Value<String> type;
+  final Value<int> order;
+  final Value<String?> label;
+  final Value<int?> restBetweenMiniSets;
+  final Value<int> version;
+  final Value<bool> pendingSync;
+  final Value<DateTime?> syncedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const TechniqueBlocksCompanion({
+    this.id = const Value.absent(),
+    this.sessionExerciseId = const Value.absent(),
+    this.workoutSessionId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.order = const Value.absent(),
+    this.label = const Value.absent(),
+    this.restBetweenMiniSets = const Value.absent(),
+    this.version = const Value.absent(),
+    this.pendingSync = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TechniqueBlocksCompanion.insert({
+    required String id,
+    required String sessionExerciseId,
+    required String workoutSessionId,
+    required String type,
+    required int order,
+    this.label = const Value.absent(),
+    this.restBetweenMiniSets = const Value.absent(),
+    this.version = const Value.absent(),
+    this.pendingSync = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       sessionExerciseId = Value(sessionExerciseId),
+       workoutSessionId = Value(workoutSessionId),
+       type = Value(type),
+       order = Value(order);
+  static Insertable<TechniqueBlock> custom({
+    Expression<String>? id,
+    Expression<String>? sessionExerciseId,
+    Expression<String>? workoutSessionId,
+    Expression<String>? type,
+    Expression<int>? order,
+    Expression<String>? label,
+    Expression<int>? restBetweenMiniSets,
+    Expression<int>? version,
+    Expression<bool>? pendingSync,
+    Expression<DateTime>? syncedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sessionExerciseId != null) 'session_exercise_id': sessionExerciseId,
+      if (workoutSessionId != null) 'workout_session_id': workoutSessionId,
+      if (type != null) 'type': type,
+      if (order != null) 'order': order,
+      if (label != null) 'label': label,
+      if (restBetweenMiniSets != null)
+        'rest_between_mini_sets': restBetweenMiniSets,
+      if (version != null) 'version': version,
+      if (pendingSync != null) 'pending_sync': pendingSync,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TechniqueBlocksCompanion copyWith({
+    Value<String>? id,
+    Value<String>? sessionExerciseId,
+    Value<String>? workoutSessionId,
+    Value<String>? type,
+    Value<int>? order,
+    Value<String?>? label,
+    Value<int?>? restBetweenMiniSets,
+    Value<int>? version,
+    Value<bool>? pendingSync,
+    Value<DateTime?>? syncedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return TechniqueBlocksCompanion(
+      id: id ?? this.id,
+      sessionExerciseId: sessionExerciseId ?? this.sessionExerciseId,
+      workoutSessionId: workoutSessionId ?? this.workoutSessionId,
+      type: type ?? this.type,
+      order: order ?? this.order,
+      label: label ?? this.label,
+      restBetweenMiniSets: restBetweenMiniSets ?? this.restBetweenMiniSets,
+      version: version ?? this.version,
+      pendingSync: pendingSync ?? this.pendingSync,
+      syncedAt: syncedAt ?? this.syncedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (sessionExerciseId.present) {
+      map['session_exercise_id'] = Variable<String>(sessionExerciseId.value);
+    }
+    if (workoutSessionId.present) {
+      map['workout_session_id'] = Variable<String>(workoutSessionId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (order.present) {
+      map['order'] = Variable<int>(order.value);
+    }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
+    if (restBetweenMiniSets.present) {
+      map['rest_between_mini_sets'] = Variable<int>(restBetweenMiniSets.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (pendingSync.present) {
+      map['pending_sync'] = Variable<bool>(pendingSync.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TechniqueBlocksCompanion(')
+          ..write('id: $id, ')
+          ..write('sessionExerciseId: $sessionExerciseId, ')
+          ..write('workoutSessionId: $workoutSessionId, ')
+          ..write('type: $type, ')
+          ..write('order: $order, ')
+          ..write('label: $label, ')
+          ..write('restBetweenMiniSets: $restBetweenMiniSets, ')
+          ..write('version: $version, ')
+          ..write('pendingSync: $pendingSync, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6372,6 +7301,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $SerieLogsTable serieLogs = $SerieLogsTable(this);
+  late final $TechniqueBlocksTable techniqueBlocks = $TechniqueBlocksTable(
+    this,
+  );
   late final $RestDaysTable restDays = $RestDaysTable(this);
   late final $WorkoutOutboxTable workoutOutbox = $WorkoutOutboxTable(this);
   @override
@@ -6385,6 +7317,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     exercises,
     workoutSessions,
     serieLogs,
+    techniqueBlocks,
     restDays,
     workoutOutbox,
   ];
@@ -8330,6 +9263,10 @@ typedef $$SerieLogsTableCreateCompanionBuilder =
       Value<int?> restTime,
       Value<String?> cadence,
       Value<bool> isFailure,
+      Value<String?> techniqueBlockId,
+      Value<int?> miniSetIndex,
+      Value<String?> setType,
+      Value<bool> isDerived,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> version,
@@ -8354,6 +9291,10 @@ typedef $$SerieLogsTableUpdateCompanionBuilder =
       Value<int?> restTime,
       Value<String?> cadence,
       Value<bool> isFailure,
+      Value<String?> techniqueBlockId,
+      Value<int?> miniSetIndex,
+      Value<String?> setType,
+      Value<bool> isDerived,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> version,
@@ -8443,6 +9384,26 @@ class $$SerieLogsTableFilterComposer
 
   ColumnFilters<bool> get isFailure => $composableBuilder(
     column: $table.isFailure,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get techniqueBlockId => $composableBuilder(
+    column: $table.techniqueBlockId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get miniSetIndex => $composableBuilder(
+    column: $table.miniSetIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get setType => $composableBuilder(
+    column: $table.setType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDerived => $composableBuilder(
+    column: $table.isDerived,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8556,6 +9517,26 @@ class $$SerieLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get techniqueBlockId => $composableBuilder(
+    column: $table.techniqueBlockId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get miniSetIndex => $composableBuilder(
+    column: $table.miniSetIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get setType => $composableBuilder(
+    column: $table.setType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDerived => $composableBuilder(
+    column: $table.isDerived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -8644,6 +9625,22 @@ class $$SerieLogsTableAnnotationComposer
   GeneratedColumn<bool> get isFailure =>
       $composableBuilder(column: $table.isFailure, builder: (column) => column);
 
+  GeneratedColumn<String> get techniqueBlockId => $composableBuilder(
+    column: $table.techniqueBlockId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get miniSetIndex => $composableBuilder(
+    column: $table.miniSetIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get setType =>
+      $composableBuilder(column: $table.setType, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDerived =>
+      $composableBuilder(column: $table.isDerived, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -8705,6 +9702,10 @@ class $$SerieLogsTableTableManager
                 Value<int?> restTime = const Value.absent(),
                 Value<String?> cadence = const Value.absent(),
                 Value<bool> isFailure = const Value.absent(),
+                Value<String?> techniqueBlockId = const Value.absent(),
+                Value<int?> miniSetIndex = const Value.absent(),
+                Value<String?> setType = const Value.absent(),
+                Value<bool> isDerived = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -8727,6 +9728,10 @@ class $$SerieLogsTableTableManager
                 restTime: restTime,
                 cadence: cadence,
                 isFailure: isFailure,
+                techniqueBlockId: techniqueBlockId,
+                miniSetIndex: miniSetIndex,
+                setType: setType,
+                isDerived: isDerived,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 version: version,
@@ -8751,6 +9756,10 @@ class $$SerieLogsTableTableManager
                 Value<int?> restTime = const Value.absent(),
                 Value<String?> cadence = const Value.absent(),
                 Value<bool> isFailure = const Value.absent(),
+                Value<String?> techniqueBlockId = const Value.absent(),
+                Value<int?> miniSetIndex = const Value.absent(),
+                Value<String?> setType = const Value.absent(),
+                Value<bool> isDerived = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -8773,6 +9782,10 @@ class $$SerieLogsTableTableManager
                 restTime: restTime,
                 cadence: cadence,
                 isFailure: isFailure,
+                techniqueBlockId: techniqueBlockId,
+                miniSetIndex: miniSetIndex,
+                setType: setType,
+                isDerived: isDerived,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 version: version,
@@ -8800,6 +9813,353 @@ typedef $$SerieLogsTableProcessedTableManager =
       $$SerieLogsTableUpdateCompanionBuilder,
       (SerieLog, BaseReferences<_$AppDatabase, $SerieLogsTable, SerieLog>),
       SerieLog,
+      PrefetchHooks Function()
+    >;
+typedef $$TechniqueBlocksTableCreateCompanionBuilder =
+    TechniqueBlocksCompanion Function({
+      required String id,
+      required String sessionExerciseId,
+      required String workoutSessionId,
+      required String type,
+      required int order,
+      Value<String?> label,
+      Value<int?> restBetweenMiniSets,
+      Value<int> version,
+      Value<bool> pendingSync,
+      Value<DateTime?> syncedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$TechniqueBlocksTableUpdateCompanionBuilder =
+    TechniqueBlocksCompanion Function({
+      Value<String> id,
+      Value<String> sessionExerciseId,
+      Value<String> workoutSessionId,
+      Value<String> type,
+      Value<int> order,
+      Value<String?> label,
+      Value<int?> restBetweenMiniSets,
+      Value<int> version,
+      Value<bool> pendingSync,
+      Value<DateTime?> syncedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$TechniqueBlocksTableFilterComposer
+    extends Composer<_$AppDatabase, $TechniqueBlocksTable> {
+  $$TechniqueBlocksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sessionExerciseId => $composableBuilder(
+    column: $table.sessionExerciseId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workoutSessionId => $composableBuilder(
+    column: $table.workoutSessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get restBetweenMiniSets => $composableBuilder(
+    column: $table.restBetweenMiniSets,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TechniqueBlocksTableOrderingComposer
+    extends Composer<_$AppDatabase, $TechniqueBlocksTable> {
+  $$TechniqueBlocksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sessionExerciseId => $composableBuilder(
+    column: $table.sessionExerciseId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get workoutSessionId => $composableBuilder(
+    column: $table.workoutSessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get order => $composableBuilder(
+    column: $table.order,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get restBetweenMiniSets => $composableBuilder(
+    column: $table.restBetweenMiniSets,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TechniqueBlocksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TechniqueBlocksTable> {
+  $$TechniqueBlocksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionExerciseId => $composableBuilder(
+    column: $table.sessionExerciseId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get workoutSessionId => $composableBuilder(
+    column: $table.workoutSessionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<int> get order =>
+      $composableBuilder(column: $table.order, builder: (column) => column);
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
+
+  GeneratedColumn<int> get restBetweenMiniSets => $composableBuilder(
+    column: $table.restBetweenMiniSets,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$TechniqueBlocksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TechniqueBlocksTable,
+          TechniqueBlock,
+          $$TechniqueBlocksTableFilterComposer,
+          $$TechniqueBlocksTableOrderingComposer,
+          $$TechniqueBlocksTableAnnotationComposer,
+          $$TechniqueBlocksTableCreateCompanionBuilder,
+          $$TechniqueBlocksTableUpdateCompanionBuilder,
+          (
+            TechniqueBlock,
+            BaseReferences<
+              _$AppDatabase,
+              $TechniqueBlocksTable,
+              TechniqueBlock
+            >,
+          ),
+          TechniqueBlock,
+          PrefetchHooks Function()
+        > {
+  $$TechniqueBlocksTableTableManager(
+    _$AppDatabase db,
+    $TechniqueBlocksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TechniqueBlocksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TechniqueBlocksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TechniqueBlocksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> sessionExerciseId = const Value.absent(),
+                Value<String> workoutSessionId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<int> order = const Value.absent(),
+                Value<String?> label = const Value.absent(),
+                Value<int?> restBetweenMiniSets = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<bool> pendingSync = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TechniqueBlocksCompanion(
+                id: id,
+                sessionExerciseId: sessionExerciseId,
+                workoutSessionId: workoutSessionId,
+                type: type,
+                order: order,
+                label: label,
+                restBetweenMiniSets: restBetweenMiniSets,
+                version: version,
+                pendingSync: pendingSync,
+                syncedAt: syncedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String sessionExerciseId,
+                required String workoutSessionId,
+                required String type,
+                required int order,
+                Value<String?> label = const Value.absent(),
+                Value<int?> restBetweenMiniSets = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<bool> pendingSync = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TechniqueBlocksCompanion.insert(
+                id: id,
+                sessionExerciseId: sessionExerciseId,
+                workoutSessionId: workoutSessionId,
+                type: type,
+                order: order,
+                label: label,
+                restBetweenMiniSets: restBetweenMiniSets,
+                version: version,
+                pendingSync: pendingSync,
+                syncedAt: syncedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TechniqueBlocksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TechniqueBlocksTable,
+      TechniqueBlock,
+      $$TechniqueBlocksTableFilterComposer,
+      $$TechniqueBlocksTableOrderingComposer,
+      $$TechniqueBlocksTableAnnotationComposer,
+      $$TechniqueBlocksTableCreateCompanionBuilder,
+      $$TechniqueBlocksTableUpdateCompanionBuilder,
+      (
+        TechniqueBlock,
+        BaseReferences<_$AppDatabase, $TechniqueBlocksTable, TechniqueBlock>,
+      ),
+      TechniqueBlock,
       PrefetchHooks Function()
     >;
 typedef $$RestDaysTableCreateCompanionBuilder =
@@ -9355,6 +10715,8 @@ class $AppDatabaseManager {
       $$WorkoutSessionsTableTableManager(_db, _db.workoutSessions);
   $$SerieLogsTableTableManager get serieLogs =>
       $$SerieLogsTableTableManager(_db, _db.serieLogs);
+  $$TechniqueBlocksTableTableManager get techniqueBlocks =>
+      $$TechniqueBlocksTableTableManager(_db, _db.techniqueBlocks);
   $$RestDaysTableTableManager get restDays =>
       $$RestDaysTableTableManager(_db, _db.restDays);
   $$WorkoutOutboxTableTableManager get workoutOutbox =>

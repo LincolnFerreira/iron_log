@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'google_icon.dart';
+import '../../auth_test_keys.dart';
 
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -17,6 +18,7 @@ class GoogleSignInButton extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
+        key: AuthTestKeys.googleSignIn,
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
