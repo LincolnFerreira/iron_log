@@ -1,7 +1,10 @@
 // features/auth/auth_state.dart
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/observability/crash_reporting_service.dart';
 import 'package:iron_log/core/services/firebase_auth_token.dart';
 import 'presentation/providers/user_profile_provider.dart';
 
@@ -39,6 +42,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   final Ref _ref;
+  final CrashReportingService _crashReporting = CrashReportingService();
 
   Future<void> _init() async {
     print('🔄 Inicializando estado de autenticação...');
@@ -51,6 +55,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (currentUser != null) {
       print('🔐 Usuário já logado: ${currentUser.email}');
       state = state.copyWith(user: currentUser, isLoading: false);
+      unawaited(_crashReporting.setUserContext(currentUser.uid));
     } else {
       print('🚪 Nenhum usuário logado');
       state = state.copyWith(user: null, isLoading: false);
@@ -61,6 +66,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (user != null) {
         print('🔐 Mudança de auth - Usuário logado: ${user.email}');
         print('🔑 UID: ${user.uid}');
+        unawaited(_crashReporting.setUserContext(user.uid));
         // Nunca use getIdToken(true) aqui: força rede e estoura offline
         // (`network-request-failed`). Perfil/API usam safeGetIdToken no interceptor.
         if (kDebugMode) {
@@ -76,6 +82,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _ref.invalidate(userProfileProvider);
       } else {
         print('🚪 Mudança de auth - Usuário não está logado');
+        unawaited(_crashReporting.setUserContext(null));
       }
 
       state = state.copyWith(user: user, isLoading: false);
@@ -87,6 +94,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // router leia um estado ainda inconsistente enquanto o signOut
     // do Firebase está sendo processado.
     state = state.copyWith(user: null, isLoading: false);
+    unawaited(_crashReporting.setUserContext(null));
     try {
       await FirebaseAuth.instance.signOut();
     } on FirebaseAuthException catch (e) {

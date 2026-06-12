@@ -21,6 +21,28 @@
       "args": ["--dart-define=FLAVOR=dev"],
       "flutterMode": "release"
     },
+    // ─── Dev Local: Celular físico na Wi-Fi (ajuste API_HOST ao IP da máquina) ─
+    {
+      "name": "Dev Local: Debug",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=FLAVOR=dev",
+        "--dart-define=API_HOST=192.168.1.25"
+      ]
+    },
+    {
+      "name": "Dev Local: Release",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=FLAVOR=dev",
+        "--dart-define=API_HOST=192.168.1.25"
+      ],
+      "flutterMode": "release"
+    },
     {
       "name": "Prod: Debug",
       "request": "launch",

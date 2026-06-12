@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/app_version.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -221,6 +223,28 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     ),
                   ),
                   const SizedBox(height: 16),
+
+                  if (kDebugMode) ...[
+                    _FadeSlide(
+                      animation: _fadeAnims[4],
+                      child: _SettingsGroup(
+                        dark: dark,
+                        items: [
+                          _SettingItem(
+                            icon: Icons.bug_report_outlined,
+                            label: '[TEMP] Teste log API',
+                            sublabel: 'Dispara erros HTTP p/ back-end',
+                            dark: dark,
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              context.push('/debug/api-error-log-test');
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
 
                   // ── LOGOUT BUTTON ──
                   _FadeSlide(

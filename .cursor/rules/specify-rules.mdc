@@ -76,6 +76,15 @@ Sem vídeos de técnica, social, nutrição, wearables, web. Mobile-first pt-BR.
 
 ## Docs
 
+- **Plano ativo**: `specs/001-api-error-observability/plan.md`
 - `README.md`, `docs/project-scope.md`
 - Backend schema: `iron_log_back_end/prisma/schema.prisma`
+
+## Observabilidade (feature 001 — plano)
+
+- Logs de erro API: Drift local `ApiErrorLogs` (schema v5), **não** PostgreSQL
+- Interceptor Dio central + `HttpErrorHandler` existente
+- Crashlytics ^5.2.3 (non-fatal API, fatal widget/zone)
+- `ErrorWidget.builder` → `AppErrorFallback` (pt-BR, tema app)
+- Retenção 7 dias — purge só tabela local de logs
 <!-- SPECKIT END -->

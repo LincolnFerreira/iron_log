@@ -16,6 +16,8 @@ import 'package:iron_log/features/workout_creation/presentation/pages/quick_work
 import 'package:iron_log/features/settings/presentation/pages/settings_page.dart';
 import 'package:iron_log/features/workout_history/presentation/pages/workout_history_page.dart';
 import 'package:iron_log/features/workout_day/presentation/pages/cardio_creation_page.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:iron_log/core/debug/temp_api_error_log_test_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -171,6 +173,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) =>
             AppPage(key: state.pageKey, child: const SettingsPage()),
       ),
+      if (kDebugMode)
+        GoRoute(
+          path: '/debug/api-error-log-test',
+          pageBuilder: (context, state) => AppPage(
+            key: state.pageKey,
+            child: const TempApiErrorLogTestPage(),
+          ),
+        ),
     ],
   );
 

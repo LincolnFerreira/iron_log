@@ -31,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -51,6 +51,9 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(serieLogs, serieLogs.miniSetIndex);
             await m.addColumn(serieLogs, serieLogs.setType);
             await m.addColumn(serieLogs, serieLogs.isDerived);
+          }
+          if (from < 6) {
+            await customStatement('DROP TABLE IF EXISTS api_error_logs');
           }
         },
       );
