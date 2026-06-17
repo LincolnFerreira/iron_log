@@ -2,7 +2,7 @@ name: Flutter CI + Firebase Distribution
 
 on:
   push:
-    branches: [ "main", "feature/offiline", "feature/voice", "004-commit-hooks" ]
+    branches: [ "main", "feature/offiline", "feature/voice", "004-git-commit-hooks" ]
 
 jobs:
   build:
