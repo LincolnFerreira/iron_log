@@ -11,43 +11,28 @@ metadata:
 
 Automatically stage and commit all changes after a Spec Kit command completes.
 
-## Behavior
+## Conventional Commits (Iron Log)
 
-This command is invoked as a hook after (or before) core commands. It:
+When `auto_commit.conventional: true` in `git-config.yml`, messages are generated via `suggest-conventional-message.sh` and validated before commit.
 
-1. Determines the event name from the hook context (e.g., if invoked as an `after_specify` hook, the event is `after_specify`; if `before_plan`, the event is `before_plan`)
-2. Checks `.specify/extensions/git/git-config.yml` for the `auto_commit` section
-3. Looks up the specific event key to see if auto-commit is enabled
-4. Falls back to `auto_commit.default` if no event-specific key exists
-5. Uses the per-command `message` if configured, otherwise a default message
-6. If enabled and there are uncommitted changes, runs `git add .` + `git commit`
+Examples:
 
-## Execution
+- `docs(specs): add specification for 004-git-commit-hooks`
+- `docs(specs): add plan for 004-git-commit-hooks`
 
-Determine the event name from the hook that triggered this command, then run the script:
-
-- **Bash**: `.specify/extensions/git/scripts/bash/auto-commit.sh <event_name>`
-- **PowerShell**: `.specify/extensions/git/scripts/powershell/auto-commit.ps1 <event_name>`
-
-Replace `<event_name>` with the actual hook event (e.g., `after_specify`, `before_plan`, `after_implement`).
+**Agent rule**: When auto-commit is disabled, propose a conventional message before `git commit`. Install hooks: `./scripts/install-githooks.sh`
 
 ## Configuration
 
-In `.specify/extensions/git/git-config.yml`:
-
 ```yaml
 auto_commit:
-  default: false          # Global toggle — set true to enable for all commands
+  conventional: true
   after_specify:
-    enabled: true          # Override per-command
-    message: "[Spec Kit] Add specification"
+    enabled: true
   after_plan:
-    enabled: false
-    message: "[Spec Kit] Add implementation plan"
+    enabled: true
 ```
 
-## Graceful Degradation
+## Execution
 
-- If Git is not available or the current directory is not a repository: skips with a warning
-- If no config file exists: skips (disabled by default)
-- If no changes to commit: skips with a message
+`.specify/extensions/git/scripts/bash/auto-commit.sh <event_name>`

@@ -363,7 +363,13 @@ Drift; `cachedRoutineJson` para snapshot offline de rotinas.
 5. **Review** — validar ramificação por modo, `pendingSync`, test keys E2E.
 
 Branches de feature MUST seguir convenção Spec Kit (extensão git). Commits
-somente quando solicitados pelo usuário ou hooks opcionais.
+MUST seguir **Conventional Commits** (`type(scope): descrição`) quando hooks
+Git estiverem instalados (`./scripts/install-githooks.sh`). Auto-commit Spec
+Kit MUST usar `auto_commit.conventional: true` em `git-config.yml`. Bump de
+versão do app (`pubspec.yaml`) MUST ocorrer apenas via `scripts/release-bump.sh`,
+não em commits diários.
+
+Commits somente quando solicitados pelo usuário ou hooks opcionais.
 
 ## Governance
 
@@ -385,4 +391,4 @@ endpoint duplicado) MUST ser justificada na tabela Complexity Tracking do plano.
 Orientação runtime para agentes: `.cursor/rules/specify-rules.mdc` e plano
 ativo em `specs/<feature>/plan.md`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-06-11
+**Version**: 1.2.1 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-06-17

@@ -9,6 +9,17 @@ O projeto é dividido em dois repositórios que trabalham juntos:
 | **`iron_log`** (este) | App Flutter — interface, banco local, sync |
 | **`iron_log_back_end`** | API REST NestJS — persistência, regras, catálogo |
 
+### Git hooks (Conventional Commits)
+
+Após clonar, instale os hooks versionados uma vez:
+
+```bash
+./scripts/install-githooks.sh
+```
+
+Commits: `type(scope): descrição` (ex.: `feat(workout): adiciona timer`).
+Guia: `specs/004-git-commit-hooks/quickstart.md`.
+
 ---
 
 ## Contexto

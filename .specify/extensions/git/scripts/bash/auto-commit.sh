@@ -46,6 +46,7 @@ fi
 _config_file="$REPO_ROOT/.specify/extensions/git/git-config.yml"
 _enabled=false
 _commit_msg=""
+_conventional=false
 
 if [ -f "$_config_file" ]; then
     # Parse the auto_commit section for this event.
@@ -70,9 +71,14 @@ if [ -f "$_config_file" ]; then
 
         if $_in_auto_commit; then
             # Check default key
-            if echo "$_line" | grep -Eq "^[[:space:]]+default:[[:space:]]"; then
+            if echo "$_line" | grep -Eq '^[[:space:]]+default:[[:space:]]'; then
                 _val=$(echo "$_line" | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
                 [ "$_val" = "true" ] && _default_enabled=true
+            fi
+
+            if echo "$_line" | grep -Eq '^[[:space:]]+conventional:[[:space:]]'; then
+                _val=$(echo "$_line" | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+                [ "$_val" = "true" ] && _conventional=true
             fi
 
             # Detect our event subsection
@@ -128,8 +134,20 @@ fi
 _command_name=$(echo "$EVENT_NAME" | sed 's/^after_//' | sed 's/^before_//')
 _phase=$(echo "$EVENT_NAME" | grep -q '^before_' && echo 'before' || echo 'after')
 
-# Use custom message if configured, otherwise default
-if [ -z "$_commit_msg" ]; then
+# Use conventional message, custom message, or default
+if [ "$_conventional" = "true" ]; then
+    _suggest_script="$SCRIPT_DIR/suggest-conventional-message.sh"
+    _validate_script="$SCRIPT_DIR/validate-commit-msg.sh"
+    _commit_msg=$(bash "$_suggest_script" --event "$EVENT_NAME")
+    _msg_tmp=$(mktemp)
+    printf '%s\n' "$_commit_msg" > "$_msg_tmp"
+    if ! bash "$_validate_script" "$_msg_tmp" 2>/dev/null; then
+        rm -f "$_msg_tmp"
+        echo "[specify] Error: generated message failed validation: $_commit_msg" >&2
+        exit 1
+    fi
+    rm -f "$_msg_tmp"
+elif [ -z "$_commit_msg" ]; then
     _commit_msg="[Spec Kit] Auto-commit ${_phase} ${_command_name}"
 fi
 

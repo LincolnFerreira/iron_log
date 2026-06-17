@@ -5,7 +5,7 @@ alwaysApply: true
 <!-- SPECKIT START -->
 # Iron Log — Agent Context
 
-**Constitution**: `.specify/memory/constitution.md` (v1.1.0)
+**Constitution**: `.specify/memory/constitution.md` (v1.2.1)
 
 ## Produto
 
@@ -76,9 +76,14 @@ Sem vídeos de técnica, social, nutrição, wearables, web. Mobile-first pt-BR.
 
 ## Docs
 
-- **Plano ativo**: `specs/001-api-error-observability/plan.md`
-- `README.md`, `docs/project-scope.md`
-- Backend schema: `iron_log_back_end/prisma/schema.prisma`
+- **Plano ativo**: implementação git commit hooks (004)
+- `specs/004-git-commit-hooks/quickstart.md` (quando disponível no branch)
+
+## Git commit hooks
+
+- `./scripts/install-githooks.sh` — instalar hooks Conventional Commits
+- `auto_commit.conventional: true` em `.specify/extensions/git/git-config.yml`
+- `./scripts/release-bump.sh --dry-run` — SemVer só no release
 
 ## Observabilidade (feature 001 — plano)
 
