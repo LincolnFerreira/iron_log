@@ -9,30 +9,39 @@ metadata:
 
 # Auto-Commit Changes
 
-Automatically stage and commit all changes after a Spec Kit command completes.
+Automatically stage and commit all changes after **selected** Spec Kit commands complete.
 
-## Conventional Commits (Iron Log)
+## Iron Log policy — o que auto-commita
 
-When `auto_commit.conventional: true` in `git-config.yml`, messages are generated via `suggest-conventional-message.sh` and validated before commit.
+| Evento | Auto-commit | Notas |
+|--------|-------------|-------|
+| `after_specify` | ✅ Sim | Spec/plan docs |
+| `after_plan` | ✅ Sim | |
+| `after_tasks` | ✅ Sim | |
+| **`after_implement`** | **❌ Não** | **Commit manual pelo desenvolvedor** |
+| Demais `after_*` | ❌ Não | Unless enabled in config |
 
-Examples:
+**Agent rule (CRITICAL)**: NEVER run `auto-commit.sh after_implement` or `git commit` at the end of `/speckit-implement` unless the user **explicitly** asks. Implementation changes stay uncommitted until the user commits.
 
-- `docs(specs): add specification for 004-git-commit-hooks`
-- `docs(specs): add plan for 004-git-commit-hooks`
+## Conventional Commits
 
-**Agent rule**: When auto-commit is disabled, propose a conventional message before `git commit`. Install hooks: `./scripts/install-githooks.sh`
+When `auto_commit.conventional: true`:
 
-## Configuration
+- `interactive: true` — pergunta na CLI quando confiança baixa (stdin TTY)
+- `amend_related: true` — amend no último commit se mesma feature (30 min)
+- `sync-feature-json.sh` — atualiza `.specify/feature.json` a partir da branch
 
 ```yaml
 auto_commit:
   conventional: true
-  after_specify:
-    enabled: true
-  after_plan:
-    enabled: true
+  interactive: true
+  amend_related: true
+  after_implement:
+    enabled: false   # MUST stay false — manual commit after implement
 ```
 
 ## Execution
 
 `.specify/extensions/git/scripts/bash/auto-commit.sh <event_name>`
+
+Only invoke when the matching event has `enabled: true` in `git-config.yml`.

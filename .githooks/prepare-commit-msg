@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
 set -e
 REPO_ROOT="$(CDPATH="" cd "$(dirname "$0")/.." && pwd)"
-exec bash "$REPO_ROOT/.specify/extensions/git/scripts/bash/suggest-conventional-message.sh" --prepare "$@"
+ARGS=(--prepare "$@")
+if [ -t 0 ]; then
+  ARGS+=(--interactive)
+fi
+exec bash "$REPO_ROOT/.specify/extensions/git/scripts/bash/suggest-conventional-message.sh" "${ARGS[@]}"

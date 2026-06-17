@@ -82,7 +82,8 @@ Sem vídeos de técnica, social, nutrição, wearables, web. Mobile-first pt-BR.
 ## Git commit hooks
 
 - `./scripts/install-githooks.sh` — instalar hooks Conventional Commits
-- `auto_commit.conventional: true` em `.specify/extensions/git/git-config.yml`
+- Auto-commit Spec Kit: `after_specify`, `after_plan`, `after_tasks` only
+- **`/speckit-implement` → commit MANUAL** (`after_implement.enabled: false`)
 - `./scripts/release-bump.sh --dry-run` — SemVer só no release
 
 ## Observabilidade (feature 001 — plano)

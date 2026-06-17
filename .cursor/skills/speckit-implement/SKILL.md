@@ -175,6 +175,17 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit-tasks` first to regenerate the task list.
 
+## Commit policy (Iron Log — NON-NEGOTIABLE)
+
+**`/speckit-implement` MUST NOT commit git changes automatically.**
+
+- Do **NOT** run `auto-commit.sh after_implement`
+- Do **NOT** run `git add` / `git commit` at the end of implementation unless the user **explicitly** requests it
+- `after_implement` is **disabled** in `.specify/extensions/git/git-config.yml` and `.specify/extensions.yml`
+- In the Completion Report, remind the user that changes are **uncommitted** and they should review + commit manually (hooks Conventional Commits apply on `git commit`)
+
+Auto-commit remains enabled only for documentation phases: `after_specify`, `after_plan`, `after_tasks`.
+
 ## Mandatory Post-Execution Hooks
 
 **You MUST complete this section before reporting completion to the user.**
@@ -212,6 +223,10 @@ Check if `.specify/extensions.yml` exists in the project root.
 ## Completion Report
 
 Report final status with summary of completed work.
+
+**Include for the user** (unless they already committed):
+
+> Alterações **não commitadas** — revise o diff e faça commit manualmente quando estiver satisfeito (`git commit` com Conventional Commits; hooks em `.githooks/`).
 
 ## Done When
 

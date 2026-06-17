@@ -2,12 +2,16 @@
 # Suggest Conventional Commit messages (Spec Kit events or prepare-commit-msg).
 #
 # Usage:
-#   suggest-conventional-message.sh --event <event_name>
-#   suggest-conventional-message.sh --prepare <msg-file> <source> [sha]
+#   suggest-conventional-message.sh --event <event_name> [--interactive]
+#   suggest-conventional-message.sh --prepare <msg-file> <source> [--interactive]
 
 set -e
 
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/commit-prompt.sh
+source "$SCRIPT_DIR/lib/commit-prompt.sh"
+
+INTERACTIVE=false
 
 _find_project_root() {
   local dir="$1"
@@ -77,6 +81,7 @@ EOF
   local type="chore"
   local scope=""
   local desc="atualiza arquivos do projeto"
+  local confidence="high"
 
   local count=0
   $has_specs && count=$((count + 1))
@@ -90,42 +95,44 @@ EOF
 
   if [ "$count" -gt 1 ]; then
     scope="$(_branch_scope)"
-    echo "${type}|${scope}|${desc}"
+    confidence="low"
+    echo "${type}|${scope}|${desc}|${confidence}"
     return
   fi
 
   if $has_specs; then
-    echo "docs|specs|atualiza documentação de specs"
+    echo "docs|specs|atualiza documentação de specs|high"
     return
   fi
   if $has_test; then
     scope=$(echo "$paths" | grep -E '^test/features/' | head -n 1 | sed -E 's|^test/features/([^/]+)/.*|\1|' || echo "test")
-    echo "test|${scope}|adiciona ou atualiza testes"
+    echo "test|${scope}|adiciona ou atualiza testes|high"
     return
   fi
   if $has_build; then
-    echo "build||atualiza configuração de build"
+    echo "build||atualiza configuração de build|high"
     return
   fi
   if $has_ci; then
-    echo "ci||atualiza pipeline de CI"
+    echo "ci||atualiza pipeline de CI|high"
     return
   fi
   if $has_core; then
-    echo "chore|core|atualiza módulo core"
+    echo "chore|core|atualiza módulo core|high"
     return
   fi
   if $has_feature; then
-    echo "chore|${feature_scope}|atualiza feature ${feature_scope}"
+    echo "chore|${feature_scope}|atualiza feature ${feature_scope}|high"
     return
   fi
   if $has_cursor; then
-    echo "chore|speckit|atualiza configuração Spec Kit"
+    echo "chore|speckit|atualiza configuração Spec Kit|high"
     return
   fi
 
   scope="$(_branch_scope)"
-  echo "${type}|${scope}|${desc}"
+  confidence="low"
+  echo "${type}|${scope}|${desc}|${confidence}"
 }
 
 _format_message() {
@@ -144,28 +151,30 @@ _suggest_for_event() {
   local feature="$(_feature_slug)"
   local scope="$(_branch_scope)"
   local paths="$(_staged_paths)"
+  local confidence="high"
+  local msg=""
 
   case "$event" in
     after_specify)
-      echo "docs(specs): add specification for ${feature}"
+      msg="docs(specs): add specification for ${feature}"
       ;;
     after_clarify)
-      echo "docs(specs): clarify specification for ${feature}"
+      msg="docs(specs): clarify specification for ${feature}"
       ;;
     after_plan)
-      echo "docs(specs): add plan for ${feature}"
+      msg="docs(specs): add plan for ${feature}"
       ;;
     after_tasks)
-      echo "docs(specs): add tasks for ${feature}"
+      msg="docs(specs): add tasks for ${feature}"
       ;;
     after_checklist)
-      echo "docs(specs): add checklist for ${feature}"
+      msg="docs(specs): add checklist for ${feature}"
       ;;
     after_analyze)
-      echo "docs(specs): add analysis for ${feature}"
+      msg="docs(specs): add analysis for ${feature}"
       ;;
     after_constitution)
-      echo "docs(constitution): update project constitution"
+      msg="docs(constitution): update project constitution"
       ;;
     after_implement)
       local only_test=true only_specs=true has_lib=false
@@ -189,31 +198,42 @@ EOF
       else
         only_test=false
         only_specs=false
+        confidence="low"
       fi
       if $only_test; then
-        echo "test(${scope}): add tests for ${feature}"
+        msg="test(${scope}): add tests for ${feature}"
       elif $only_specs; then
-        echo "docs(specs): update docs for ${feature}"
+        msg="docs(specs): update docs for ${feature}"
       elif $has_lib; then
-        echo "feat(${scope}): implement ${feature}"
+        msg="feat(${scope}): implement ${feature}"
+        confidence="low"
       else
-        echo "chore(speckit): implementation progress for ${feature}"
+        msg="chore(speckit): implementation progress for ${feature}"
+        confidence="low"
       fi
       ;;
     before_*)
       local phase
       phase=$(echo "$event" | sed 's/^before_//')
-      echo "chore(speckit): save progress before ${phase}"
+      msg="chore(speckit): save progress before ${phase}"
       ;;
     after_*)
       local phase
       phase=$(echo "$event" | sed 's/^after_//')
-      echo "chore(speckit): auto-commit after ${phase} for ${feature}"
+      msg="chore(speckit): auto-commit after ${phase} for ${feature}"
+      confidence="low"
       ;;
     *)
-      echo "chore(speckit): auto-commit ${event}"
+      msg="chore(speckit): auto-commit ${event}"
+      confidence="low"
       ;;
   esac
+
+  if $INTERACTIVE; then
+    _commit_prompt_interactive "$msg" "$confidence" "$paths"
+  else
+    echo "$msg"
+  fi
 }
 
 _prepare_commit_msg() {
@@ -241,12 +261,17 @@ _prepare_commit_msg() {
     exit 0
   fi
 
-  local classified type scope desc suggestion comments
+  local classified type scope desc confidence suggestion comments
   classified=$(_classify_paths "$paths")
   type=$(echo "$classified" | cut -d'|' -f1)
   scope=$(echo "$classified" | cut -d'|' -f2)
   desc=$(echo "$classified" | cut -d'|' -f3)
+  confidence=$(echo "$classified" | cut -d'|' -f4)
   suggestion=$(_format_message "$type" "$scope" "$desc")
+
+  if $INTERACTIVE || [ "$confidence" = "low" ]; then
+    suggestion=$(_commit_prompt_interactive "$suggestion" "$confidence" "$paths")
+  fi
 
   comments=$(grep '^#' "$msg_file" || true)
 
@@ -260,20 +285,37 @@ _prepare_commit_msg() {
 }
 
 MODE="${1:-}"
+shift || true
 case "$MODE" in
   --event)
-    EVENT="${2:-}"
+    EVENT="${1:-}"
+    shift || true
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --interactive) INTERACTIVE=true ;;
+      esac
+      shift
+    done
     if [ -z "$EVENT" ]; then
-      echo "Usage: $0 --event <event_name>" >&2
+      echo "Usage: $0 --event <event_name> [--interactive]" >&2
       exit 1
     fi
     _suggest_for_event "$EVENT"
     ;;
   --prepare)
-    _prepare_commit_msg "${2:-}" "${3:-}"
+    MSG_FILE="${1:-}"
+    SOURCE="${2:-}"
+    shift 2 || true
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --interactive) INTERACTIVE=true ;;
+      esac
+      shift
+    done
+    _prepare_commit_msg "$MSG_FILE" "$SOURCE"
     ;;
   *)
-    echo "Usage: $0 --event <name> | --prepare <msg-file> <source> [sha]" >&2
+    echo "Usage: $0 --event <name> [--interactive] | --prepare <msg-file> <source> [--interactive]" >&2
     exit 1
     ;;
 esac

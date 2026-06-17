@@ -365,7 +365,9 @@ Drift; `cachedRoutineJson` para snapshot offline de rotinas.
 Branches de feature MUST seguir convenção Spec Kit (extensão git). Commits
 MUST seguir **Conventional Commits** (`type(scope): descrição`) quando hooks
 Git estiverem instalados (`./scripts/install-githooks.sh`). Auto-commit Spec
-Kit MUST usar `auto_commit.conventional: true` em `git-config.yml`. Bump de
+Kit MUST usar `auto_commit.conventional: true` em `git-config.yml`; MUST NOT
+auto-commit após `/speckit-implement` (`after_implement.enabled: false`) —
+commit de código de implementação é decisão manual do desenvolvedor. Bump de
 versão do app (`pubspec.yaml`) MUST ocorrer apenas via `scripts/release-bump.sh`,
 não em commits diários.
 

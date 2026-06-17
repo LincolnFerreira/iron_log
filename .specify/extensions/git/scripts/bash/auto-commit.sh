@@ -47,6 +47,8 @@ _config_file="$REPO_ROOT/.specify/extensions/git/git-config.yml"
 _enabled=false
 _commit_msg=""
 _conventional=false
+_interactive=false
+_amend_related=false
 
 if [ -f "$_config_file" ]; then
     # Parse the auto_commit section for this event.
@@ -79,6 +81,16 @@ if [ -f "$_config_file" ]; then
             if echo "$_line" | grep -Eq '^[[:space:]]+conventional:[[:space:]]'; then
                 _val=$(echo "$_line" | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
                 [ "$_val" = "true" ] && _conventional=true
+            fi
+
+            if echo "$_line" | grep -Eq '^[[:space:]]+interactive:[[:space:]]'; then
+                _val=$(echo "$_line" | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+                [ "$_val" = "true" ] && _interactive=true
+            fi
+
+            if echo "$_line" | grep -Eq '^[[:space:]]+amend_related:[[:space:]]'; then
+                _val=$(echo "$_line" | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+                [ "$_val" = "true" ] && _amend_related=true
             fi
 
             # Detect our event subsection
@@ -123,6 +135,9 @@ if [ "$_enabled" != "true" ]; then
     exit 0
 fi
 
+# Sync feature.json with branch (specs/NNN-name) before message generation
+bash "$SCRIPT_DIR/sync-feature-json.sh" 2>/dev/null || true
+
 # Check if there are changes to commit
 if git diff --quiet HEAD 2>/dev/null && git diff --cached --quiet 2>/dev/null && [ -z "$(git ls-files --others --exclude-standard 2>/dev/null)" ]; then
     echo "[specify] No changes to commit after $EVENT_NAME" >&2
@@ -134,11 +149,18 @@ fi
 _command_name=$(echo "$EVENT_NAME" | sed 's/^after_//' | sed 's/^before_//')
 _phase=$(echo "$EVENT_NAME" | grep -q '^before_' && echo 'before' || echo 'after')
 
+# Stage first so path-based suggestions see cached changes
+_git_out=$(git add . 2>&1) || { echo "[specify] Error: git add failed: $_git_out" >&2; exit 1; }
+
 # Use conventional message, custom message, or default
 if [ "$_conventional" = "true" ]; then
     _suggest_script="$SCRIPT_DIR/suggest-conventional-message.sh"
     _validate_script="$SCRIPT_DIR/validate-commit-msg.sh"
-    _commit_msg=$(bash "$_suggest_script" --event "$EVENT_NAME")
+    _suggest_args=(--event "$EVENT_NAME")
+    if [ "$_interactive" = "true" ] || [ -t 0 ]; then
+        _suggest_args+=(--interactive)
+    fi
+    _commit_msg=$(bash "$_suggest_script" "${_suggest_args[@]}")
     _msg_tmp=$(mktemp)
     printf '%s\n' "$_commit_msg" > "$_msg_tmp"
     if ! bash "$_validate_script" "$_msg_tmp" 2>/dev/null; then
@@ -151,8 +173,23 @@ elif [ -z "$_commit_msg" ]; then
     _commit_msg="[Spec Kit] Auto-commit ${_phase} ${_command_name}"
 fi
 
-# Stage and commit
-_git_out=$(git add . 2>&1) || { echo "[specify] Error: git add failed: $_git_out" >&2; exit 1; }
-_git_out=$(git commit -q -m "$_commit_msg" 2>&1) || { echo "[specify] Error: git commit failed: $_git_out" >&2; exit 1; }
+_should_amend=false
+if [ "$_amend_related" = "true" ]; then
+    _last_ts=$(git log -1 --format=%ct 2>/dev/null || echo 0)
+    _now_ts=$(date +%s)
+    _feature_slug=$(basename "$(grep -E '"feature_directory"' "$REPO_ROOT/.specify/feature.json" 2>/dev/null | sed -E 's/.*"feature_directory"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/' | head -n 1)" 2>/dev/null || echo "")
+    _last_msg=$(git log -1 --format=%s 2>/dev/null || echo "")
+    if [ -n "$_feature_slug" ] && echo "$_last_msg" | grep -Fq "$_feature_slug"; then
+        if [ "$_last_ts" -gt 0 ] && [ $((_now_ts - _last_ts)) -le 1800 ]; then
+            _should_amend=true
+        fi
+    fi
+fi
 
-echo "[OK] Changes committed ${_phase} ${_command_name}" >&2
+if [ "$_should_amend" = "true" ]; then
+    _git_out=$(git commit --amend -m "$_commit_msg" 2>&1) || { echo "[specify] Error: git commit --amend failed: $_git_out" >&2; exit 1; }
+    echo "[OK] Changes amended into previous commit (${_phase} ${_command_name})" >&2
+else
+    _git_out=$(git commit -m "$_commit_msg" 2>&1) || { echo "[specify] Error: git commit failed: $_git_out" >&2; exit 1; }
+    echo "[OK] Changes committed ${_phase} ${_command_name}" >&2
+fi

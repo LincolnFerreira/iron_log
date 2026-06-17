@@ -18,7 +18,12 @@ Após clonar, instale os hooks versionados uma vez:
 ```
 
 Commits: `type(scope): descrição` (ex.: `feat(workout): adiciona timer`).
-Guia: `specs/004-git-commit-hooks/quickstart.md`.
+
+- **Auto-commit Spec Kit**: após `/speckit-specify`, `/speckit-plan`, `/speckit-tasks` — **não** após `/speckit-implement` (commit manual seu)
+- **Interativo**: se não inferir o tipo com confiança, pergunta no terminal (TTY)
+- **Amend**: alterações relacionadas à mesma feature nos últimos 30 min vão para o último commit (`amend_related: true`)
+
+Guia: `specs/004-git-commit-hooks/quickstart.md` (se existir no branch).
 
 ---
 
