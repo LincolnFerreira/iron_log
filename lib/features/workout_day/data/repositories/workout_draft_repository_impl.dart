@@ -48,9 +48,9 @@ class WorkoutDraftRepositoryImpl implements WorkoutDraftRepository {
     final existing = await _local.getById(draftId);
     if (existing == null) return;
 
-    await _local.upsert(
+    await _local.updateById(
+      draftId,
       WorkoutDraftsCompanion(
-        id: Value(draftId),
         status: const Value('pendingUpload'),
         pendingOperation: Value(operation.storageValue),
         serverWorkoutId: serverWorkoutId == null
@@ -80,9 +80,9 @@ class WorkoutDraftRepositoryImpl implements WorkoutDraftRepository {
     final existing = await _local.getById(draftId);
     if (existing == null) return;
 
-    await _local.upsert(
+    await _local.updateById(
+      draftId,
       WorkoutDraftsCompanion(
-        id: Value(draftId),
         lastErrorType: error.type == null
             ? const Value.absent()
             : Value(error.type),

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import '../../../routines/domain/entities/search_exercise.dart';
 import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/exercise_tag.dart';
+import '../../domain/entities/workout_draft.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../components/molecules/workout_day_header.dart';
 import '../components/organisms/add_exercise_bottom_sheet.dart';
@@ -146,6 +148,15 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         _syncDraftContext();
       }
     } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.warning(
+        context: context,
+        title: 'Rascunho indisponível',
+        message: e is WorkoutDraftCorruptException
+            ? 'Os dados salvos estão corrompidos e não puderam ser restaurados. '
+                  'O rascunho permanece no dispositivo para revisão em Treinos pendentes.'
+            : 'Não foi possível carregar o treino salvo. Tente novamente.',
+      );
       if (kDebugMode) {
         print('Erro ao carregar rascunho: $e');
       }

@@ -21,10 +21,10 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Iron Log client**: `lib/features/<feature>/`, `lib/core/`, `test/`, `integration_test/`
-- **Iron Log backend** (repo `iron_log_back_end`): `src/<module>/`, `prisma/schema.prisma`
-- Sync/offline tasks MUST reference `lib/core/sync/` and Drift tables em `lib/core/database/`
-- Paths below are examples — adjust per `plan.md` structure decision
+- **Single project**: `src/`, `tests/` at repository root
+- **Web app**: `backend/src/`, `frontend/src/`
+- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
+- Paths shown below assume single project - adjust based on plan.md structure
 
 <!--
   ============================================================================

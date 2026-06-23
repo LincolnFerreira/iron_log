@@ -277,3 +277,19 @@ T045 ∥ T046 ∥ T047 ∥ T048
 - Não deletar rows de draft em falha de upload — só `deleteAfterSuccessfulUpload`
 - `WorkoutOutbox`: apenas migration + delegate; sem novos inserts
 - Commit sugerido após cada checkpoint de fase
+
+---
+
+## Phase 10: Convergence
+
+**Purpose**: Corrigir gaps entre spec/plan/tasks e o código atual (inclui erros de compilação que impedem `flutter analyze` e testes).
+
+- [x] T051 **CRITICAL** Adicionar `import 'package:flutter/material.dart';` em `lib/features/home/components/molecules/active_workout_card.dart` — `StatelessWidget`/`Widget` indefinidos quebram Home e testes (US2/FR-005) (missing)
+- [x] T052 **CRITICAL** Adicionar import de `LogoutUtils` (`../../../auth/utils/logout_utils.dart`) em `lib/features/settings/presentation/pages/settings_page.dart` — getter indefinido na linha do logout (missing)
+- [x] T053 Criar `test/features/workout_day/data/workout_draft_repository_test.dart` com casos de upsert único `inProgress` e transição `pendingUpload` conforme plan.md (T045) (missing)
+- [x] T054 Criar `test/features/workout_day/data/workout_log_service_draft_test.dart` cobrindo persistência em `DioException` POST/PATCH (T047) (missing)
+- [x] T055 Criar `test/features/home/components/continue_workout_button_test.dart` validando label CONTINUAR TREINO e callback (T048) (missing)
+- [x] T056 Chamar `flushWorkoutOutbox` (ou `WorkoutDraftSyncService.flushPendingUploads`) no startup pós-auth/DB em `lib/main.dart` ou `app_widget.dart` conforme T038/plan (US5/FR-012) (partial)
+- [x] T057 Espelhar `PopScope` + flush de draft e suporte `resume` em `lib/features/workout_day/presentation/pages/workout_session_screen.dart` se ainda exportada (T031) (missing)
+- [x] T058 Exibir feedback pt-BR (`AppSnackbar`) quando snapshot/payload de rascunho estiver corrompido em `loadDraftForResume` / resume flow — nunca descartar silenciosamente (edge case spec) (partial)
+- [x] T059 Executar `flutter analyze` e `flutter test` sem erros nos arquivos da feature após T051–T058 (SC-001) (partial)

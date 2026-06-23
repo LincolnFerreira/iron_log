@@ -35,6 +35,17 @@ class DraftUploadError {
   final String? message;
 }
 
+/// Snapshot ou payload do rascunho não pode ser interpretado.
+class WorkoutDraftCorruptException implements Exception {
+  WorkoutDraftCorruptException({required this.draftId});
+
+  final String draftId;
+
+  @override
+  String toString() =>
+      'Não foi possível restaurar o rascunho: dados locais corrompidos.';
+}
+
 class WorkoutDraftSummary {
   const WorkoutDraftSummary({
     required this.id,

@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
@@ -10,6 +13,7 @@ import '../../../home/state/home_provider.dart';
 import '../../../routines/domain/entities/routine.dart';
 import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/exercise_tag.dart';
+import '../../domain/entities/workout_draft.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../domain/enums/workout_screen_mode.dart';
 import '../../domain/workout_mode.dart';
@@ -31,6 +35,9 @@ class WorkoutSessionScreen extends ConsumerStatefulWidget {
   final DateTime? manualDate;
   final String? workoutId;
 
+  /// Quando definido, retoma rascunho local em andamento.
+  final String? resumeDraftId;
+
   const WorkoutSessionScreen({
     super.key,
     this.routineId,
@@ -38,6 +45,7 @@ class WorkoutSessionScreen extends ConsumerStatefulWidget {
     this.subtitle,
     this.manualDate,
     this.workoutId,
+    this.resumeDraftId,
   });
 
   const WorkoutSessionScreen.create({
@@ -85,6 +93,14 @@ class WorkoutSessionScreen extends ConsumerStatefulWidget {
          workoutId: workoutId,
        );
 
+  const WorkoutSessionScreen.resume({
+    Key? key,
+    required String draftId,
+  }) : this(
+         key: key,
+         resumeDraftId: draftId,
+       );
+
   @override
   ConsumerState<WorkoutSessionScreen> createState() =>
       _WorkoutSessionScreenState();
@@ -110,7 +126,9 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
 
       ref.read(exerciseSearchProvider.notifier).clearSearch();
 
-      if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
+      if (widget.resumeDraftId != null) {
+        _loadDraft(widget.resumeDraftId!);
+      } else if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
         _loadExistingWorkout();
       } else if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
         _loadSession();
@@ -133,6 +151,53 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       }
     }
     super.dispose();
+  }
+
+  Future<void> _loadDraft(String draftId) async {
+    try {
+      await ref
+          .read(workoutDayExercisesProvider.notifier)
+          .loadDraftForResume(draftId);
+      if (mounted) {
+        setState(() {
+          _workoutStarted = true;
+        });
+        _syncDraftContext();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackbar.warning(
+        context: context,
+        title: 'Rascunho indisponível',
+        message: e is WorkoutDraftCorruptException
+            ? 'Os dados salvos estão corrompidos e não puderam ser restaurados. '
+                  'O rascunho permanece no dispositivo para revisão em Treinos pendentes.'
+            : 'Não foi possível carregar o treino salvo. Tente novamente.',
+      );
+      if (kDebugMode) {
+        print('Erro ao carregar rascunho: $e');
+      }
+    }
+  }
+
+  void _syncDraftContext() {
+    ref.read(workoutDayExercisesProvider.notifier).setDraftExecutionContext(
+      WorkoutDraftExecutionContext(
+        workoutStarted: _workoutStarted,
+        subtitle: widget.subtitle,
+        routineId: widget.routineId,
+        sessionId: widget.sessionId,
+        manualDate: _selectedDate,
+      ),
+    );
+  }
+
+  Future<void> _flushDraftOnExit() async {
+    if (!_workoutStarted) return;
+    _syncDraftContext();
+    await ref
+        .read(workoutDayExercisesProvider.notifier)
+        .flushPersistInProgressDraft();
   }
 
   WorkoutScreenMode _determineMode() {
@@ -197,7 +262,14 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          unawaited(_flushDraftOnExit());
+        }
+      },
+      child: Scaffold(
       appBar: _buildSearchAppBar(context, isDark),
       body: Stack(
         children: [
@@ -265,6 +337,7 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
               const SizedBox.shrink(),
         ],
       ),
+    ),
     );
   }
 

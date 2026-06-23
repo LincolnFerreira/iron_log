@@ -39,4 +39,9 @@ void main() {
     expect(decoded.workoutStarted, isTrue);
     expect(decoded.subtitle, 'Peito A');
   });
+
+  test('decode throws on corrupt JSON', () {
+    final mapper = WorkoutDraftSnapshotMapper();
+    expect(() => mapper.decode('not-json'), throwsA(isA<FormatException>()));
+  });
 }

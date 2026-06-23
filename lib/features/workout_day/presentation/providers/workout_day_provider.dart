@@ -801,7 +801,12 @@ class WorkoutDayExercisesNotifier
     }
 
     final mapper = ref.read(workoutDraftSnapshotMapperProvider);
-    final snapshot = mapper.decode(draft.snapshotJson);
+    DraftSnapshotV1 snapshot;
+    try {
+      snapshot = mapper.decode(draft.snapshotJson);
+    } catch (_) {
+      throw WorkoutDraftCorruptException(draftId: draftId);
+    }
 
     ref.read(activeDraftIdProvider.notifier).state = draft.id;
     _draftStartedAt = draft.startedAt;

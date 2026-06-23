@@ -89,11 +89,10 @@ Future<void> _flushDraftPendingUploads({
       if (kDebugMode) {
         print('WorkoutDraftSync: falha ${row.id}: $e');
       }
-      await database
-          .into(database.workoutDrafts)
-          .insertOnConflictUpdate(
+      await (database.update(database.workoutDrafts)
+            ..where((t) => t.id.equals(row.id)))
+          .write(
             WorkoutDraftsCompanion(
-              id: Value(row.id),
               lastErrorType: Value(e.type.name),
               lastErrorStatusCode: Value(e.response?.statusCode),
               lastAttemptAt: Value(DateTime.now()),

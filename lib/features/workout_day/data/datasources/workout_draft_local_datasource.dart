@@ -38,6 +38,11 @@ class WorkoutDraftLocalDataSource {
     await _db.into(_db.workoutDrafts).insertOnConflictUpdate(companion);
   }
 
+  Future<void> updateById(String id, WorkoutDraftsCompanion companion) async {
+    await (_db.update(_db.workoutDrafts)..where((t) => t.id.equals(id)))
+        .write(companion);
+  }
+
   Future<void> deleteById(String id) async {
     await (_db.delete(
       _db.workoutDrafts,

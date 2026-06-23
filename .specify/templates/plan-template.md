@@ -18,38 +18,29 @@
   the iteration process.
 -->
 
-**Language/Version**: Dart ^3.8 / Flutter 3.8+ (client); TypeScript / NestJS (backend em `iron_log_back_end`)
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
 
-**Primary Dependencies**: Riverpod, go_router, Drift, Dio, Firebase Auth; Prisma + PostgreSQL no backend
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
-**Storage**: Drift (SQLite) local; PostgreSQL canônico via Prisma no backend
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
-**Testing**: flutter_test (`test/`), Patrol + integration_test (`integration_test/`)
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
 
-**Target Platform**: Android/iOS mobile-first (sem versão web)
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
 
-**Project Type**: mobile-app + REST API (dois repositórios)
+**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
 
-**Performance Goals**: UI responsiva em execução de treino; sync em background sem bloquear gravação local
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
 
-**Constraints**: offline-first obrigatório; strings pt-BR inline; sem mídia de execução de exercícios
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
 
-**Scale/Scope**: usuário individual; domínio rotina → sessão → workout → série
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Verify against `.specify/memory/constitution.md` (Iron Log v1.0.0+):
-
-- [ ] **Offline-first**: escrita local Drift + `pendingSync`/`version`; sync via SyncManager ou outbox quando aplicável
-- [ ] **Feature layers**: `data/domain/presentation` para lógica de negócio; providers injetáveis com override em `main.dart`
-- [ ] **Riverpod only**: sem BLoC/provider em código novo
-- [ ] **Core reuse**: HttpService, ApiEndpoints, AppTheme, AppSnackbar, componentes em `lib/core/components/`
-- [ ] **Product scope**: sem vídeo/imagem de técnica, social, nutrição, wearables ou web
-- [ ] **Domain model**: respeita Rotina → Sessão → WorkoutSession → SerieLog
-- [ ] **Workout modes**: se touch em execução, documentar `WorkoutScreenMode` + `WorkoutMode` e ramificação start/finish
-- [ ] **Tests**: plano indica unit/widget e/ou Patrol E2E para fluxos críticos
+[Gates determined based on constitution file]
 
 ## Project Structure
 
@@ -74,21 +65,43 @@ specs/[###-feature]/
 -->
 
 ```text
-iron_log/                          # Flutter client (este repo)
-├── lib/
-│   ├── core/                      # api, database, sync, services, theme, routes
-│   └── features/<feature>/        # data, domain, presentation
-├── test/
-└── integration_test/
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+src/
+├── models/
+├── services/
+├── cli/
+└── lib/
 
-iron_log_back_end/                 # NestJS API (repo irmão)
-├── prisma/schema.prisma
-└── src/<module>/                  # routine, session, workout, sync, auth, user
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Mobile + API. Implementação cliente em `lib/features/<feature>/`;
-alterações de schema canônico no backend (`iron_log_back_end/prisma/schema.prisma`)
-quando a feature exigir persistência servidor.
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 

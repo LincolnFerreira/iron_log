@@ -7,6 +7,7 @@ import 'package:iron_log/core/app_version.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../auth/auth_state.dart';
+import '../../../auth/utils/logout_utils.dart';
 import '../../../workout_day/presentation/widgets/pending_workout_drafts_sheet.dart';
 
 // ─────────────────────────────────────────────
