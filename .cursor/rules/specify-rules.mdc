@@ -3,6 +3,78 @@ alwaysApply: true
 ---
 
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+# Iron Log Flutter — Agent Context
+
+**Constitution**: `.specify/memory/constitution.md` (v1.2.2)
+
+**Arquitetura oficial**: `specs/006-flutter-architecture-standard/spec.md`
+
+## Stack
+
+Flutter 3.8+, Dart ^3.8, Riverpod 3 (`flutter_riverpod` + `riverpod_annotation`),
+go_router, Drift (offline-first), Dio via `HttpService`, Firebase Auth/Crashlytics.
+
+Backend: `iron_log_back_end` (NestJS + Prisma). Contrato API:
+`lib/core/api/api_endpoints.dart`.
+
+## Estrutura
+
+- `lib/core/` — HTTP, DB, sync, rotas, tema, componentes compartilhados
+- `lib/features/<feature>/` — `domain/` | `data/` | `presentation/`
+- Referência: `routines/`, `workout_day/`. **Não** copiar `analytics/`,
+  `workout_session/` (stubs).
+
+## Riverpod — regras essenciais
+
+**Estado ≠ DI.** Não criar providers sem motivo.
+
+| Papel | API | Exemplo |
+|-------|-----|---------|
+| Estado (UI rebuild) | `ref.watch` | `ref.watch(authControllerProvider)` |
+| DI (repository, HTTP) | `ref.read` | `ref.read(routineRepositoryProvider)` |
+| Side-effect | `ref.listen` | snackbar, navegação pós-login |
+
+**Código novo**: `@riverpod` + `AsyncNotifier`/`Notifier`, `AsyncValue.guard`.
+**Proibido código novo**: `StateNotifier`, `ChangeNotifier`, `provider`, BLoC,
+GetIt, `ref.watch(repository)` na UI, snackbar no `build`.
+
+**Legado**: `StateNotifier` existente OK até migração **incremental** (arquivo
+a arquivo ao tocar o código — sem rewrite em massa).
+
+**Nomenclatura**: nomes declarativos (`workoutDayExercises`, `authRepository`).
+Evitar abreviações opacas (`m.`, `svc`, `repo` sem contexto).
+
+**Infra**: `HttpService` singleton + `httpServiceProvider`; overrides de repo em
+`main.dart` via `*ProvidersOverrides`.
+
+## Offline-first
+
+Drift antes de rede; `version` + `pendingSync` + `syncedAt`; transações Drift
+para writes compostos; `SyncManager` / `WorkoutOutbox` para treinos.
+
+## Navegação
+
+GoRouter em `core/routes/app_router.dart`. Home:
+`lib/features/home/presentation/pages/home_page.dart` (barrel `home/home_page.dart`).
+
+Execução de treino: `lib/core/routes/workout_route_locations.dart` — rotas
+`/workout/execution`, `/workout/manual`, `/workout/edit/:id`, `/workout/resume/:draftId`,
+`/workout/summary`. Usar `context.push(WorkoutRouteLocations.*)`; evitar
+`Navigator.push` para fluxos de treino.
+
+## Testes
+
+Unit/widget: `test/` + `getTestProviderOverrides()`. E2E: Patrol em
+`integration_test/`, chaves `e2e_*`.
+
+## Plano ativo
+
+**Plan**: `specs/006-flutter-architecture-standard/plan.md`  
+**Tasks**: `specs/006-flutter-architecture-standard/tasks.md`  
+**Spec**: `specs/006-flutter-architecture-standard/spec.md`  
+**Contracts**: `specs/006-flutter-architecture-standard/contracts/`  
+**Quickstart**: `specs/006-flutter-architecture-standard/quickstart.md`
+
+Migração em 6 fases (0–6) — incremental, sem big bang. PR checklist:
+`contracts/pr-review-checklist.md`.
 <!-- SPECKIT END -->

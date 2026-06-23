@@ -12,7 +12,7 @@ export 'data/repositories/session_repository_impl.dart';
 
 // Presentation
 export 'presentation/pages/routines_page.dart';
-export 'presentation/bloc/routine_provider.dart';
+export 'presentation/providers/routine_provider.dart';
 export 'presentation/providers/session_provider.dart';
 
 // Providers

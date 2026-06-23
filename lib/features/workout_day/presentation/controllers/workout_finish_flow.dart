@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
-import 'package:iron_log/features/home/components/organisms/session_picker_sheet.dart';
-import 'package:iron_log/features/home/state/home_provider.dart';
+import 'package:iron_log/core/routes/workout_route_locations.dart';
+import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
+import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/workout_mode.dart';
 import 'package:iron_log/features/workout_day/presentation/controllers/workout_controller.dart';
 import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
-import 'package:iron_log/features/workout_day/presentation/pages/workout_summary_screen.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/workout_timer_provider.dart';
 
 /// UI orchestration for finishing a workout (duration picker, session picker, navigation).
@@ -174,11 +175,9 @@ class WorkoutFinishFlow {
         Navigator.of(context).pop();
       } else {
         if (!isMounted()) return;
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) =>
-                WorkoutSummaryScreen(workoutSummary: result.summary!),
-          ),
+        await context.push(
+          WorkoutRouteLocations.summaryPath,
+          extra: result.summary,
         );
       }
       return;

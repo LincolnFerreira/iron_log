@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/features/home/components/organisms/session_picker_sheet.dart';
-import 'package:iron_log/features/home/state/home_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/routes/app_router.dart';
+import 'package:iron_log/core/routes/workout_route_locations.dart';
+import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
+import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
-import 'package:iron_log/features/workout_day/presentation/pages/workout_day_screen.dart';
 import 'package:iron_log/features/workout_history/presentation/components/atoms/history_month_header.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/history_filter_tabs.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
@@ -12,7 +14,6 @@ import 'package:iron_log/features/workout_history/presentation/components/molecu
 import 'package:iron_log/features/workout_history/presentation/components/organisms/workout_detail_sheet.dart';
 import 'package:iron_log/features/workout_history/presentation/providers/history_filter_provider.dart';
 import 'package:iron_log/features/workout_history/presentation/providers/workout_history_provider.dart';
-import 'package:iron_log/core/routes/app_router.dart';
 
 // ── Data model for a grouped list section ──────────────────────────────────
 class _HistoryGroup {
@@ -214,15 +215,13 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
                         onTap: () => WorkoutDetailSheet.show(
                           context,
                           workout,
-                          onEdit: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => WorkoutDayScreen.edit(
-                                workoutId: workout.id,
-                                sessionId: workout.sessionId,
-                                subtitle:
-                                    workout.sessionName ?? workout.routineName,
-                                manualDate: workout.date,
-                              ),
+                          onEdit: () => context.push(
+                            WorkoutRouteLocations.editPath(
+                              workoutId: workout.id,
+                              sessionId: workout.sessionId,
+                              subtitle:
+                                  workout.sessionName ?? workout.routineName,
+                              manualDate: workout.date,
                             ),
                           ),
                         ),
@@ -305,14 +304,12 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
         : '${picked.day.toString().padLeft(2, '0')}/'
               '${picked.month.toString().padLeft(2, '0')}/${picked.year}';
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => WorkoutDayScreen.manual(
-          routineId: routineId,
-          sessionId: sessionId,
-          subtitle: subtitle,
-          manualDate: picked,
-        ),
+    context.push(
+      WorkoutRouteLocations.manualPath(
+        routineId: routineId,
+        sessionId: sessionId,
+        subtitle: subtitle,
+        manualDate: picked,
       ),
     );
   }

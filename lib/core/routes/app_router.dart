@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'app_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/features/auth/auth_state.dart';
+import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/auth/presentation/pages/login_screen.dart';
 import 'package:iron_log/features/auth/presentation/pages/splash_screen.dart';
 import 'package:iron_log/features/home/home_page.dart';
@@ -18,6 +18,7 @@ import 'package:iron_log/features/workout_history/presentation/pages/workout_his
 import 'package:iron_log/features/workout_day/presentation/pages/cardio_creation_page.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:iron_log/core/debug/temp_api_error_log_test_page.dart';
+import 'workout_route_locations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -34,10 +35,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (BuildContext context, GoRouterState state) {
       final authState = ref.read(authStateProvider);
 
-      // Debug: Log do estado atual
-      print(
-        '🔀 Router redirect - isLoading: ${authState.isLoading}, isLoggedIn: ${authState.isLoggedIn}, location: ${state.matchedLocation}',
-      );
+      if (kDebugMode) {
+        debugPrint(
+          'Router redirect - isLoading: ${authState.isLoading}, '
+          'isLoggedIn: ${authState.isLoggedIn}, '
+          'location: ${state.matchedLocation}',
+        );
+      }
 
       final isLoggedIn = authState.isLoggedIn;
       final onboardingCompleted = authState.onboardingCompleted;
@@ -49,13 +53,16 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Se não está logado, deve ir para login
       if (!isLoggedIn && !authState.isLoading) {
-        print('🔀 Redirecionando para login - usuário não logado');
+        if (kDebugMode) {
+          debugPrint('Router redirect -> /login (not logged in)');
+        }
         return '/login';
       }
 
-      // Se está carregando, não redireciona (mostra splash na rota /)
       if (authState.isLoading) {
-        print('🔀 Estado carregando, mantendo rota atual');
+        if (kDebugMode) {
+          debugPrint('Router redirect: loading, keep current route');
+        }
         return null;
       }
 
@@ -150,6 +157,41 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPage(
           key: state.pageKey,
           child: const QuickWorkoutCreationPage(),
+        ),
+      ),
+      GoRoute(
+        path: WorkoutRouteLocations.execution,
+        pageBuilder: (context, state) => AppPage(
+          key: state.pageKey,
+          child: WorkoutRouteLocations.screenFromState(state),
+        ),
+      ),
+      GoRoute(
+        path: WorkoutRouteLocations.manual,
+        pageBuilder: (context, state) => AppPage(
+          key: state.pageKey,
+          child: WorkoutRouteLocations.screenFromState(state),
+        ),
+      ),
+      GoRoute(
+        path: '${WorkoutRouteLocations.editPrefix}/:id',
+        pageBuilder: (context, state) => AppPage(
+          key: state.pageKey,
+          child: WorkoutRouteLocations.screenFromState(state),
+        ),
+      ),
+      GoRoute(
+        path: '${WorkoutRouteLocations.resumePrefix}/:draftId',
+        pageBuilder: (context, state) => AppPage(
+          key: state.pageKey,
+          child: WorkoutRouteLocations.screenFromState(state),
+        ),
+      ),
+      GoRoute(
+        path: WorkoutRouteLocations.summary,
+        pageBuilder: (context, state) => AppPage(
+          key: state.pageKey,
+          child: WorkoutRouteLocations.summaryScreenFromState(state),
         ),
       ),
       GoRoute(

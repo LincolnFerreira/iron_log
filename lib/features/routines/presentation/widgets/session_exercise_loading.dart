@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/core/app_colors.dart';
-import 'package:iron_log/features/home/components/atoms/workout_loading_card.dart';
+import 'package:iron_log/features/home/presentation/components/atoms/workout_loading_card.dart';
 
 /// Skeleton horizontal para os chips de filtro por músculo.
 class ExerciseFilterChipsSkeleton extends StatelessWidget {

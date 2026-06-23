@@ -65,14 +65,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
-  bloc:
-    dependency: "direct main"
-    description:
-      name: bloc
-      sha256: "52c10575f4445c61dd9e0cafcc6356fdd827c4c64dd7945ef3c4105f6b6ac189"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.0.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -285,18 +277,18 @@ packages:
     dependency: "direct main"
     description:
       name: dio
-      sha256: d90ee57923d1828ac14e492ca49440f65477f4bb1263575900be731a3dac66a9
+      sha256: aff32c08f92787a557dd5c0145ac91536481831a01b4648136373cddb0e64f8c
       url: "https://pub.dev"
     source: hosted
-    version: "5.9.0"
+    version: "5.9.2"
   dio_web_adapter:
     dependency: transitive
     description:
       name: dio_web_adapter
-      sha256: "7586e476d70caecaf1686d21eee7247ea43ef5c345eab9e0cc3583ff13378d78"
+      sha256: "2f9e64323a7c3c7ef69567d5c800424a11f8337b8b228bad02524c9fb3c1f340"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "2.1.2"
   dispose_scope:
     dependency: transitive
     description:
@@ -446,14 +438,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_bloc:
-    dependency: "direct main"
-    description:
-      name: flutter_bloc
-      sha256: cf51747952201a455a1c840f8171d273be009b932c75093020f9af64f2123e38
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.1.1"
   flutter_driver:
     dependency: transitive
     description: flutter
@@ -756,14 +740,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  nested:
-    dependency: transitive
-    description:
-      name: nested
-      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   nm:
     dependency: transitive
     description:
@@ -948,14 +924,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.5"
-  provider:
-    dependency: "direct main"
-    description:
-      name: provider
-      sha256: "4abbd070a04e9ddc287673bf5a030c7ca8b685ff70218720abab8b092f53dd84"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.1.5"
   pub_semver:
     dependency: transitive
     description:

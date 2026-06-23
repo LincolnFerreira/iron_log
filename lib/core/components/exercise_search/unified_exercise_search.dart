@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/services/auth_service.dart';
-import 'package:iron_log/core/api/endpoints.dart';
+import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 
 // ============================================================================
@@ -88,7 +88,7 @@ class ExerciseSearchNotifier extends StateNotifier<ExerciseSearchState> {
       auth.initialize();
       final response = await auth.authenticatedRequest(
         method: 'GET',
-        path: ApiEndpoints.exerciseSearch,
+        path: ApiEndpoints.exerciseSearchPath,
         queryParameters: {'q': query, 'limit': 30},
       );
 

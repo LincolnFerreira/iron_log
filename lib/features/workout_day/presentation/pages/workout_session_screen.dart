@@ -8,8 +8,8 @@ import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
-import '../../../home/components/organisms/session_picker_sheet.dart';
-import '../../../home/state/home_provider.dart';
+import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
+import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import '../../../routines/domain/entities/routine.dart';
 import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/exercise_tag.dart';
@@ -28,6 +28,7 @@ import '../providers/workout_timer_provider.dart';
 import '../widgets/voice_input_bottom_sheet.dart';
 import './workout_summary_screen.dart';
 
+@Deprecated('Use WorkoutDayScreen via GoRouter workout routes (WorkoutRouteLocations)')
 class WorkoutSessionScreen extends ConsumerStatefulWidget {
   final String? routineId;
   final String? sessionId;

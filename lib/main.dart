@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/firebase_options.dart';
 import 'app_widget.dart';
 import 'core/observability/crash_reporting_service.dart';
+import 'core/providers/app_provider_observer.dart';
 import 'core/services/auth_service.dart';
 import 'core/widgets/app_error_fallback.dart';
 import 'features/routines/routine_providers.dart';
@@ -64,6 +65,7 @@ Future<void> main() async {
 
       runApp(
         ProviderScope(
+          observers: kDebugMode ? [AppProviderObserver()] : const [],
           overrides: [
             ...routineProvidersOverrides,
             ...workoutDraftProvidersOverrides,

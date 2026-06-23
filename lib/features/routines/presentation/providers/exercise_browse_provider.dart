@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/core/api/endpoints.dart';
+import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/services/http_service.dart';
 import 'package:iron_log/features/routines/data/models/exercise_browse_dto.dart';
 import 'package:iron_log/features/routines/domain/entities/exercise_browse_result.dart';

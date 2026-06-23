@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../data/providers/create_activity_provider.dart';
+import '../providers/create_activity_provider.dart';
 
 /// Página para criação rápida de cardio
 /// Permite seleção de tipo, duração, intensidade e notas

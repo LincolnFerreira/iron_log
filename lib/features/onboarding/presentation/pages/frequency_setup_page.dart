@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iron_log/features/onboarding/controller/division_setup_controller.dart';
+import 'package:iron_log/features/onboarding/presentation/controllers/division_setup_controller.dart';
 import '../templates/setup_page_template.dart';
 import '../organisms/division_organism.dart';
 

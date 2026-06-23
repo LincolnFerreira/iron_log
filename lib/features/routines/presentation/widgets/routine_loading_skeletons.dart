@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iron_log/features/home/components/atoms/workout_loading_card.dart';
+import 'package:iron_log/features/home/presentation/components/atoms/workout_loading_card.dart';
 
 class RoutinesListSkeleton extends StatelessWidget {
   const RoutinesListSkeleton({super.key});

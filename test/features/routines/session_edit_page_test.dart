@@ -1,9 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/features/routines/presentation/pages/routine_sessions_page.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
-import '../../helpers/test_providers_setup.dart';
+import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
+import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
+import 'package:iron_log/features/routines/domain/repositories/routine_repository.dart';
+import 'package:iron_log/features/routines/presentation/pages/routine_sessions_page.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_last_workout_provider.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
+
+class _TestRoutineRepository implements RoutineRepository {
+  _TestRoutineRepository(this.routine);
+
+  final Routine routine;
+
+  @override
+  Future<Routine> getRoutine(String id) async => routine;
+
+  @override
+  Future<List<Routine>> getRoutines() async => [routine];
+
+  @override
+  Future<Routine> createRoutine({
+    required String name,
+    String? division,
+    bool isTemplate = false,
+    List<SessionCreation>? sessions,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deleteRoutine(String id) => throw UnimplementedError();
+
+  @override
+  Future<Routine> updateRoutine(String id, RoutineUpdate updates) =>
+      throw UnimplementedError();
+}
 
 void main() {
   testWidgets('SessionEditPage shows routine title and history', (
@@ -22,22 +54,24 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: getTestProviderOverrides(),
+        overrides: [
+          routineRepositoryProvider.overrideWithValue(
+            _TestRoutineRepository(routine),
+          ),
+          routineLastWorkoutProvider.overrideWith(
+            (ref, routineId) async => null,
+          ),
+        ],
         child: MaterialApp(home: RoutineSessionsPage(routine: routine)),
       ),
     );
 
-    // Title must contain routine name
-    expect(find.text('Rotina ${routine.name}'), findsOneWidget);
+    expect(find.text('SESSÕES'), findsOneWidget);
+    expect(find.text('MINHA ROTINA'), findsOneWidget);
 
-    // Initially shows a CircularProgressIndicator from the FutureProvider
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
-    // Let the provider complete (provider mock has a small delay)
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pumpAndSettle();
-
-    // After data loads, history area should show either cards or the 'Nenhum histórico' text
-    expect(find.text('Nenhum histórico disponível'), findsNothing);
+    expect(find.text('Nenhum treino registrado ainda'), findsOneWidget);
   });
 }

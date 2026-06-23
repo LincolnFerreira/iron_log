@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../state/workout_creation_provider.dart';
+import '../providers/workout_creation_provider.dart';
 import '../widgets/reorderable_workout_list.dart';
 
 class QuickWorkoutCreationPage extends ConsumerWidget {

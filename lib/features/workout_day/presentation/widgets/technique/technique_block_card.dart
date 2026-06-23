@@ -6,7 +6,7 @@ import 'package:iron_log/features/workout_day/domain/entities/technique_type.dar
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
 import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
 
-import '../../molecules/series_table.dart';
+import '../../components/molecules/series_table.dart';
 import '../../series_visual_style.dart';
 import 'cluster_set_footer.dart';
 import 'cluster_set_header.dart';

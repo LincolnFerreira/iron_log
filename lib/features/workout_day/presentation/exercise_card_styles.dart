@@ -134,17 +134,52 @@ abstract final class ExerciseCardStyles {
     );
   }
 
-  static BoxDecoration fieldBoxDecoration({bool compact = false}) {
+  static BoxDecoration fieldBoxDecoration({
+    bool compact = false,
+    bool focused = false,
+  }) {
     if (compact) {
       return BoxDecoration(
         color: accentBg,
         borderRadius: BorderRadius.circular(compactFieldRadius),
+        border: focused
+            ? Border.all(color: accent.withValues(alpha: 0.4), width: 1)
+            : null,
       );
     }
     return BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(fieldRadius),
-      border: Border.all(color: fieldBorder, width: 1),
+      border: Border.all(
+        color: focused
+            ? accent.withValues(alpha: 0.55)
+            : fieldBorder,
+        width: 1,
+      ),
+    );
+  }
+
+  /// TextField sem borda própria — a caixa externa ([fieldBoxDecoration]) define o tamanho.
+  static InputDecoration inlineFieldDecoration({
+    String? hintText,
+    bool compact = false,
+  }) {
+    final textStyle = compact ? compactFieldTextStyle : fieldTextStyle;
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: textStyle.copyWith(color: labelMuted),
+      isDense: true,
+      filled: false,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 6 : 10,
+        vertical: compact ? 4 : 11,
+      ),
+      border: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+      disabledBorder: InputBorder.none,
+      errorBorder: InputBorder.none,
+      focusedErrorBorder: InputBorder.none,
     );
   }
 

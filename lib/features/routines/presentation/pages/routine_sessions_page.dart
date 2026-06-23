@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/core/widgets/page_header_title.dart';
 import '../../domain/entities/routine.dart';
-import '../bloc/routine_provider.dart';
+import '../providers/routine_provider.dart';
 import '../widgets/reorderable_session_list.dart';
 import '../widgets/routine_loading_skeletons.dart';
 import '../widgets/session_section_title.dart';

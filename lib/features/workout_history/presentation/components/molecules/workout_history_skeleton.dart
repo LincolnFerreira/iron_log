@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iron_log/features/home/components/atoms/workout_loading_card.dart';
+import 'package:iron_log/features/home/presentation/components/atoms/workout_loading_card.dart';
 
 /// Skeleton version of [WorkoutHistoryCard].
 class WorkoutHistorySkeletonCard extends StatelessWidget {

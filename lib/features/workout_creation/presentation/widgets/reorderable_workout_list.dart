@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/workout_split.dart';
-import '../state/workout_creation_provider.dart';
+import '../providers/workout_creation_provider.dart';
 import 'workout_split_card.dart';
 import 'molecules/add_workout_card.dart';
 import 'organisms/add_workout_bottom_sheet.dart';

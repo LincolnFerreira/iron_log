@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iron_log/core/api/endpoints.dart';
+import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/services/auth_service.dart';
 import '../../data/models/exercise_browse_dto.dart';

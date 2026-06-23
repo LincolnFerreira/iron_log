@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:iron_log/features/home/components/atoms/continue_workout_button.dart';
+import 'package:iron_log/features/home/presentation/components/atoms/continue_workout_button.dart';
 
 void main() {
   testWidgets('ContinueWorkoutButton shows CONTINUAR TREINO label', (tester) async {

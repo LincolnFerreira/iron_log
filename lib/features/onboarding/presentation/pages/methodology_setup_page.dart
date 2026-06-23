@@ -1,7 +1,7 @@
 // features/onboarding/presentation/pages/division_setup_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/features/onboarding/controller/division_setup_controller.dart';
+import 'package:iron_log/features/onboarding/presentation/controllers/division_setup_controller.dart';
 import '../templates/setup_page_template.dart';
 import '../organisms/methodology_setup_content.dart';
 

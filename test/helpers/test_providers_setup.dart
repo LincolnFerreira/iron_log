@@ -47,7 +47,10 @@ class MockRoutineRepository implements RoutineRepository {
   }
 }
 
-/// Creates a list of provider overrides for testing
+/// Creates a list of provider overrides for testing.
+///
+/// Paths pós-migração 006: routines providers em
+/// `presentation/providers/`; home em `presentation/providers/`.
 ///
 /// Usage:
 /// ```dart

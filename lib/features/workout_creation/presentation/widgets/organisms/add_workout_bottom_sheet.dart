@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/workout_split.dart';
-import '../../state/workout_creation_provider.dart';
+import '../../providers/workout_creation_provider.dart';
 
 /// Organism: Bottom sheet for adding new workout splits
 class AddWorkoutBottomSheet extends ConsumerStatefulWidget {

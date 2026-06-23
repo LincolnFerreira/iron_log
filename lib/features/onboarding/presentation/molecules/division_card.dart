@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iron_log/features/onboarding/model/division_type.dart';
+import 'package:iron_log/features/onboarding/domain/entities/division_type.dart';
 
 class DivisionCard extends StatelessWidget {
   final DivisionType type;

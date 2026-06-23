@@ -48,18 +48,41 @@ testabilidade com mocks de repositório.
 
 ### III. Estado com Riverpod
 
-Estado de aplicação MUST usar `flutter_riverpod`. Padrões permitidos:
+Estado de aplicação MUST usar `flutter_riverpod` com `riverpod_annotation` /
+codegen quando possível.
 
-- `StateNotifierProvider` + `StateNotifier` para fluxos complexos
-- `FutureProvider` / `.family` para dados assíncronos
-- `@riverpod` codegen para controllers isolados (ex.: onboarding)
+**Estado ≠ DI** (regra fundamental): Riverpod resolve ambos, mas com papéis
+distintos. UI MUST `ref.watch` apenas providers de **estado** (controllers,
+`AsyncValue`). Repositories, `HttpService`, datasources MUST ser acessados com
+`ref.read` — MUST NOT `ref.watch` repositório na UI.
 
-`provider` e `flutter_bloc` estão no `pubspec.yaml` mas MUST NOT ser usados
-em código novo. Pastas `presentation/bloc/` podem conter notifiers Riverpod
+**Código novo (2026)** MUST usar:
+
+- `@riverpod` + `AsyncNotifier` / `Notifier` para lógica de negócio
+- `AsyncValue.guard` em operações async de controllers
+- `ref.listen` para side-effects (snackbar via `AppSnackbar`, navegação)
+- `.family` para providers parametrizados; estado derivado via `ref.watch` em
+  outro provider (não duplicar totais/computados no estado fonte)
+- `autoDispose` padrão em telas; `@Riverpod(keepAlive: true)` para sessão,
+  auth, tema e infra de boot
+
+**Legado permitido até migração incremental**: `StateNotifierProvider` +
+`StateNotifier` existentes (`AuthNotifier`, `workoutDayExercisesProvider`,
+etc.). MUST NOT criar novos `StateNotifier`. Migrar para `AsyncNotifier` ao
+tocar o arquivo em PR pequeno — **proibido** rewrite em massa.
+
+`provider`, `flutter_bloc`, `ChangeNotifier`, GetIt e service locator MUST NOT
+ser usados em código novo. Pastas `presentation/bloc/` podem conter Riverpod
 (legado de nomenclatura).
 
-**Rationale**: Um único padrão de estado evita divergência e simplifica testes
-com `ProviderScope` overrides.
+Nomenclatura: nomes **declarativos** (`routineRepository`, `authState`) —
+MUST NOT abreviações opacas (`m.`, `svc`, `repo` sem contexto) em código novo.
+
+`ProviderObserver` SHOULD estar ativo em `kDebugMode` no `ProviderScope`.
+
+**Rationale**: Um único padrão maduro (AsyncNotifier + read/watch correto)
+evita divergência, bugs de rebuild desnecessário e simplifica testes com
+`ProviderScope` overrides.
 
 ### IV. Infraestrutura Core Compartilhada
 
@@ -393,4 +416,4 @@ endpoint duplicado) MUST ser justificada na tabela Complexity Tracking do plano.
 Orientação runtime para agentes: `.cursor/rules/specify-rules.mdc` e plano
 ativo em `specs/<feature>/plan.md`.
 
-**Version**: 1.2.1 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-06-17
+**Version**: 1.2.2 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-06-23

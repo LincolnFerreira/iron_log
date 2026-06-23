@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/core/services/auth_service.dart';
-import 'package:iron_log/features/home/state/home_provider.dart';
+import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_update.dart';
-import '../bloc/routine_provider.dart';
+import '../providers/routine_provider.dart';
 import '../components/molecules/routine_card.dart';
 import '../widgets/routine_loading_skeletons.dart';
 

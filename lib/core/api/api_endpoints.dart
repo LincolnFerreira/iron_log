@@ -23,6 +23,7 @@ class ApiEndpoints {
   static const String routines = '/routine';
   static String routine(String id) => '/routine/$id';
   static String routineById(String id) => '/routine/$id';
+  static String routineWorkouts(String routineId) => '/routine/$routineId/workouts';
   static String routinesByUser(String userId) => '/routine/user/$userId';
 
   // Session endpoints
@@ -37,8 +38,12 @@ class ApiEndpoints {
 
   // Exercise endpoints
   static const String exercises = '/exercises';
+  static const String exerciseSearchPath = '/exercises/search';
+  static const String exerciseBrowse = '/exercises/browse';
+  static const String exerciseFindOrCreate = '/exercises/find-or-create';
+  static const String exerciseCreate = '/exercises';
   static String exerciseSearch(String query, {int limit = 30}) =>
-      '/exercises/search?q=$query&limit=$limit';
+      '$exerciseSearchPath?q=$query&limit=$limit';
   static String exerciseById(String id) => '/exercises/$id';
 
   // Workout endpoints

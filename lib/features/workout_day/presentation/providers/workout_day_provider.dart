@@ -8,7 +8,7 @@ import '../../../../core/api/api_endpoints.dart';
 import '../../../../core/providers/sync_providers.dart';
 import '../../../../core/services/http_error_handler.dart';
 import '../../../../core/services/http_service.dart';
-import '../../../routines/presentation/bloc/routine_provider.dart';
+import '../../../routines/presentation/providers/routine_provider.dart';
 import '../../../auth/auth.dart';
 import '../../data/datasources/workout_outbox_local_datasource.dart';
 import '../../data/mappers/workout_draft_snapshot_mapper.dart';

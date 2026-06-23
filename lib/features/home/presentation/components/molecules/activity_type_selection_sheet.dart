@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iron_log/features/workout_day/data/providers/create_activity_provider.dart';
-import 'package:iron_log/features/home/state/workout_calendar_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/create_activity_provider.dart';
+import 'package:iron_log/features/home/presentation/providers/workout_calendar_provider.dart';
 
 /// Modal que oferece três opções de atividade: Treino, Cardio e Descanso
 /// Apresentado quando usuário clica em um dia vazio do calendário
