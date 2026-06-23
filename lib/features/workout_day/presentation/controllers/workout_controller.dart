@@ -6,7 +6,9 @@ import '../../domain/entities/workout_exercise.dart';
 import '../../domain/entities/workout_summary.dart';
 import '../../domain/workout_mode.dart';
 import '../mappers/workout_mapper.dart';
+import '../../data/services/workout_log_service.dart';
 import '../providers/workout_day_provider.dart';
+import '../providers/workout_draft_providers.dart';
 import '../providers/workout_timer_provider.dart';
 
 class FinishResult {
@@ -15,6 +17,7 @@ class FinishResult {
   final String? error;
   final bool needDuration;
   final bool needSessionSelection;
+  final bool savedLocally;
 
   FinishResult({
     required this.success,
@@ -22,6 +25,7 @@ class FinishResult {
     this.error,
     this.needDuration = false,
     this.needSessionSelection = false,
+    this.savedLocally = false,
   });
 }
 
@@ -83,6 +87,7 @@ class WorkoutController extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.loading();
 
       final logService = ref.read(workoutLogServiceProvider);
+      final draftId = ref.read(activeDraftIdProvider);
 
       final now = DateTime.now();
 
@@ -144,7 +149,16 @@ class WorkoutController extends StateNotifier<AsyncValue<void>> {
           startedAt: startedAt,
           endedAt: endedAt,
           sessionId: sessionId,
+          draftId: draftId,
+          markPendingOnFailure: true,
         );
+
+        if (draftId != null) {
+          await ref
+              .read(workoutDraftRepositoryProvider)
+              .deleteAfterSuccessfulUpload(draftId);
+          ref.read(activeDraftIdProvider.notifier).state = null;
+        }
 
         final summary = WorkoutMapper.toSummary(
           sessionName: '',
@@ -201,22 +215,42 @@ class WorkoutController extends StateNotifier<AsyncValue<void>> {
           !WorkoutLocalIds.isLocalSession(pendingWsId) &&
           !WorkoutLocalIds.isQueuedOutbox(pendingWsId);
 
-      if (usePatchExisting) {
-        await logService.updateWorkout(
-          workoutId: pendingWsId,
-          exercises: exercises,
-          startedAt: startedAt,
-          endedAt: endedAt,
-          sessionId: sessionId,
-        );
-      } else {
-        await logService.saveWorkout(
-          exercises: exercises,
-          routineId: routineId,
-          startedAt: startedAt,
-          endedAt: endedAt,
-          isManual: selectedDate != null,
-          sessionId: sessionId,
+      try {
+        if (usePatchExisting) {
+          await logService.updateWorkout(
+            workoutId: pendingWsId,
+            exercises: exercises,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            sessionId: sessionId,
+            draftId: draftId,
+            markPendingOnFailure: true,
+          );
+        } else {
+          await logService.saveWorkout(
+            exercises: exercises,
+            routineId: routineId,
+            startedAt: startedAt,
+            endedAt: endedAt,
+            isManual: selectedDate != null,
+            sessionId: sessionId,
+            draftId: draftId,
+            markPendingOnFailure: true,
+          );
+        }
+
+        if (draftId != null) {
+          await ref
+              .read(workoutDraftRepositoryProvider)
+              .deleteAfterSuccessfulUpload(draftId);
+          ref.read(activeDraftIdProvider.notifier).state = null;
+        }
+      } on WorkoutUploadDeferredException catch (e) {
+        state = const AsyncValue.data(null);
+        return FinishResult(
+          success: false,
+          savedLocally: true,
+          error: e.message,
         );
       }
 
@@ -252,6 +286,13 @@ class WorkoutController extends StateNotifier<AsyncValue<void>> {
 
       state = const AsyncValue.data(null);
       return FinishResult(success: true, summary: summary);
+    } on WorkoutUploadDeferredException catch (e) {
+      state = const AsyncValue.data(null);
+      return FinishResult(
+        success: false,
+        savedLocally: true,
+        error: e.message,
+      );
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
       return FinishResult(success: false, error: e.toString());

@@ -76,8 +76,8 @@ Sem vídeos de técnica, social, nutrição, wearables, web. Mobile-first pt-BR.
 
 ## Docs
 
-- **Plano ativo**: implementação git commit hooks (004)
-- `specs/004-git-commit-hooks/quickstart.md` (quando disponível no branch)
+- **Plano ativo**: `specs/005-workout-draft-persistence/plan.md` — rascunhos de treino (`WorkoutDrafts`, Continuar na Home, reenvio)
+- `WorkoutDraftRepository` + auto-save em `workoutDayExercisesProvider`
 
 ## Git commit hooks
 

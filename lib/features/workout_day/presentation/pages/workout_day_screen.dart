@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +33,9 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
   /// carrega o treino existente e ao finalizar faz PATCH em vez de POST.
   final String? workoutId;
 
+  /// Quando definido, retoma rascunho local em andamento.
+  final String? resumeDraftId;
+
   const WorkoutDayScreen({
     super.key,
     this.routineId,
@@ -38,6 +43,7 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
     this.subtitle,
     this.manualDate,
     this.workoutId,
+    this.resumeDraftId,
   });
 
   const WorkoutDayScreen.create({
@@ -67,6 +73,14 @@ class WorkoutDayScreen extends ConsumerStatefulWidget {
          subtitle: subtitle,
          manualDate: manualDate,
          workoutId: null,
+       );
+
+  const WorkoutDayScreen.resume({
+    Key? key,
+    required String draftId,
+  }) : this(
+         key: key,
+         resumeDraftId: draftId,
        );
 
   const WorkoutDayScreen.edit({
@@ -108,7 +122,9 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       final mode = _determineMode();
       ref.read(workoutScreenModeProvider.notifier).state = mode;
 
-      if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
+      if (widget.resumeDraftId != null) {
+        _loadDraft(widget.resumeDraftId!);
+      } else if (widget.workoutId != null && widget.workoutId!.isNotEmpty) {
         // Modo edição: carrega treino existente pelo ID do WorkoutSession.
         _loadExistingWorkout();
       } else if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {
@@ -116,6 +132,44 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         _loadSession();
       }
     });
+  }
+
+  Future<void> _loadDraft(String draftId) async {
+    try {
+      await ref
+          .read(workoutDayExercisesProvider.notifier)
+          .loadDraftForResume(draftId);
+      if (mounted) {
+        setState(() {
+          _workoutStarted = true;
+        });
+        _syncDraftContext();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Erro ao carregar rascunho: $e');
+      }
+    }
+  }
+
+  void _syncDraftContext() {
+    ref.read(workoutDayExercisesProvider.notifier).setDraftExecutionContext(
+      WorkoutDraftExecutionContext(
+        workoutStarted: _workoutStarted,
+        subtitle: widget.subtitle,
+        routineId: widget.routineId,
+        sessionId: widget.sessionId,
+        manualDate: _selectedDate,
+      ),
+    );
+  }
+
+  Future<void> _flushDraftOnExit() async {
+    if (!_workoutStarted) return;
+    _syncDraftContext();
+    await ref
+        .read(workoutDayExercisesProvider.notifier)
+        .flushPersistInProgressDraft();
   }
 
   @override
@@ -271,7 +325,14 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       }
     }
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          unawaited(_flushDraftOnExit());
+        }
+      },
+      child: Scaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -496,6 +557,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
             : null,
         child: const Icon(Icons.mic),
       ),
+      ),
     );
   }
 
@@ -505,6 +567,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
         _isStartingWorkout = true;
         _workoutStarted = true;
       });
+      _syncDraftContext();
 
       // Se em modo execution, cria a WorkoutSession no backend
       if (widget.sessionId != null && widget.sessionId!.isNotEmpty) {

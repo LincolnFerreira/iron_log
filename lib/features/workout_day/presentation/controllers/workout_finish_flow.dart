@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/features/home/components/organisms/session_picker_sheet.dart';
 import 'package:iron_log/features/home/state/home_provider.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
@@ -185,6 +186,16 @@ class WorkoutFinishFlow {
 
     if (isMounted()) {
       onWorkoutNotStarted();
+      if (result.savedLocally) {
+        AppSnackbar.warning(
+          context: context,
+          title: 'Treino salvo no dispositivo',
+          message:
+              'O envio falhou, mas seus dados estão seguros. '
+              'Reenvie depois em Configurações → Treinos pendentes.',
+        );
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

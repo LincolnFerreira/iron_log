@@ -6,6 +6,7 @@ import '../auth/auth.dart';
 import '../auth/utils/logout_utils.dart';
 import '../routines/domain/entities/routine.dart';
 import '../workout_day/presentation/pages/workout_day_screen.dart';
+import '../workout_day/presentation/providers/workout_draft_providers.dart';
 import 'components/organisms/session_picker_sheet.dart';
 import 'components/templates/home_template.dart';
 import 'state/home_provider.dart';
@@ -56,6 +57,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     final homeState = ref.watch(homeProvider);
     final userProfile = ref.watch(userProfileProvider);
     final streak = ref.watch(workoutStreakProvider);
+    final activeDraft = ref.watch(activeWorkoutDraftProvider).valueOrNull;
 
     // Determina o nome do usuário com fallbacks apropriados
     final userName = userProfile.when(
@@ -78,6 +80,10 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         isLoadingWorkout: homeState.isLoading,
         error: homeState.error,
         onStartWorkout: () => _navigateToWorkout(context, ref),
+        onContinueWorkout: activeDraft != null
+            ? () => _navigateToResume(context, activeDraft.id)
+            : null,
+        activeDraft: activeDraft,
         onChangeWorkout: () => _changeWorkout(context),
         onQuickCreate: () => _quickCreateWorkout(context),
         onRetryWorkout: () => _retryWorkout(ref),
@@ -133,6 +139,33 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   }
 
   void _navigateToWorkout(BuildContext context, WidgetRef ref) async {
+    final activeDraft = ref.read(activeWorkoutDraftProvider).valueOrNull;
+    if (activeDraft != null && context.mounted) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Treino em andamento'),
+          content: const Text(
+            'Você já tem um treino não finalizado. Deseja continuar de onde parou?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Continuar'),
+            ),
+          ],
+        ),
+      );
+      if (proceed == true && context.mounted) {
+        _navigateToResume(context, activeDraft.id);
+      }
+      return;
+    }
+
     final homeState = ref.read(homeProvider);
     final routine = homeState.todaysRoutine;
 
@@ -162,6 +195,14 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
           sessionId: selectedSession!.id,
           subtitle: '${selectedSession.name} - ${routine.name}',
         ),
+      ),
+    );
+  }
+
+  void _navigateToResume(BuildContext context, String draftId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => WorkoutDayScreen.resume(draftId: draftId),
       ),
     );
   }

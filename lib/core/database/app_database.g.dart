@@ -7288,6 +7288,1125 @@ class WorkoutOutboxCompanion extends UpdateCompanion<WorkoutOutboxData> {
   }
 }
 
+class $WorkoutDraftsTable extends WorkoutDrafts
+    with TableInfo<$WorkoutDraftsTable, WorkoutDraftRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkoutDraftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pendingOperationMeta = const VerificationMeta(
+    'pendingOperation',
+  );
+  @override
+  late final GeneratedColumn<String> pendingOperation = GeneratedColumn<String>(
+    'pending_operation',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _routineIdMeta = const VerificationMeta(
+    'routineId',
+  );
+  @override
+  late final GeneratedColumn<String> routineId = GeneratedColumn<String>(
+    'routine_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+    'session_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverWorkoutIdMeta = const VerificationMeta(
+    'serverWorkoutId',
+  );
+  @override
+  late final GeneratedColumn<String> serverWorkoutId = GeneratedColumn<String>(
+    'server_workout_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _snapshotJsonMeta = const VerificationMeta(
+    'snapshotJson',
+  );
+  @override
+  late final GeneratedColumn<String> snapshotJson = GeneratedColumn<String>(
+    'snapshot_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _apiPayloadJsonMeta = const VerificationMeta(
+    'apiPayloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> apiPayloadJson = GeneratedColumn<String>(
+    'api_payload_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _manualDateMeta = const VerificationMeta(
+    'manualDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> manualDate = GeneratedColumn<DateTime>(
+    'manual_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _timerStartedAtMeta = const VerificationMeta(
+    'timerStartedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> timerStartedAt =
+      GeneratedColumn<DateTime>(
+        'timer_started_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _accumulatedDurationSecondsMeta =
+      const VerificationMeta('accumulatedDurationSeconds');
+  @override
+  late final GeneratedColumn<int> accumulatedDurationSeconds =
+      GeneratedColumn<int>(
+        'accumulated_duration_seconds',
+        aliasedName,
+        true,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _lastErrorTypeMeta = const VerificationMeta(
+    'lastErrorType',
+  );
+  @override
+  late final GeneratedColumn<String> lastErrorType = GeneratedColumn<String>(
+    'last_error_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastErrorStatusCodeMeta =
+      const VerificationMeta('lastErrorStatusCode');
+  @override
+  late final GeneratedColumn<int> lastErrorStatusCode = GeneratedColumn<int>(
+    'last_error_status_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastAttemptAtMeta = const VerificationMeta(
+    'lastAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastAttemptAt =
+      GeneratedColumn<DateTime>(
+        'last_attempt_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    status,
+    pendingOperation,
+    routineId,
+    sessionId,
+    serverWorkoutId,
+    snapshotJson,
+    apiPayloadJson,
+    startedAt,
+    endedAt,
+    manualDate,
+    timerStartedAt,
+    accumulatedDurationSeconds,
+    lastErrorType,
+    lastErrorStatusCode,
+    lastAttemptAt,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'workout_drafts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkoutDraftRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('pending_operation')) {
+      context.handle(
+        _pendingOperationMeta,
+        pendingOperation.isAcceptableOrUnknown(
+          data['pending_operation']!,
+          _pendingOperationMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_pendingOperationMeta);
+    }
+    if (data.containsKey('routine_id')) {
+      context.handle(
+        _routineIdMeta,
+        routineId.isAcceptableOrUnknown(data['routine_id']!, _routineIdMeta),
+      );
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    }
+    if (data.containsKey('server_workout_id')) {
+      context.handle(
+        _serverWorkoutIdMeta,
+        serverWorkoutId.isAcceptableOrUnknown(
+          data['server_workout_id']!,
+          _serverWorkoutIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('snapshot_json')) {
+      context.handle(
+        _snapshotJsonMeta,
+        snapshotJson.isAcceptableOrUnknown(
+          data['snapshot_json']!,
+          _snapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_snapshotJsonMeta);
+    }
+    if (data.containsKey('api_payload_json')) {
+      context.handle(
+        _apiPayloadJsonMeta,
+        apiPayloadJson.isAcceptableOrUnknown(
+          data['api_payload_json']!,
+          _apiPayloadJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('manual_date')) {
+      context.handle(
+        _manualDateMeta,
+        manualDate.isAcceptableOrUnknown(data['manual_date']!, _manualDateMeta),
+      );
+    }
+    if (data.containsKey('timer_started_at')) {
+      context.handle(
+        _timerStartedAtMeta,
+        timerStartedAt.isAcceptableOrUnknown(
+          data['timer_started_at']!,
+          _timerStartedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('accumulated_duration_seconds')) {
+      context.handle(
+        _accumulatedDurationSecondsMeta,
+        accumulatedDurationSeconds.isAcceptableOrUnknown(
+          data['accumulated_duration_seconds']!,
+          _accumulatedDurationSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_error_type')) {
+      context.handle(
+        _lastErrorTypeMeta,
+        lastErrorType.isAcceptableOrUnknown(
+          data['last_error_type']!,
+          _lastErrorTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_error_status_code')) {
+      context.handle(
+        _lastErrorStatusCodeMeta,
+        lastErrorStatusCode.isAcceptableOrUnknown(
+          data['last_error_status_code']!,
+          _lastErrorStatusCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_attempt_at')) {
+      context.handle(
+        _lastAttemptAtMeta,
+        lastAttemptAt.isAcceptableOrUnknown(
+          data['last_attempt_at']!,
+          _lastAttemptAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WorkoutDraftRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkoutDraftRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      pendingOperation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pending_operation'],
+      )!,
+      routineId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}routine_id'],
+      ),
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      ),
+      serverWorkoutId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_workout_id'],
+      ),
+      snapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snapshot_json'],
+      )!,
+      apiPayloadJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}api_payload_json'],
+      ),
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+      manualDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}manual_date'],
+      ),
+      timerStartedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}timer_started_at'],
+      ),
+      accumulatedDurationSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}accumulated_duration_seconds'],
+      ),
+      lastErrorType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error_type'],
+      ),
+      lastErrorStatusCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_error_status_code'],
+      ),
+      lastAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_attempt_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WorkoutDraftsTable createAlias(String alias) {
+    return $WorkoutDraftsTable(attachedDatabase, alias);
+  }
+}
+
+class WorkoutDraftRow extends DataClass implements Insertable<WorkoutDraftRow> {
+  final String id;
+  final String userId;
+  final String status;
+  final String pendingOperation;
+  final String? routineId;
+  final String? sessionId;
+  final String? serverWorkoutId;
+  final String snapshotJson;
+  final String? apiPayloadJson;
+  final DateTime startedAt;
+  final DateTime? endedAt;
+  final DateTime? manualDate;
+  final DateTime? timerStartedAt;
+  final int? accumulatedDurationSeconds;
+  final String? lastErrorType;
+  final int? lastErrorStatusCode;
+  final DateTime? lastAttemptAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const WorkoutDraftRow({
+    required this.id,
+    required this.userId,
+    required this.status,
+    required this.pendingOperation,
+    this.routineId,
+    this.sessionId,
+    this.serverWorkoutId,
+    required this.snapshotJson,
+    this.apiPayloadJson,
+    required this.startedAt,
+    this.endedAt,
+    this.manualDate,
+    this.timerStartedAt,
+    this.accumulatedDurationSeconds,
+    this.lastErrorType,
+    this.lastErrorStatusCode,
+    this.lastAttemptAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['status'] = Variable<String>(status);
+    map['pending_operation'] = Variable<String>(pendingOperation);
+    if (!nullToAbsent || routineId != null) {
+      map['routine_id'] = Variable<String>(routineId);
+    }
+    if (!nullToAbsent || sessionId != null) {
+      map['session_id'] = Variable<String>(sessionId);
+    }
+    if (!nullToAbsent || serverWorkoutId != null) {
+      map['server_workout_id'] = Variable<String>(serverWorkoutId);
+    }
+    map['snapshot_json'] = Variable<String>(snapshotJson);
+    if (!nullToAbsent || apiPayloadJson != null) {
+      map['api_payload_json'] = Variable<String>(apiPayloadJson);
+    }
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    if (!nullToAbsent || manualDate != null) {
+      map['manual_date'] = Variable<DateTime>(manualDate);
+    }
+    if (!nullToAbsent || timerStartedAt != null) {
+      map['timer_started_at'] = Variable<DateTime>(timerStartedAt);
+    }
+    if (!nullToAbsent || accumulatedDurationSeconds != null) {
+      map['accumulated_duration_seconds'] = Variable<int>(
+        accumulatedDurationSeconds,
+      );
+    }
+    if (!nullToAbsent || lastErrorType != null) {
+      map['last_error_type'] = Variable<String>(lastErrorType);
+    }
+    if (!nullToAbsent || lastErrorStatusCode != null) {
+      map['last_error_status_code'] = Variable<int>(lastErrorStatusCode);
+    }
+    if (!nullToAbsent || lastAttemptAt != null) {
+      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  WorkoutDraftsCompanion toCompanion(bool nullToAbsent) {
+    return WorkoutDraftsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      status: Value(status),
+      pendingOperation: Value(pendingOperation),
+      routineId: routineId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(routineId),
+      sessionId: sessionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sessionId),
+      serverWorkoutId: serverWorkoutId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverWorkoutId),
+      snapshotJson: Value(snapshotJson),
+      apiPayloadJson: apiPayloadJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(apiPayloadJson),
+      startedAt: Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      manualDate: manualDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(manualDate),
+      timerStartedAt: timerStartedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(timerStartedAt),
+      accumulatedDurationSeconds:
+          accumulatedDurationSeconds == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accumulatedDurationSeconds),
+      lastErrorType: lastErrorType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorType),
+      lastErrorStatusCode: lastErrorStatusCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastErrorStatusCode),
+      lastAttemptAt: lastAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAttemptAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory WorkoutDraftRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkoutDraftRow(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      status: serializer.fromJson<String>(json['status']),
+      pendingOperation: serializer.fromJson<String>(json['pendingOperation']),
+      routineId: serializer.fromJson<String?>(json['routineId']),
+      sessionId: serializer.fromJson<String?>(json['sessionId']),
+      serverWorkoutId: serializer.fromJson<String?>(json['serverWorkoutId']),
+      snapshotJson: serializer.fromJson<String>(json['snapshotJson']),
+      apiPayloadJson: serializer.fromJson<String?>(json['apiPayloadJson']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+      manualDate: serializer.fromJson<DateTime?>(json['manualDate']),
+      timerStartedAt: serializer.fromJson<DateTime?>(json['timerStartedAt']),
+      accumulatedDurationSeconds: serializer.fromJson<int?>(
+        json['accumulatedDurationSeconds'],
+      ),
+      lastErrorType: serializer.fromJson<String?>(json['lastErrorType']),
+      lastErrorStatusCode: serializer.fromJson<int?>(
+        json['lastErrorStatusCode'],
+      ),
+      lastAttemptAt: serializer.fromJson<DateTime?>(json['lastAttemptAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'status': serializer.toJson<String>(status),
+      'pendingOperation': serializer.toJson<String>(pendingOperation),
+      'routineId': serializer.toJson<String?>(routineId),
+      'sessionId': serializer.toJson<String?>(sessionId),
+      'serverWorkoutId': serializer.toJson<String?>(serverWorkoutId),
+      'snapshotJson': serializer.toJson<String>(snapshotJson),
+      'apiPayloadJson': serializer.toJson<String?>(apiPayloadJson),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+      'manualDate': serializer.toJson<DateTime?>(manualDate),
+      'timerStartedAt': serializer.toJson<DateTime?>(timerStartedAt),
+      'accumulatedDurationSeconds': serializer.toJson<int?>(
+        accumulatedDurationSeconds,
+      ),
+      'lastErrorType': serializer.toJson<String?>(lastErrorType),
+      'lastErrorStatusCode': serializer.toJson<int?>(lastErrorStatusCode),
+      'lastAttemptAt': serializer.toJson<DateTime?>(lastAttemptAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  WorkoutDraftRow copyWith({
+    String? id,
+    String? userId,
+    String? status,
+    String? pendingOperation,
+    Value<String?> routineId = const Value.absent(),
+    Value<String?> sessionId = const Value.absent(),
+    Value<String?> serverWorkoutId = const Value.absent(),
+    String? snapshotJson,
+    Value<String?> apiPayloadJson = const Value.absent(),
+    DateTime? startedAt,
+    Value<DateTime?> endedAt = const Value.absent(),
+    Value<DateTime?> manualDate = const Value.absent(),
+    Value<DateTime?> timerStartedAt = const Value.absent(),
+    Value<int?> accumulatedDurationSeconds = const Value.absent(),
+    Value<String?> lastErrorType = const Value.absent(),
+    Value<int?> lastErrorStatusCode = const Value.absent(),
+    Value<DateTime?> lastAttemptAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => WorkoutDraftRow(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    status: status ?? this.status,
+    pendingOperation: pendingOperation ?? this.pendingOperation,
+    routineId: routineId.present ? routineId.value : this.routineId,
+    sessionId: sessionId.present ? sessionId.value : this.sessionId,
+    serverWorkoutId: serverWorkoutId.present
+        ? serverWorkoutId.value
+        : this.serverWorkoutId,
+    snapshotJson: snapshotJson ?? this.snapshotJson,
+    apiPayloadJson: apiPayloadJson.present
+        ? apiPayloadJson.value
+        : this.apiPayloadJson,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    manualDate: manualDate.present ? manualDate.value : this.manualDate,
+    timerStartedAt: timerStartedAt.present
+        ? timerStartedAt.value
+        : this.timerStartedAt,
+    accumulatedDurationSeconds: accumulatedDurationSeconds.present
+        ? accumulatedDurationSeconds.value
+        : this.accumulatedDurationSeconds,
+    lastErrorType: lastErrorType.present
+        ? lastErrorType.value
+        : this.lastErrorType,
+    lastErrorStatusCode: lastErrorStatusCode.present
+        ? lastErrorStatusCode.value
+        : this.lastErrorStatusCode,
+    lastAttemptAt: lastAttemptAt.present
+        ? lastAttemptAt.value
+        : this.lastAttemptAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  WorkoutDraftRow copyWithCompanion(WorkoutDraftsCompanion data) {
+    return WorkoutDraftRow(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      status: data.status.present ? data.status.value : this.status,
+      pendingOperation: data.pendingOperation.present
+          ? data.pendingOperation.value
+          : this.pendingOperation,
+      routineId: data.routineId.present ? data.routineId.value : this.routineId,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      serverWorkoutId: data.serverWorkoutId.present
+          ? data.serverWorkoutId.value
+          : this.serverWorkoutId,
+      snapshotJson: data.snapshotJson.present
+          ? data.snapshotJson.value
+          : this.snapshotJson,
+      apiPayloadJson: data.apiPayloadJson.present
+          ? data.apiPayloadJson.value
+          : this.apiPayloadJson,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      manualDate: data.manualDate.present
+          ? data.manualDate.value
+          : this.manualDate,
+      timerStartedAt: data.timerStartedAt.present
+          ? data.timerStartedAt.value
+          : this.timerStartedAt,
+      accumulatedDurationSeconds: data.accumulatedDurationSeconds.present
+          ? data.accumulatedDurationSeconds.value
+          : this.accumulatedDurationSeconds,
+      lastErrorType: data.lastErrorType.present
+          ? data.lastErrorType.value
+          : this.lastErrorType,
+      lastErrorStatusCode: data.lastErrorStatusCode.present
+          ? data.lastErrorStatusCode.value
+          : this.lastErrorStatusCode,
+      lastAttemptAt: data.lastAttemptAt.present
+          ? data.lastAttemptAt.value
+          : this.lastAttemptAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutDraftRow(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('status: $status, ')
+          ..write('pendingOperation: $pendingOperation, ')
+          ..write('routineId: $routineId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('serverWorkoutId: $serverWorkoutId, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('apiPayloadJson: $apiPayloadJson, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('manualDate: $manualDate, ')
+          ..write('timerStartedAt: $timerStartedAt, ')
+          ..write('accumulatedDurationSeconds: $accumulatedDurationSeconds, ')
+          ..write('lastErrorType: $lastErrorType, ')
+          ..write('lastErrorStatusCode: $lastErrorStatusCode, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    status,
+    pendingOperation,
+    routineId,
+    sessionId,
+    serverWorkoutId,
+    snapshotJson,
+    apiPayloadJson,
+    startedAt,
+    endedAt,
+    manualDate,
+    timerStartedAt,
+    accumulatedDurationSeconds,
+    lastErrorType,
+    lastErrorStatusCode,
+    lastAttemptAt,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkoutDraftRow &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.status == this.status &&
+          other.pendingOperation == this.pendingOperation &&
+          other.routineId == this.routineId &&
+          other.sessionId == this.sessionId &&
+          other.serverWorkoutId == this.serverWorkoutId &&
+          other.snapshotJson == this.snapshotJson &&
+          other.apiPayloadJson == this.apiPayloadJson &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.manualDate == this.manualDate &&
+          other.timerStartedAt == this.timerStartedAt &&
+          other.accumulatedDurationSeconds == this.accumulatedDurationSeconds &&
+          other.lastErrorType == this.lastErrorType &&
+          other.lastErrorStatusCode == this.lastErrorStatusCode &&
+          other.lastAttemptAt == this.lastAttemptAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class WorkoutDraftsCompanion extends UpdateCompanion<WorkoutDraftRow> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> status;
+  final Value<String> pendingOperation;
+  final Value<String?> routineId;
+  final Value<String?> sessionId;
+  final Value<String?> serverWorkoutId;
+  final Value<String> snapshotJson;
+  final Value<String?> apiPayloadJson;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> endedAt;
+  final Value<DateTime?> manualDate;
+  final Value<DateTime?> timerStartedAt;
+  final Value<int?> accumulatedDurationSeconds;
+  final Value<String?> lastErrorType;
+  final Value<int?> lastErrorStatusCode;
+  final Value<DateTime?> lastAttemptAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const WorkoutDraftsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.pendingOperation = const Value.absent(),
+    this.routineId = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.serverWorkoutId = const Value.absent(),
+    this.snapshotJson = const Value.absent(),
+    this.apiPayloadJson = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.manualDate = const Value.absent(),
+    this.timerStartedAt = const Value.absent(),
+    this.accumulatedDurationSeconds = const Value.absent(),
+    this.lastErrorType = const Value.absent(),
+    this.lastErrorStatusCode = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkoutDraftsCompanion.insert({
+    required String id,
+    required String userId,
+    required String status,
+    required String pendingOperation,
+    this.routineId = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.serverWorkoutId = const Value.absent(),
+    required String snapshotJson,
+    this.apiPayloadJson = const Value.absent(),
+    required DateTime startedAt,
+    this.endedAt = const Value.absent(),
+    this.manualDate = const Value.absent(),
+    this.timerStartedAt = const Value.absent(),
+    this.accumulatedDurationSeconds = const Value.absent(),
+    this.lastErrorType = const Value.absent(),
+    this.lastErrorStatusCode = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       status = Value(status),
+       pendingOperation = Value(pendingOperation),
+       snapshotJson = Value(snapshotJson),
+       startedAt = Value(startedAt);
+  static Insertable<WorkoutDraftRow> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? status,
+    Expression<String>? pendingOperation,
+    Expression<String>? routineId,
+    Expression<String>? sessionId,
+    Expression<String>? serverWorkoutId,
+    Expression<String>? snapshotJson,
+    Expression<String>? apiPayloadJson,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<DateTime>? manualDate,
+    Expression<DateTime>? timerStartedAt,
+    Expression<int>? accumulatedDurationSeconds,
+    Expression<String>? lastErrorType,
+    Expression<int>? lastErrorStatusCode,
+    Expression<DateTime>? lastAttemptAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (status != null) 'status': status,
+      if (pendingOperation != null) 'pending_operation': pendingOperation,
+      if (routineId != null) 'routine_id': routineId,
+      if (sessionId != null) 'session_id': sessionId,
+      if (serverWorkoutId != null) 'server_workout_id': serverWorkoutId,
+      if (snapshotJson != null) 'snapshot_json': snapshotJson,
+      if (apiPayloadJson != null) 'api_payload_json': apiPayloadJson,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (manualDate != null) 'manual_date': manualDate,
+      if (timerStartedAt != null) 'timer_started_at': timerStartedAt,
+      if (accumulatedDurationSeconds != null)
+        'accumulated_duration_seconds': accumulatedDurationSeconds,
+      if (lastErrorType != null) 'last_error_type': lastErrorType,
+      if (lastErrorStatusCode != null)
+        'last_error_status_code': lastErrorStatusCode,
+      if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkoutDraftsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? status,
+    Value<String>? pendingOperation,
+    Value<String?>? routineId,
+    Value<String?>? sessionId,
+    Value<String?>? serverWorkoutId,
+    Value<String>? snapshotJson,
+    Value<String?>? apiPayloadJson,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? endedAt,
+    Value<DateTime?>? manualDate,
+    Value<DateTime?>? timerStartedAt,
+    Value<int?>? accumulatedDurationSeconds,
+    Value<String?>? lastErrorType,
+    Value<int?>? lastErrorStatusCode,
+    Value<DateTime?>? lastAttemptAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return WorkoutDraftsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      status: status ?? this.status,
+      pendingOperation: pendingOperation ?? this.pendingOperation,
+      routineId: routineId ?? this.routineId,
+      sessionId: sessionId ?? this.sessionId,
+      serverWorkoutId: serverWorkoutId ?? this.serverWorkoutId,
+      snapshotJson: snapshotJson ?? this.snapshotJson,
+      apiPayloadJson: apiPayloadJson ?? this.apiPayloadJson,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      manualDate: manualDate ?? this.manualDate,
+      timerStartedAt: timerStartedAt ?? this.timerStartedAt,
+      accumulatedDurationSeconds:
+          accumulatedDurationSeconds ?? this.accumulatedDurationSeconds,
+      lastErrorType: lastErrorType ?? this.lastErrorType,
+      lastErrorStatusCode: lastErrorStatusCode ?? this.lastErrorStatusCode,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (pendingOperation.present) {
+      map['pending_operation'] = Variable<String>(pendingOperation.value);
+    }
+    if (routineId.present) {
+      map['routine_id'] = Variable<String>(routineId.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (serverWorkoutId.present) {
+      map['server_workout_id'] = Variable<String>(serverWorkoutId.value);
+    }
+    if (snapshotJson.present) {
+      map['snapshot_json'] = Variable<String>(snapshotJson.value);
+    }
+    if (apiPayloadJson.present) {
+      map['api_payload_json'] = Variable<String>(apiPayloadJson.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (manualDate.present) {
+      map['manual_date'] = Variable<DateTime>(manualDate.value);
+    }
+    if (timerStartedAt.present) {
+      map['timer_started_at'] = Variable<DateTime>(timerStartedAt.value);
+    }
+    if (accumulatedDurationSeconds.present) {
+      map['accumulated_duration_seconds'] = Variable<int>(
+        accumulatedDurationSeconds.value,
+      );
+    }
+    if (lastErrorType.present) {
+      map['last_error_type'] = Variable<String>(lastErrorType.value);
+    }
+    if (lastErrorStatusCode.present) {
+      map['last_error_status_code'] = Variable<int>(lastErrorStatusCode.value);
+    }
+    if (lastAttemptAt.present) {
+      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutDraftsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('status: $status, ')
+          ..write('pendingOperation: $pendingOperation, ')
+          ..write('routineId: $routineId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('serverWorkoutId: $serverWorkoutId, ')
+          ..write('snapshotJson: $snapshotJson, ')
+          ..write('apiPayloadJson: $apiPayloadJson, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('manualDate: $manualDate, ')
+          ..write('timerStartedAt: $timerStartedAt, ')
+          ..write('accumulatedDurationSeconds: $accumulatedDurationSeconds, ')
+          ..write('lastErrorType: $lastErrorType, ')
+          ..write('lastErrorStatusCode: $lastErrorStatusCode, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7306,6 +8425,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $RestDaysTable restDays = $RestDaysTable(this);
   late final $WorkoutOutboxTable workoutOutbox = $WorkoutOutboxTable(this);
+  late final $WorkoutDraftsTable workoutDrafts = $WorkoutDraftsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7320,6 +8440,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     techniqueBlocks,
     restDays,
     workoutOutbox,
+    workoutDrafts,
   ];
 }
 
@@ -10699,6 +11820,492 @@ typedef $$WorkoutOutboxTableProcessedTableManager =
       WorkoutOutboxData,
       PrefetchHooks Function()
     >;
+typedef $$WorkoutDraftsTableCreateCompanionBuilder =
+    WorkoutDraftsCompanion Function({
+      required String id,
+      required String userId,
+      required String status,
+      required String pendingOperation,
+      Value<String?> routineId,
+      Value<String?> sessionId,
+      Value<String?> serverWorkoutId,
+      required String snapshotJson,
+      Value<String?> apiPayloadJson,
+      required DateTime startedAt,
+      Value<DateTime?> endedAt,
+      Value<DateTime?> manualDate,
+      Value<DateTime?> timerStartedAt,
+      Value<int?> accumulatedDurationSeconds,
+      Value<String?> lastErrorType,
+      Value<int?> lastErrorStatusCode,
+      Value<DateTime?> lastAttemptAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$WorkoutDraftsTableUpdateCompanionBuilder =
+    WorkoutDraftsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> status,
+      Value<String> pendingOperation,
+      Value<String?> routineId,
+      Value<String?> sessionId,
+      Value<String?> serverWorkoutId,
+      Value<String> snapshotJson,
+      Value<String?> apiPayloadJson,
+      Value<DateTime> startedAt,
+      Value<DateTime?> endedAt,
+      Value<DateTime?> manualDate,
+      Value<DateTime?> timerStartedAt,
+      Value<int?> accumulatedDurationSeconds,
+      Value<String?> lastErrorType,
+      Value<int?> lastErrorStatusCode,
+      Value<DateTime?> lastAttemptAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$WorkoutDraftsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkoutDraftsTable> {
+  $$WorkoutDraftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pendingOperation => $composableBuilder(
+    column: $table.pendingOperation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get routineId => $composableBuilder(
+    column: $table.routineId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serverWorkoutId => $composableBuilder(
+    column: $table.serverWorkoutId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get apiPayloadJson => $composableBuilder(
+    column: $table.apiPayloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get manualDate => $composableBuilder(
+    column: $table.manualDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get timerStartedAt => $composableBuilder(
+    column: $table.timerStartedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get accumulatedDurationSeconds => $composableBuilder(
+    column: $table.accumulatedDurationSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastErrorType => $composableBuilder(
+    column: $table.lastErrorType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastErrorStatusCode => $composableBuilder(
+    column: $table.lastErrorStatusCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WorkoutDraftsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkoutDraftsTable> {
+  $$WorkoutDraftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pendingOperation => $composableBuilder(
+    column: $table.pendingOperation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get routineId => $composableBuilder(
+    column: $table.routineId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sessionId => $composableBuilder(
+    column: $table.sessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverWorkoutId => $composableBuilder(
+    column: $table.serverWorkoutId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get apiPayloadJson => $composableBuilder(
+    column: $table.apiPayloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get manualDate => $composableBuilder(
+    column: $table.manualDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get timerStartedAt => $composableBuilder(
+    column: $table.timerStartedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get accumulatedDurationSeconds => $composableBuilder(
+    column: $table.accumulatedDurationSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastErrorType => $composableBuilder(
+    column: $table.lastErrorType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastErrorStatusCode => $composableBuilder(
+    column: $table.lastErrorStatusCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WorkoutDraftsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkoutDraftsTable> {
+  $$WorkoutDraftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get pendingOperation => $composableBuilder(
+    column: $table.pendingOperation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get routineId =>
+      $composableBuilder(column: $table.routineId, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionId =>
+      $composableBuilder(column: $table.sessionId, builder: (column) => column);
+
+  GeneratedColumn<String> get serverWorkoutId => $composableBuilder(
+    column: $table.serverWorkoutId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snapshotJson => $composableBuilder(
+    column: $table.snapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get apiPayloadJson => $composableBuilder(
+    column: $table.apiPayloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get manualDate => $composableBuilder(
+    column: $table.manualDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get timerStartedAt => $composableBuilder(
+    column: $table.timerStartedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get accumulatedDurationSeconds => $composableBuilder(
+    column: $table.accumulatedDurationSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastErrorType => $composableBuilder(
+    column: $table.lastErrorType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastErrorStatusCode => $composableBuilder(
+    column: $table.lastErrorStatusCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$WorkoutDraftsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkoutDraftsTable,
+          WorkoutDraftRow,
+          $$WorkoutDraftsTableFilterComposer,
+          $$WorkoutDraftsTableOrderingComposer,
+          $$WorkoutDraftsTableAnnotationComposer,
+          $$WorkoutDraftsTableCreateCompanionBuilder,
+          $$WorkoutDraftsTableUpdateCompanionBuilder,
+          (
+            WorkoutDraftRow,
+            BaseReferences<_$AppDatabase, $WorkoutDraftsTable, WorkoutDraftRow>,
+          ),
+          WorkoutDraftRow,
+          PrefetchHooks Function()
+        > {
+  $$WorkoutDraftsTableTableManager(_$AppDatabase db, $WorkoutDraftsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkoutDraftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkoutDraftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkoutDraftsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> pendingOperation = const Value.absent(),
+                Value<String?> routineId = const Value.absent(),
+                Value<String?> sessionId = const Value.absent(),
+                Value<String?> serverWorkoutId = const Value.absent(),
+                Value<String> snapshotJson = const Value.absent(),
+                Value<String?> apiPayloadJson = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<DateTime?> manualDate = const Value.absent(),
+                Value<DateTime?> timerStartedAt = const Value.absent(),
+                Value<int?> accumulatedDurationSeconds = const Value.absent(),
+                Value<String?> lastErrorType = const Value.absent(),
+                Value<int?> lastErrorStatusCode = const Value.absent(),
+                Value<DateTime?> lastAttemptAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutDraftsCompanion(
+                id: id,
+                userId: userId,
+                status: status,
+                pendingOperation: pendingOperation,
+                routineId: routineId,
+                sessionId: sessionId,
+                serverWorkoutId: serverWorkoutId,
+                snapshotJson: snapshotJson,
+                apiPayloadJson: apiPayloadJson,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                manualDate: manualDate,
+                timerStartedAt: timerStartedAt,
+                accumulatedDurationSeconds: accumulatedDurationSeconds,
+                lastErrorType: lastErrorType,
+                lastErrorStatusCode: lastErrorStatusCode,
+                lastAttemptAt: lastAttemptAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String status,
+                required String pendingOperation,
+                Value<String?> routineId = const Value.absent(),
+                Value<String?> sessionId = const Value.absent(),
+                Value<String?> serverWorkoutId = const Value.absent(),
+                required String snapshotJson,
+                Value<String?> apiPayloadJson = const Value.absent(),
+                required DateTime startedAt,
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<DateTime?> manualDate = const Value.absent(),
+                Value<DateTime?> timerStartedAt = const Value.absent(),
+                Value<int?> accumulatedDurationSeconds = const Value.absent(),
+                Value<String?> lastErrorType = const Value.absent(),
+                Value<int?> lastErrorStatusCode = const Value.absent(),
+                Value<DateTime?> lastAttemptAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutDraftsCompanion.insert(
+                id: id,
+                userId: userId,
+                status: status,
+                pendingOperation: pendingOperation,
+                routineId: routineId,
+                sessionId: sessionId,
+                serverWorkoutId: serverWorkoutId,
+                snapshotJson: snapshotJson,
+                apiPayloadJson: apiPayloadJson,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                manualDate: manualDate,
+                timerStartedAt: timerStartedAt,
+                accumulatedDurationSeconds: accumulatedDurationSeconds,
+                lastErrorType: lastErrorType,
+                lastErrorStatusCode: lastErrorStatusCode,
+                lastAttemptAt: lastAttemptAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WorkoutDraftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkoutDraftsTable,
+      WorkoutDraftRow,
+      $$WorkoutDraftsTableFilterComposer,
+      $$WorkoutDraftsTableOrderingComposer,
+      $$WorkoutDraftsTableAnnotationComposer,
+      $$WorkoutDraftsTableCreateCompanionBuilder,
+      $$WorkoutDraftsTableUpdateCompanionBuilder,
+      (
+        WorkoutDraftRow,
+        BaseReferences<_$AppDatabase, $WorkoutDraftsTable, WorkoutDraftRow>,
+      ),
+      WorkoutDraftRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -10721,4 +12328,6 @@ class $AppDatabaseManager {
       $$RestDaysTableTableManager(_db, _db.restDays);
   $$WorkoutOutboxTableTableManager get workoutOutbox =>
       $$WorkoutOutboxTableTableManager(_db, _db.workoutOutbox);
+  $$WorkoutDraftsTableTableManager get workoutDrafts =>
+      $$WorkoutDraftsTableTableManager(_db, _db.workoutDrafts);
 }

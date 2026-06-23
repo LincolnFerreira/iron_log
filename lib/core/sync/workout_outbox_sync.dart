@@ -1,16 +1,19 @@
 import 'dart:convert';
 
+import 'package:drift/drift.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../api/api_endpoints.dart';
 import '../database/app_database.dart';
 
-/// Envia itens pendentes da tabela [WorkoutOutbox] (POST/PATCH em `/workout`).
+/// Envia rascunhos `pendingUpload` e legado [WorkoutOutbox].
 Future<void> flushWorkoutOutbox({
   required AppDatabase database,
   required Dio dio,
 }) async {
+  await _flushDraftPendingUploads(database: database, dio: dio);
+
   final rows = await database.select(database.workoutOutbox).get();
   if (rows.isEmpty) return;
 
@@ -24,11 +27,8 @@ Future<void> flushWorkoutOutbox({
         final payload = envelope['payload'];
         if (workoutId == null || payload is! Map<String, dynamic>) {
           if (kDebugMode) {
-            print('WorkoutOutboxSync: descartando linha inválida id=${row.id}');
+            print('WorkoutOutboxSync: payload PATCH inválido id=${row.id}');
           }
-          await (database.delete(
-            database.workoutOutbox,
-          )..where((t) => t.id.equals(row.id))).go();
           continue;
         }
         await dio.patch(ApiEndpoints.workoutById(workoutId), data: payload);
@@ -38,9 +38,6 @@ Future<void> flushWorkoutOutbox({
           if (kDebugMode) {
             print('WorkoutOutboxSync: payload POST inválido id=${row.id}');
           }
-          await (database.delete(
-            database.workoutOutbox,
-          )..where((t) => t.id.equals(row.id))).go();
           continue;
         }
         await dio.post(ApiEndpoints.workouts, data: payload);
@@ -58,6 +55,51 @@ Future<void> flushWorkoutOutbox({
       if (kDebugMode) {
         print('WorkoutOutboxSync: erro inesperado ${row.id}: $e');
       }
+      break;
+    }
+  }
+}
+
+Future<void> _flushDraftPendingUploads({
+  required AppDatabase database,
+  required Dio dio,
+}) async {
+  final rows = await (database.select(database.workoutDrafts)
+        ..where((t) => t.status.equals('pendingUpload')))
+      .get();
+
+  for (final row in rows) {
+    final payloadRaw = row.apiPayloadJson;
+    if (payloadRaw == null || payloadRaw.isEmpty) continue;
+
+    try {
+      final payload = jsonDecode(payloadRaw) as Map<String, dynamic>;
+      if (row.pendingOperation == 'patch') {
+        final workoutId = row.serverWorkoutId;
+        if (workoutId == null || workoutId.isEmpty) continue;
+        await dio.patch(ApiEndpoints.workoutById(workoutId), data: payload);
+      } else {
+        await dio.post(ApiEndpoints.workouts, data: payload);
+      }
+
+      await (database.delete(
+        database.workoutDrafts,
+      )..where((t) => t.id.equals(row.id))).go();
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('WorkoutDraftSync: falha ${row.id}: $e');
+      }
+      await database
+          .into(database.workoutDrafts)
+          .insertOnConflictUpdate(
+            WorkoutDraftsCompanion(
+              id: Value(row.id),
+              lastErrorType: Value(e.type.name),
+              lastErrorStatusCode: Value(e.response?.statusCode),
+              lastAttemptAt: Value(DateTime.now()),
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
       break;
     }
   }

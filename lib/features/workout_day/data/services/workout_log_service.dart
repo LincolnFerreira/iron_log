@@ -2,32 +2,37 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/services/auth_service.dart';
-import 'package:iron_log/core/services/http_error_handler.dart';
-import 'package:iron_log/features/workout_day/data/datasources/workout_outbox_local_datasource.dart';
 import 'package:iron_log/features/workout_day/data/workout_local_ids.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
+import 'package:iron_log/features/workout_day/domain/repositories/workout_draft_repository.dart';
+
+/// Falha de upload com rascunho já persistido localmente.
+class WorkoutUploadDeferredException implements Exception {
+  WorkoutUploadDeferredException({
+    required this.draftId,
+    this.message = 'Treino salvo localmente; envio pendente.',
+  });
+
+  final String draftId;
+  final String message;
+
+  @override
+  String toString() => message;
+}
 
 /// Serviço responsável por persistir sessões de treino no backend.
-/// Converte os dados locais do [WorkoutExercise] para o formato
-/// esperado pelo endpoint POST /workout.
 class WorkoutLogService {
   final AuthService _auth;
-  final WorkoutOutboxLocalDataSource? _outbox;
+  final WorkoutDraftRepository? _drafts;
 
   WorkoutLogService({
     AuthService? auth,
-    WorkoutOutboxLocalDataSource? outbox,
+    WorkoutDraftRepository? drafts,
   }) : _auth = auth ?? AuthService(),
-       _outbox = outbox;
+       _drafts = drafts;
 
-  /// Salva uma sessão de treino no backend.
-  ///
-  /// [exercises] — lista executada (cada item pode carregar [WorkoutExercise.entries]).
-  /// [routineId], [startedAt], [endedAt], [isManual], [sessionId] conforme o fluxo.
-  ///
-  /// [skipOutboxEnqueueOnUnreachable] — em falha de rede, devolve um id `local_…`
-  /// sem gravar fila (uso no “Iniciar treino”). Caso false, enfileira POST em Drift.
   Future<String> saveWorkout({
     required List<WorkoutExercise> exercises,
     String? routineId,
@@ -36,9 +41,83 @@ class WorkoutLogService {
     bool isManual = false,
     String? notes,
     String? sessionId,
-    bool skipOutboxEnqueueOnUnreachable = false,
+    String? draftId,
+    bool markPendingOnFailure = false,
   }) async {
-    final payload = {
+    final payload = buildCreatePayload(
+      exercises: exercises,
+      routineId: routineId,
+      startedAt: startedAt,
+      endedAt: endedAt,
+      isManual: isManual,
+      notes: notes,
+      sessionId: sessionId,
+    );
+
+    try {
+      final data = await postRaw(payload);
+      return data['workoutId'] as String;
+    } on DioException catch (e) {
+      await _handleUploadFailure(
+        e: e,
+        draftId: draftId,
+        markPendingOnFailure: markPendingOnFailure,
+        payload: payload,
+        operation: PendingOperation.create,
+        serverWorkoutId: null,
+        endedAt: endedAt,
+      );
+      return WorkoutLocalIds.newLocalSessionId();
+    }
+  }
+
+  Future<void> updateWorkout({
+    required String workoutId,
+    required List<WorkoutExercise> exercises,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    String? notes,
+    String? sessionId,
+    String? draftId,
+    bool markPendingOnFailure = false,
+  }) async {
+    final payload = buildPatchPayload(
+      exercises: exercises,
+      startedAt: startedAt,
+      endedAt: endedAt,
+      notes: notes,
+      sessionId: sessionId,
+    );
+
+    try {
+      await patchRaw(workoutId, payload);
+    } on DioException catch (e) {
+      await _handleUploadFailure(
+        e: e,
+        draftId: draftId,
+        markPendingOnFailure: markPendingOnFailure,
+        payload: payload,
+        operation: PendingOperation.patch,
+        serverWorkoutId: workoutId,
+        endedAt: endedAt,
+      );
+      if (markPendingOnFailure && draftId != null) {
+        throw WorkoutUploadDeferredException(draftId: draftId);
+      }
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic> buildCreatePayload({
+    required List<WorkoutExercise> exercises,
+    String? routineId,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    bool isManual = false,
+    String? notes,
+    String? sessionId,
+  }) {
+    return {
       if (routineId != null) 'routineId': routineId,
       'date': startedAt.toIso8601String(),
       'endedAt': endedAt.toIso8601String(),
@@ -51,26 +130,66 @@ class WorkoutLogService {
           .map((e) => _exerciseToDto(e.value, order: e.key + 1))
           .toList(),
     };
+  }
 
-    try {
-      final response = await _auth.post(ApiEndpoints.workouts, data: payload);
-      final data = response.data as Map<String, dynamic>;
-      return data['workoutId'] as String;
-    } on DioException catch (e) {
-      if (!HttpErrorHandler.isConnectivityError(e)) rethrow;
-      if (skipOutboxEnqueueOnUnreachable) {
-        return WorkoutLocalIds.newLocalSessionId();
-      }
-      final uid = _auth.currentUser?.uid;
-      final outbox = _outbox;
-      if (outbox == null || uid == null || uid.isEmpty) rethrow;
-      final rowId = WorkoutLocalIds.newOutboxRowId();
-      await outbox.enqueuePost(
-        rowId: rowId,
-        userId: uid,
-        workoutPayload: payload,
+  Map<String, dynamic> buildPatchPayload({
+    required List<WorkoutExercise> exercises,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    String? notes,
+    String? sessionId,
+  }) {
+    return {
+      'date': startedAt.toIso8601String(),
+      'endedAt': endedAt.toIso8601String(),
+      if (notes != null) 'notes': notes,
+      if (sessionId != null) 'sessionId': sessionId,
+      'exercises': exercises
+          .asMap()
+          .entries
+          .map((e) => _exerciseToDto(e.value, order: e.key + 1))
+          .toList(),
+    };
+  }
+
+  Future<Map<String, dynamic>> postRaw(Map<String, dynamic> payload) async {
+    final response = await _auth.post(ApiEndpoints.workouts, data: payload);
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<void> patchRaw(String workoutId, Map<String, dynamic> payload) async {
+    await _auth.patch(ApiEndpoints.workoutById(workoutId), data: payload);
+  }
+
+  Future<void> _handleUploadFailure({
+    required DioException e,
+    required String? draftId,
+    required bool markPendingOnFailure,
+    required Map<String, dynamic> payload,
+    required PendingOperation operation,
+    required String? serverWorkoutId,
+    required DateTime? endedAt,
+  }) async {
+    final uid = _auth.currentUser?.uid;
+    final drafts = _drafts;
+    if (drafts == null || uid == null || uid.isEmpty || draftId == null) {
+      return;
+    }
+
+    if (markPendingOnFailure) {
+      await drafts.markPendingUpload(
+        draftId: draftId,
+        apiPayload: payload,
+        serverWorkoutId: serverWorkoutId,
+        operation: operation,
+        endedAt: endedAt,
+        error: DraftUploadError(
+          type: e.type.name,
+          statusCode: e.response?.statusCode,
+          message: e.message,
+        ),
       );
-      return 'queued_$rowId';
+      throw WorkoutUploadDeferredException(draftId: draftId);
     }
   }
 
@@ -121,64 +240,17 @@ class WorkoutLogService {
 
   double _parseWeight(String value) => TechniqueBlockMapper.parseWeight(value);
 
-  /// Formato de exercício em POST/PATCH `/workout` (séries, reps, peso, etc.).
   Map<String, dynamic> exerciseToWorkoutExerciseDto(
     WorkoutExercise exercise, {
     int order = 1,
   }) => _exerciseToDto(exercise, order: order);
 
-  /// Exposes [_exerciseToDto] for unit testing without HTTP/Firebase.
   @visibleForTesting
   Map<String, dynamic> exerciseToDtoForTesting(
     WorkoutExercise exercise, {
     int order = 1,
   }) => _exerciseToDto(exercise, order: order);
 
-  /// Atualiza (substitui as séries de) um treino já registrado.
-  ///
-  /// Corresponde ao endpoint PATCH /workout/:id.
-  /// O backend deleta os SerieLog existentes e recria a partir de [exercises].
-  Future<void> updateWorkout({
-    required String workoutId,
-    required List<WorkoutExercise> exercises,
-    required DateTime startedAt,
-    required DateTime endedAt,
-    String? notes,
-    String? sessionId,
-  }) async {
-    final payload = {
-      'date': startedAt.toIso8601String(),
-      'endedAt': endedAt.toIso8601String(),
-      if (notes != null) 'notes': notes,
-      if (sessionId != null) 'sessionId': sessionId,
-      'exercises': exercises
-          .asMap()
-          .entries
-          .map((e) => _exerciseToDto(e.value, order: e.key + 1))
-          .toList(),
-    };
-
-    try {
-      await _auth.patch(ApiEndpoints.workoutById(workoutId), data: payload);
-    } on DioException catch (e) {
-      if (!HttpErrorHandler.isConnectivityError(e)) rethrow;
-      final uid = _auth.currentUser?.uid;
-      final outbox = _outbox;
-      if (outbox == null || uid == null || uid.isEmpty) rethrow;
-      final rowId = WorkoutLocalIds.newOutboxRowId();
-      await outbox.enqueuePatch(
-        rowId: rowId,
-        userId: uid,
-        workoutId: workoutId,
-        patchPayload: payload,
-      );
-    }
-  }
-
-  /// Atualiza apenas a data (startedAt) de um treino já registrado.
-  /// Usado para auto-save quando o usuário troca a data no modo edição.
-  ///
-  /// Se [newEndedAt] for fornecido, também atualiza o endedAt para preservar a duração.
   Future<void> patchDate(
     String workoutId,
     DateTime newDate, {

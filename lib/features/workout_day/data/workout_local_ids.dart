@@ -9,4 +9,7 @@ abstract final class WorkoutLocalIds {
       'local_${DateTime.now().millisecondsSinceEpoch}';
 
   static String newOutboxRowId() => 'ob_${DateTime.now().microsecondsSinceEpoch}';
+
+  static String newDraftRowId() =>
+      'draft_${DateTime.now().microsecondsSinceEpoch}';
 }

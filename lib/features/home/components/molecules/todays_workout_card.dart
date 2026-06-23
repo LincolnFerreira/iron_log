@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
 import '../atoms/workout_loading_card.dart';
 import '../atoms/no_workout_card.dart';
 import 'active_workout_card.dart';
@@ -12,6 +13,8 @@ class TodaysWorkoutCard extends StatelessWidget {
   final VoidCallback? onNoWorkoutTap;
   final List<Session> sessions;
   final void Function(Session)? onSelectSession;
+  final WorkoutDraftSummary? activeDraft;
+  final VoidCallback? onContinueWorkout;
 
   const TodaysWorkoutCard({
     super.key,
@@ -22,6 +25,8 @@ class TodaysWorkoutCard extends StatelessWidget {
     this.onNoWorkoutTap,
     this.sessions = const [],
     this.onSelectSession,
+    this.activeDraft,
+    this.onContinueWorkout,
   });
 
   @override
@@ -40,6 +45,8 @@ class TodaysWorkoutCard extends StatelessWidget {
       sessions: sessions,
       onStartWorkout: onStartWorkout,
       onSelectSession: onSelectSession,
+      activeDraft: activeDraft,
+      onContinueWorkout: onContinueWorkout,
     );
   }
 }

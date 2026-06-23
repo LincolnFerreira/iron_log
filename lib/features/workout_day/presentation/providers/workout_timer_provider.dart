@@ -36,6 +36,11 @@ class WorkoutTimerNotifier extends StateNotifier<DateTime?> {
     state = DateTime.now();
   }
 
+  /// Restaura timer a partir de um instante salvo no rascunho.
+  void restoreTimer(DateTime startedAt) {
+    state = startedAt;
+  }
+
   /// Resets the timer
   void resetTimer() {
     state = null;

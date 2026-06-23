@@ -7,7 +7,7 @@ import 'package:iron_log/core/app_version.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../auth/auth_state.dart';
-import '../../../auth/utils/logout_utils.dart';
+import '../../../workout_day/presentation/widgets/pending_workout_drafts_sheet.dart';
 
 // ─────────────────────────────────────────────
 //  DESIGN TOKENS  (espelha o CSS do IronLog)
@@ -203,6 +203,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     child: _SettingsGroup(
                       dark: dark,
                       items: [
+                        _SettingItem(
+                          icon: Icons.fitness_center_outlined,
+                          label: 'Treinos pendentes',
+                          sublabel: 'Reenviar treinos salvos offline',
+                          dark: dark,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            PendingWorkoutDraftsSheet.show(context);
+                          },
+                        ),
                         _SettingItem(
                           icon: Icons.cloud_upload_outlined,
                           label: 'Backup de Dados',

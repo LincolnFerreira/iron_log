@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
 import '../molecules/exercise_preview_chips.dart';
+import '../atoms/continue_workout_button.dart';
 import '../atoms/start_workout_button.dart';
 import '../organisms/session_picker_sheet.dart';
 
@@ -11,6 +12,8 @@ class ActiveWorkoutCard extends StatelessWidget {
   final List<Session> sessions;
   final VoidCallback? onStartWorkout;
   final void Function(Session)? onSelectSession;
+  final WorkoutDraftSummary? activeDraft;
+  final VoidCallback? onContinueWorkout;
 
   const ActiveWorkoutCard({
     super.key,
@@ -19,6 +22,8 @@ class ActiveWorkoutCard extends StatelessWidget {
     this.sessions = const [],
     this.onStartWorkout,
     this.onSelectSession,
+    this.activeDraft,
+    this.onContinueWorkout,
   });
 
   @override
@@ -76,12 +81,19 @@ class ActiveWorkoutCard extends StatelessWidget {
             fontSize: 26,
           ),
         ),
-        // Start workout button
-        StartWorkoutButton(
-          sessionName: session.name,
-          exerciseCount: session.exercises.length,
-          onTap: onStartWorkout ?? () {},
-        ),
+        // Start / Continue workout button
+        if (activeDraft != null)
+          ContinueWorkoutButton(
+            sessionName: activeDraft!.sessionName,
+            exerciseCount: activeDraft!.exerciseCount,
+            onTap: onContinueWorkout ?? () {},
+          )
+        else
+          StartWorkoutButton(
+            sessionName: session.name,
+            exerciseCount: session.exercises.length,
+            onTap: onStartWorkout ?? () {},
+          ),
         ExercisePreviewChips(exercises: session.exercises),
       ],
     );

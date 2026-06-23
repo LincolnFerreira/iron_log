@@ -1,31 +1,29 @@
-import 'dart:convert';
+import 'package:iron_log/core/database/app_database.dart';
+import '../../domain/entities/workout_draft.dart';
+import '../../domain/repositories/workout_draft_repository.dart';
 
-import '../../../../core/database/app_database.dart';
-
-/// Persistência da fila POST/PATCH `/workout` para envio quando houver rede.
+/// @deprecated Novos writes vão para [WorkoutDraftRepository].
 class WorkoutOutboxLocalDataSource {
-  WorkoutOutboxLocalDataSource(this._db);
+  WorkoutOutboxLocalDataSource(this._db, {WorkoutDraftRepository? drafts})
+    : _drafts = drafts;
 
   final AppDatabase _db;
+  final WorkoutDraftRepository? _drafts;
 
   Future<void> enqueuePost({
     required String rowId,
     required String userId,
     required Map<String, dynamic> workoutPayload,
   }) async {
-    final envelope = <String, dynamic>{
-      'kind': 'post',
-      'payload': workoutPayload,
-    };
-    await _db
-        .into(_db.workoutOutbox)
-        .insert(
-          WorkoutOutboxCompanion.insert(
-            id: rowId,
-            userId: userId,
-            payloadJson: jsonEncode(envelope),
-          ),
-        );
+    if (_drafts == null) return;
+    await _drafts.markPendingUpload(
+      draftId: rowId,
+      apiPayload: workoutPayload,
+      operation: PendingOperation.create,
+      endedAt: DateTime.tryParse(
+        workoutPayload['endedAt']?.toString() ?? '',
+      ),
+    );
   }
 
   Future<void> enqueuePatch({
@@ -34,19 +32,13 @@ class WorkoutOutboxLocalDataSource {
     required String workoutId,
     required Map<String, dynamic> patchPayload,
   }) async {
-    final envelope = <String, dynamic>{
-      'kind': 'patch',
-      'workoutId': workoutId,
-      'payload': patchPayload,
-    };
-    await _db
-        .into(_db.workoutOutbox)
-        .insert(
-          WorkoutOutboxCompanion.insert(
-            id: rowId,
-            userId: userId,
-            payloadJson: jsonEncode(envelope),
-          ),
-        );
+    if (_drafts == null) return;
+    await _drafts.markPendingUpload(
+      draftId: rowId,
+      apiPayload: patchPayload,
+      serverWorkoutId: workoutId,
+      operation: PendingOperation.patch,
+      endedAt: DateTime.tryParse(patchPayload['endedAt']?.toString() ?? ''),
+    );
   }
 }

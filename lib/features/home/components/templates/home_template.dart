@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
 
 import '../molecules/greeting_header.dart';
 import '../molecules/active_sequence_card.dart';
@@ -28,6 +29,8 @@ class HomeTemplate extends StatelessWidget {
   final void Function(Session)? onSelectSession;
   final int streak;
   final String? connectivityBanner;
+  final WorkoutDraftSummary? activeDraft;
+  final VoidCallback? onContinueWorkout;
 
   const HomeTemplate({
     super.key,
@@ -48,6 +51,8 @@ class HomeTemplate extends StatelessWidget {
     this.onSelectSession,
     this.streak = 0,
     this.connectivityBanner,
+    this.activeDraft,
+    this.onContinueWorkout,
   });
 
   @override
@@ -93,6 +98,8 @@ class HomeTemplate extends StatelessWidget {
                   onNoWorkoutTap: onChangeWorkout,
                   sessions: routineSessions,
                   onSelectSession: onSelectSession,
+                  activeDraft: activeDraft,
+                  onContinueWorkout: onContinueWorkout,
                 ),
               ],
             ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +9,11 @@ import '../../../../core/providers/sync_providers.dart';
 import '../../../../core/services/http_error_handler.dart';
 import '../../../../core/services/http_service.dart';
 import '../../../routines/presentation/bloc/routine_provider.dart';
+import '../../../auth/auth.dart';
 import '../../data/datasources/workout_outbox_local_datasource.dart';
+import '../../data/mappers/workout_draft_snapshot_mapper.dart';
+import '../../data/workout_local_ids.dart';
+import '../../domain/entities/workout_draft.dart';
 import '../../data/mappers/plan_session_exercises_mapper.dart';
 import '../../data/models/session_exercise_dto.dart';
 import '../../data/models/workout_edit_dto.dart';
@@ -16,14 +22,20 @@ import '../../domain/entities/workout_exercise.dart';
 import '../../domain/enums/workout_screen_mode.dart';
 import '../../domain/mappers/technique_block_mapper.dart';
 
+import 'workout_draft_providers.dart';
+import 'workout_timer_provider.dart';
+
 final workoutOutboxLocalDataSourceProvider =
     Provider<WorkoutOutboxLocalDataSource>((ref) {
-      return WorkoutOutboxLocalDataSource(ref.watch(driftDatabaseProvider));
+      return WorkoutOutboxLocalDataSource(
+        ref.watch(driftDatabaseProvider),
+        drafts: ref.watch(workoutDraftRepositoryProvider),
+      );
     });
 
 final workoutLogServiceProvider = Provider<WorkoutLogService>((ref) {
   return WorkoutLogService(
-    outbox: ref.watch(workoutOutboxLocalDataSourceProvider),
+    drafts: ref.watch(workoutDraftRepositoryProvider),
   );
 });
 
@@ -66,6 +78,22 @@ final workoutDayExercisesProvider =
       return WorkoutDayExercisesNotifier(httpService, ref: ref);
     });
 
+class WorkoutDraftExecutionContext {
+  const WorkoutDraftExecutionContext({
+    required this.workoutStarted,
+    this.subtitle,
+    this.routineId,
+    this.sessionId,
+    this.manualDate,
+  });
+
+  final bool workoutStarted;
+  final String? subtitle;
+  final String? routineId;
+  final String? sessionId;
+  final DateTime? manualDate;
+}
+
 class WorkoutDayExercisesNotifier
     extends StateNotifier<AsyncValue<List<WorkoutExercise>>> {
   final HttpService _httpService;
@@ -77,6 +105,9 @@ class WorkoutDayExercisesNotifier
 
   // Controle para evitar múltiplas chamadas simultâneas
   bool _isLoading = false;
+  Timer? _draftSaveDebounce;
+  WorkoutDraftExecutionContext? _draftContext;
+  DateTime? _draftStartedAt;
 
   // Carrega sessão específica com exercícios e dados da rotina (via expand)
   Future<void> loadSession(String sessionId, {String? routineId}) async {
@@ -375,14 +406,19 @@ class WorkoutDayExercisesNotifier
       final exercise = exercises.removeAt(oldIndex);
       exercises.insert(newIndex, exercise);
       state = AsyncValue.data(exercises);
+      schedulePersistInProgressDraft();
     }
   }
 
   /// Substitui a lista inteira de exercícios por uma nova ordem.
   /// Usado para aplicar o resultado vindo do bottom-sheet de reordenação.
-  void replaceExercises(List<WorkoutExercise> newExercises) {
+  void replaceExercises(
+    List<WorkoutExercise> newExercises, {
+    bool persistDraft = true,
+  }) {
     if (newExercises.isEmpty) return;
     state = AsyncValue.data(List<WorkoutExercise>.from(newExercises));
+    if (persistDraft) schedulePersistInProgressDraft();
   }
 
   // Salva os exercícios atualizados da sessão (apenas em modo template)
@@ -575,17 +611,21 @@ class WorkoutDayExercisesNotifier
       final workoutLogService = ref.read(workoutLogServiceProvider);
 
       // Cria a WorkoutSession no backend com os exercícios e timestamp inicial
+      final draftId = await ensureActiveDraftId(ref);
+
       final workoutSessionId = await workoutLogService.saveWorkout(
         exercises: currentState.value,
         routineId: routineId,
         startedAt: DateTime.now(),
-        endedAt: DateTime.now(), // Será atualizado no finish
+        endedAt: DateTime.now(),
         isManual: isManual,
         sessionId: sessionId,
-        skipOutboxEnqueueOnUnreachable: true,
+        draftId: draftId,
       );
 
       ref.read(workoutSessionIdProvider.notifier).state = workoutSessionId;
+
+      await flushPersistInProgressDraft();
 
       if (kDebugMode) {
         print('✅ WorkoutSession criada: $workoutSessionId');
@@ -673,6 +713,113 @@ class WorkoutDayExercisesNotifier
         '[Provider._updateExerciseInMemory] AFTER: ${updatedExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
       );
       state = AsyncValue.data(updatedExercises);
+      schedulePersistInProgressDraft();
+    }
+  }
+
+  void setDraftExecutionContext(WorkoutDraftExecutionContext context) {
+    _draftContext = context;
+    if (_draftStartedAt == null && context.workoutStarted) {
+      _draftStartedAt = DateTime.now();
+    }
+  }
+
+  void schedulePersistInProgressDraft() {
+    final ref = _ref;
+    final ctx = _draftContext;
+    if (ref == null || ctx == null || !ctx.workoutStarted) return;
+
+    _draftSaveDebounce?.cancel();
+    _draftSaveDebounce = Timer(
+      const Duration(milliseconds: 500),
+      () => unawaited(flushPersistInProgressDraft()),
+    );
+  }
+
+  Future<void> flushPersistInProgressDraft() async {
+    final ref = _ref;
+    final ctx = _draftContext;
+    if (ref == null || ctx == null || !ctx.workoutStarted) return;
+
+    final currentState = state;
+    if (currentState is! AsyncData<List<WorkoutExercise>>) return;
+
+    final uid = ref.read(authStateProvider).user?.uid;
+    if (uid == null || uid.isEmpty) return;
+
+    final draftId = await ensureActiveDraftId(ref);
+    final mapper = ref.read(workoutDraftSnapshotMapperProvider);
+    final mode =
+        ref.read(workoutScreenModeProvider) ?? WorkoutScreenMode.execution;
+    final timerStartedAt = ref.read(workoutTimerProvider);
+
+    final snapshot = mapper.fromExecutionState(
+      exercises: currentState.value,
+      screenMode: mode,
+      workoutStarted: ctx.workoutStarted,
+      subtitle: ctx.subtitle,
+      workoutSessionId: ref.read(workoutSessionIdProvider),
+      routineId: ctx.routineId,
+      sessionId: ctx.sessionId,
+      manualDate: ctx.manualDate,
+    );
+
+    final draft = WorkoutDraft(
+      id: draftId,
+      userId: uid,
+      status: WorkoutDraftStatus.inProgress,
+      pendingOperation: PendingOperation.create,
+      routineId: ctx.routineId,
+      sessionId: ctx.sessionId,
+      serverWorkoutId: ref.read(workoutSessionIdProvider),
+      snapshotJson: mapper.encode(snapshot),
+      startedAt: _draftStartedAt ?? DateTime.now(),
+      manualDate: ctx.manualDate,
+      timerStartedAt: timerStartedAt,
+    );
+
+    await ref.read(workoutDraftRepositoryProvider).saveInProgress(draft);
+  }
+
+  Future<String> ensureActiveDraftId(Ref ref) async {
+    final existing = ref.read(activeDraftIdProvider);
+    if (existing != null && existing.isNotEmpty) return existing;
+    final id = WorkoutLocalIds.newDraftRowId();
+    ref.read(activeDraftIdProvider.notifier).state = id;
+    return id;
+  }
+
+  Future<void> loadDraftForResume(String draftId) async {
+    final ref = _ref;
+    if (ref == null) return;
+
+    final draft = await ref
+        .read(workoutDraftRepositoryProvider)
+        .getById(draftId);
+    if (draft == null) {
+      throw Exception('Rascunho não encontrado');
+    }
+
+    final mapper = ref.read(workoutDraftSnapshotMapperProvider);
+    final snapshot = mapper.decode(draft.snapshotJson);
+
+    ref.read(activeDraftIdProvider.notifier).state = draft.id;
+    _draftStartedAt = draft.startedAt;
+    _draftContext = WorkoutDraftExecutionContext(
+      workoutStarted: snapshot.workoutStarted,
+      subtitle: snapshot.subtitle,
+      routineId: snapshot.routineId ?? draft.routineId,
+      sessionId: snapshot.sessionId ?? draft.sessionId,
+      manualDate: draft.manualDate ??
+          (snapshot.manualDateIso != null
+              ? DateTime.tryParse(snapshot.manualDateIso!)
+              : null),
+    );
+
+    applyDraftSnapshotToProviders(ref, snapshot);
+
+    if (draft.timerStartedAt != null) {
+      ref.read(workoutTimerProvider.notifier).restoreTimer(draft.timerStartedAt!);
     }
   }
 
@@ -745,4 +892,16 @@ class WorkoutDayExercisesNotifier
       throw Exception('Erro ao atualizar treino: $e');
     }
   }
+}
+
+void applyDraftSnapshotToProviders(Ref ref, DraftSnapshotV1 snapshot) {
+  ref.read(workoutScreenModeProvider.notifier).state = WorkoutScreenMode.values
+      .firstWhere(
+        (m) => m.name == snapshot.screenMode,
+        orElse: () => WorkoutScreenMode.execution,
+      );
+  ref
+      .read(workoutDayExercisesProvider.notifier)
+      .replaceExercises(snapshot.exercises, persistDraft: false);
+  ref.read(workoutSessionIdProvider.notifier).state = snapshot.workoutSessionId;
 }
