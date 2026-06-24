@@ -8407,6 +8407,570 @@ class WorkoutDraftsCompanion extends UpdateCompanion<WorkoutDraftRow> {
   }
 }
 
+class $WorkoutImportDraftsTable extends WorkoutImportDrafts
+    with TableInfo<$WorkoutImportDraftsTable, WorkoutImportDraftRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkoutImportDraftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _importIdMeta = const VerificationMeta(
+    'importId',
+  );
+  @override
+  late final GeneratedColumn<String> importId = GeneratedColumn<String>(
+    'import_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rawTextMeta = const VerificationMeta(
+    'rawText',
+  );
+  @override
+  late final GeneratedColumn<String> rawText = GeneratedColumn<String>(
+    'raw_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _reviewSnapshotJsonMeta =
+      const VerificationMeta('reviewSnapshotJson');
+  @override
+  late final GeneratedColumn<String> reviewSnapshotJson =
+      GeneratedColumn<String>(
+        'review_snapshot_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    importId,
+    status,
+    rawText,
+    reviewSnapshotJson,
+    lastError,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'workout_import_drafts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkoutImportDraftRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('import_id')) {
+      context.handle(
+        _importIdMeta,
+        importId.isAcceptableOrUnknown(data['import_id']!, _importIdMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('raw_text')) {
+      context.handle(
+        _rawTextMeta,
+        rawText.isAcceptableOrUnknown(data['raw_text']!, _rawTextMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_rawTextMeta);
+    }
+    if (data.containsKey('review_snapshot_json')) {
+      context.handle(
+        _reviewSnapshotJsonMeta,
+        reviewSnapshotJson.isAcceptableOrUnknown(
+          data['review_snapshot_json']!,
+          _reviewSnapshotJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_reviewSnapshotJsonMeta);
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WorkoutImportDraftRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WorkoutImportDraftRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      importId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}import_id'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      rawText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_text'],
+      )!,
+      reviewSnapshotJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}review_snapshot_json'],
+      )!,
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WorkoutImportDraftsTable createAlias(String alias) {
+    return $WorkoutImportDraftsTable(attachedDatabase, alias);
+  }
+}
+
+class WorkoutImportDraftRow extends DataClass
+    implements Insertable<WorkoutImportDraftRow> {
+  final String id;
+  final String userId;
+  final String? importId;
+  final String status;
+  final String rawText;
+  final String reviewSnapshotJson;
+  final String? lastError;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const WorkoutImportDraftRow({
+    required this.id,
+    required this.userId,
+    this.importId,
+    required this.status,
+    required this.rawText,
+    required this.reviewSnapshotJson,
+    this.lastError,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || importId != null) {
+      map['import_id'] = Variable<String>(importId);
+    }
+    map['status'] = Variable<String>(status);
+    map['raw_text'] = Variable<String>(rawText);
+    map['review_snapshot_json'] = Variable<String>(reviewSnapshotJson);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  WorkoutImportDraftsCompanion toCompanion(bool nullToAbsent) {
+    return WorkoutImportDraftsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      importId: importId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(importId),
+      status: Value(status),
+      rawText: Value(rawText),
+      reviewSnapshotJson: Value(reviewSnapshotJson),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory WorkoutImportDraftRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WorkoutImportDraftRow(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      importId: serializer.fromJson<String?>(json['importId']),
+      status: serializer.fromJson<String>(json['status']),
+      rawText: serializer.fromJson<String>(json['rawText']),
+      reviewSnapshotJson: serializer.fromJson<String>(
+        json['reviewSnapshotJson'],
+      ),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'importId': serializer.toJson<String?>(importId),
+      'status': serializer.toJson<String>(status),
+      'rawText': serializer.toJson<String>(rawText),
+      'reviewSnapshotJson': serializer.toJson<String>(reviewSnapshotJson),
+      'lastError': serializer.toJson<String?>(lastError),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  WorkoutImportDraftRow copyWith({
+    String? id,
+    String? userId,
+    Value<String?> importId = const Value.absent(),
+    String? status,
+    String? rawText,
+    String? reviewSnapshotJson,
+    Value<String?> lastError = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => WorkoutImportDraftRow(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    importId: importId.present ? importId.value : this.importId,
+    status: status ?? this.status,
+    rawText: rawText ?? this.rawText,
+    reviewSnapshotJson: reviewSnapshotJson ?? this.reviewSnapshotJson,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  WorkoutImportDraftRow copyWithCompanion(WorkoutImportDraftsCompanion data) {
+    return WorkoutImportDraftRow(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      importId: data.importId.present ? data.importId.value : this.importId,
+      status: data.status.present ? data.status.value : this.status,
+      rawText: data.rawText.present ? data.rawText.value : this.rawText,
+      reviewSnapshotJson: data.reviewSnapshotJson.present
+          ? data.reviewSnapshotJson.value
+          : this.reviewSnapshotJson,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutImportDraftRow(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('importId: $importId, ')
+          ..write('status: $status, ')
+          ..write('rawText: $rawText, ')
+          ..write('reviewSnapshotJson: $reviewSnapshotJson, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    importId,
+    status,
+    rawText,
+    reviewSnapshotJson,
+    lastError,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WorkoutImportDraftRow &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.importId == this.importId &&
+          other.status == this.status &&
+          other.rawText == this.rawText &&
+          other.reviewSnapshotJson == this.reviewSnapshotJson &&
+          other.lastError == this.lastError &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class WorkoutImportDraftsCompanion
+    extends UpdateCompanion<WorkoutImportDraftRow> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> importId;
+  final Value<String> status;
+  final Value<String> rawText;
+  final Value<String> reviewSnapshotJson;
+  final Value<String?> lastError;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const WorkoutImportDraftsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.importId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.rawText = const Value.absent(),
+    this.reviewSnapshotJson = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  WorkoutImportDraftsCompanion.insert({
+    required String id,
+    required String userId,
+    this.importId = const Value.absent(),
+    required String status,
+    required String rawText,
+    required String reviewSnapshotJson,
+    this.lastError = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       status = Value(status),
+       rawText = Value(rawText),
+       reviewSnapshotJson = Value(reviewSnapshotJson);
+  static Insertable<WorkoutImportDraftRow> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? importId,
+    Expression<String>? status,
+    Expression<String>? rawText,
+    Expression<String>? reviewSnapshotJson,
+    Expression<String>? lastError,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (importId != null) 'import_id': importId,
+      if (status != null) 'status': status,
+      if (rawText != null) 'raw_text': rawText,
+      if (reviewSnapshotJson != null)
+        'review_snapshot_json': reviewSnapshotJson,
+      if (lastError != null) 'last_error': lastError,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  WorkoutImportDraftsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? importId,
+    Value<String>? status,
+    Value<String>? rawText,
+    Value<String>? reviewSnapshotJson,
+    Value<String?>? lastError,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return WorkoutImportDraftsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      importId: importId ?? this.importId,
+      status: status ?? this.status,
+      rawText: rawText ?? this.rawText,
+      reviewSnapshotJson: reviewSnapshotJson ?? this.reviewSnapshotJson,
+      lastError: lastError ?? this.lastError,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (importId.present) {
+      map['import_id'] = Variable<String>(importId.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (rawText.present) {
+      map['raw_text'] = Variable<String>(rawText.value);
+    }
+    if (reviewSnapshotJson.present) {
+      map['review_snapshot_json'] = Variable<String>(reviewSnapshotJson.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WorkoutImportDraftsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('importId: $importId, ')
+          ..write('status: $status, ')
+          ..write('rawText: $rawText, ')
+          ..write('reviewSnapshotJson: $reviewSnapshotJson, ')
+          ..write('lastError: $lastError, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8426,6 +8990,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RestDaysTable restDays = $RestDaysTable(this);
   late final $WorkoutOutboxTable workoutOutbox = $WorkoutOutboxTable(this);
   late final $WorkoutDraftsTable workoutDrafts = $WorkoutDraftsTable(this);
+  late final $WorkoutImportDraftsTable workoutImportDrafts =
+      $WorkoutImportDraftsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8441,6 +9007,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     restDays,
     workoutOutbox,
     workoutDrafts,
+    workoutImportDrafts,
   ];
 }
 
@@ -12306,6 +12873,300 @@ typedef $$WorkoutDraftsTableProcessedTableManager =
       WorkoutDraftRow,
       PrefetchHooks Function()
     >;
+typedef $$WorkoutImportDraftsTableCreateCompanionBuilder =
+    WorkoutImportDraftsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> importId,
+      required String status,
+      required String rawText,
+      required String reviewSnapshotJson,
+      Value<String?> lastError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$WorkoutImportDraftsTableUpdateCompanionBuilder =
+    WorkoutImportDraftsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> importId,
+      Value<String> status,
+      Value<String> rawText,
+      Value<String> reviewSnapshotJson,
+      Value<String?> lastError,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$WorkoutImportDraftsTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkoutImportDraftsTable> {
+  $$WorkoutImportDraftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get importId => $composableBuilder(
+    column: $table.importId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawText => $composableBuilder(
+    column: $table.rawText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reviewSnapshotJson => $composableBuilder(
+    column: $table.reviewSnapshotJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WorkoutImportDraftsTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkoutImportDraftsTable> {
+  $$WorkoutImportDraftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get importId => $composableBuilder(
+    column: $table.importId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawText => $composableBuilder(
+    column: $table.rawText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reviewSnapshotJson => $composableBuilder(
+    column: $table.reviewSnapshotJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WorkoutImportDraftsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkoutImportDraftsTable> {
+  $$WorkoutImportDraftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get importId =>
+      $composableBuilder(column: $table.importId, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get rawText =>
+      $composableBuilder(column: $table.rawText, builder: (column) => column);
+
+  GeneratedColumn<String> get reviewSnapshotJson => $composableBuilder(
+    column: $table.reviewSnapshotJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$WorkoutImportDraftsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkoutImportDraftsTable,
+          WorkoutImportDraftRow,
+          $$WorkoutImportDraftsTableFilterComposer,
+          $$WorkoutImportDraftsTableOrderingComposer,
+          $$WorkoutImportDraftsTableAnnotationComposer,
+          $$WorkoutImportDraftsTableCreateCompanionBuilder,
+          $$WorkoutImportDraftsTableUpdateCompanionBuilder,
+          (
+            WorkoutImportDraftRow,
+            BaseReferences<
+              _$AppDatabase,
+              $WorkoutImportDraftsTable,
+              WorkoutImportDraftRow
+            >,
+          ),
+          WorkoutImportDraftRow,
+          PrefetchHooks Function()
+        > {
+  $$WorkoutImportDraftsTableTableManager(
+    _$AppDatabase db,
+    $WorkoutImportDraftsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkoutImportDraftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkoutImportDraftsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$WorkoutImportDraftsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> importId = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> rawText = const Value.absent(),
+                Value<String> reviewSnapshotJson = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutImportDraftsCompanion(
+                id: id,
+                userId: userId,
+                importId: importId,
+                status: status,
+                rawText: rawText,
+                reviewSnapshotJson: reviewSnapshotJson,
+                lastError: lastError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> importId = const Value.absent(),
+                required String status,
+                required String rawText,
+                required String reviewSnapshotJson,
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutImportDraftsCompanion.insert(
+                id: id,
+                userId: userId,
+                importId: importId,
+                status: status,
+                rawText: rawText,
+                reviewSnapshotJson: reviewSnapshotJson,
+                lastError: lastError,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$WorkoutImportDraftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WorkoutImportDraftsTable,
+      WorkoutImportDraftRow,
+      $$WorkoutImportDraftsTableFilterComposer,
+      $$WorkoutImportDraftsTableOrderingComposer,
+      $$WorkoutImportDraftsTableAnnotationComposer,
+      $$WorkoutImportDraftsTableCreateCompanionBuilder,
+      $$WorkoutImportDraftsTableUpdateCompanionBuilder,
+      (
+        WorkoutImportDraftRow,
+        BaseReferences<
+          _$AppDatabase,
+          $WorkoutImportDraftsTable,
+          WorkoutImportDraftRow
+        >,
+      ),
+      WorkoutImportDraftRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -12330,4 +13191,6 @@ class $AppDatabaseManager {
       $$WorkoutOutboxTableTableManager(_db, _db.workoutOutbox);
   $$WorkoutDraftsTableTableManager get workoutDrafts =>
       $$WorkoutDraftsTableTableManager(_db, _db.workoutDrafts);
+  $$WorkoutImportDraftsTableTableManager get workoutImportDrafts =>
+      $$WorkoutImportDraftsTableTableManager(_db, _db.workoutImportDrafts);
 }

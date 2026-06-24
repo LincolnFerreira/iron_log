@@ -250,6 +250,11 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
       title: const Text('Histórico'),
       centerTitle: false,
       actions: [
+        IconButton(
+          icon: const Icon(Icons.text_snippet_outlined),
+          tooltip: 'Importar de texto',
+          onPressed: () => context.push(WorkoutRouteLocations.import),
+        ),
         if (count != null)
           Padding(
             padding: const EdgeInsets.only(right: 16),

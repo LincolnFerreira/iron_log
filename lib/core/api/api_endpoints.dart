@@ -61,6 +61,11 @@ class ApiEndpoints {
   static String exerciseLastSets(String exerciseId, {int limit = 2}) =>
       '/workout/exercise/$exerciseId/last-sets?limit=$limit';
 
+  // Workout import (text paste)
+  static const String workoutImportParse = '/workout-import/parse';
+  static const String workoutImportConfirm = '/workout-import/confirm';
+  static String workoutImportById(String id) => '/workout-import/$id';
+
   // AI suggestion for an exercise
   static String exerciseSuggestion(String exerciseId) =>
       '/suggestion?exerciseId=$exerciseId';

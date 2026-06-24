@@ -8,6 +8,10 @@ class WorkoutRouteLocations {
   static const execution = '/workout/execution';
   static const manual = '/workout/manual';
   static const summary = '/workout/summary';
+  static const import = '/workout/import';
+  static const importReviewPrefix = '/workout/import/review';
+
+  static String importReview(String draftId) => '$importReviewPrefix/$draftId';
   static const editPrefix = '/workout/edit';
   static const resumePrefix = '/workout/resume';
 

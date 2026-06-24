@@ -12,6 +12,7 @@ import 'technique_blocks_table.dart';
 import 'rest_days_table.dart';
 import 'workout_outbox_table.dart';
 import 'workout_drafts_table.dart';
+import 'workout_import_drafts_table.dart';
 
 part 'app_database.g.dart';
 
@@ -27,13 +28,14 @@ part 'app_database.g.dart';
     RestDays,
     WorkoutOutbox,
     WorkoutDrafts,
+    WorkoutImportDrafts,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -80,6 +82,9 @@ class AppDatabase extends _$AppDatabase {
               FROM workout_outbox o
               WHERE json_extract(o.payload_json, '\$.payload') IS NOT NULL
             ''');
+          }
+          if (from < 8) {
+            await m.createTable(workoutImportDrafts);
           }
         },
       );

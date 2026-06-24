@@ -18,6 +18,8 @@ import 'package:iron_log/features/workout_history/presentation/pages/workout_his
 import 'package:iron_log/features/workout_day/presentation/pages/cardio_creation_page.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:iron_log/core/debug/temp_api_error_log_test_page.dart';
+import 'package:iron_log/features/workout_import/presentation/pages/workout_import_paste_page.dart';
+import 'package:iron_log/features/workout_import/presentation/pages/workout_import_review_page.dart';
 import 'workout_route_locations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -193,6 +195,23 @@ final routerProvider = Provider<GoRouter>((ref) {
           key: state.pageKey,
           child: WorkoutRouteLocations.summaryScreenFromState(state),
         ),
+      ),
+      GoRoute(
+        path: WorkoutRouteLocations.import,
+        pageBuilder: (context, state) => AppPage(
+          key: state.pageKey,
+          child: const WorkoutImportPastePage(),
+        ),
+      ),
+      GoRoute(
+        path: '${WorkoutRouteLocations.importReviewPrefix}/:draftId',
+        pageBuilder: (context, state) {
+          final draftId = state.pathParameters['draftId']!;
+          return AppPage(
+            key: state.pageKey,
+            child: WorkoutImportReviewPage(draftId: draftId),
+          );
+        },
       ),
       GoRoute(
         path: '/cardio-creation',
