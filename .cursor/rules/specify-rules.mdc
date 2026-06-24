@@ -69,12 +69,11 @@ Unit/widget: `test/` + `getTestProviderOverrides()`. E2E: Patrol em
 
 ## Plano ativo
 
-**Plan**: `specs/006-flutter-architecture-standard/plan.md`  
-**Tasks**: `specs/006-flutter-architecture-standard/tasks.md`  
-**Spec**: `specs/006-flutter-architecture-standard/spec.md`  
-**Contracts**: `specs/006-flutter-architecture-standard/contracts/`  
-**Quickstart**: `specs/006-flutter-architecture-standard/quickstart.md`
+**Plan**: `specs/007-workout-text-import/plan.md`  
+**Spec**: `specs/007-workout-text-import/spec.md`  
+**Research**: `specs/007-workout-text-import/research.md`  
+**Contracts**: `specs/007-workout-text-import/contracts/`  
+**Quickstart**: `specs/007-workout-text-import/quickstart.md`
 
-Migração em 6 fases (0–6) — incremental, sem big bang. PR checklist:
-`contracts/pr-review-checklist.md`.
+Importação de treino por texto livre: parse Gemini no backend → revisão humana no Flutter → confirm. Dual-repo (`iron_log` + `iron_log_back_end`).
 <!-- SPECKIT END -->
