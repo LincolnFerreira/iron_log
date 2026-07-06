@@ -18,6 +18,9 @@ class WorkoutDayHeader extends ConsumerWidget {
   /// de duração abaixo da data.
   final Duration? existingDuration;
 
+  /// Quando false, omite o timer ao vivo (ex.: revisão de importação).
+  final bool showTimer;
+
   const WorkoutDayHeader({
     super.key,
     this.onBackPressed,
@@ -27,6 +30,7 @@ class WorkoutDayHeader extends ConsumerWidget {
     this.manualDate,
     this.onDateTap,
     this.existingDuration,
+    this.showTimer = true,
   });
 
   @override
@@ -112,7 +116,7 @@ class WorkoutDayHeader extends ConsumerWidget {
                       ),
                     ),
                   ),
-                ] else ...[
+                ] else if (showTimer) ...[
                   const WorkoutTimer(),
                 ],
                 if (existingDuration != null) ...[

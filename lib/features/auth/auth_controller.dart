@@ -14,6 +14,13 @@ part 'auth_controller.g.dart';
 @Riverpod(keepAlive: true)
 class AuthController extends _$AuthController {
   final CrashReportingService _crashReporting = CrashReportingService();
+  bool _debugTokenLogged = false;
+
+  void _maybeLogDebugToken(User user) {
+    if (!kDebugMode || _debugTokenLogged) return;
+    _debugTokenLogged = true;
+    unawaited(debugLogIdToken(user));
+  }
 
   @override
   AuthState build() {
@@ -39,6 +46,7 @@ class AuthController extends _$AuthController {
       }
       state = state.copyWith(user: currentUser, isLoading: false);
       unawaited(_crashReporting.setUserContext(currentUser.uid));
+      _maybeLogDebugToken(currentUser);
     } else {
       if (kDebugMode) {
         debugPrint('🚪 Nenhum usuário logado');
@@ -54,19 +62,10 @@ class AuthController extends _$AuthController {
         debugPrint('🔑 UID: ${user.uid}');
       }
       unawaited(_crashReporting.setUserContext(user.uid));
-      if (kDebugMode) {
-        safeGetIdToken(user).then((token) {
-          if (token != null) {
-            debugPrint('🔑 Token (cache) length: ${token.length}');
-          } else {
-            debugPrint(
-              '🔑 Token indisponível (rede/offline), sessão local mantida',
-            );
-          }
-        });
-      }
+      _maybeLogDebugToken(user);
       ref.invalidate(userProfileProvider);
     } else {
+      _debugTokenLogged = false;
       if (kDebugMode) {
         debugPrint('🚪 Mudança de auth - Usuário não está logado');
       }
@@ -77,6 +76,7 @@ class AuthController extends _$AuthController {
   }
 
   Future<void> signOut() async {
+    _debugTokenLogged = false;
     state = state.copyWith(user: null, isLoading: false);
     unawaited(_crashReporting.setUserContext(null));
     try {

@@ -24,6 +24,7 @@ class SeriesInputRow extends StatefulWidget {
   final SeriesVisualStyle visualStyle;
   /// True quando a linha é um mini-set filho de um cluster.
   final bool isClusterMiniSet;
+  final bool showDoneColumn;
 
   const SeriesInputRow({
     super.key,
@@ -42,6 +43,7 @@ class SeriesInputRow extends StatefulWidget {
     this.seriesKeyIndex,
     this.visualStyle = SeriesVisualStyle.standard,
     this.isClusterMiniSet = false,
+    this.showDoneColumn = true,
   });
 
   @override
@@ -377,11 +379,13 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
         Expanded(child: _buildWeightField()),
         const SizedBox(width: ExerciseCardStyles.columnGap),
         Expanded(child: _buildRepsField()),
-        const SizedBox(width: ExerciseCardStyles.columnGap),
-        SizedBox(
-          width: ExerciseCardStyles.doneColumnWidth,
-          child: Center(child: _buildDoneCheckbox()),
-        ),
+        if (widget.showDoneColumn) ...[
+          const SizedBox(width: ExerciseCardStyles.columnGap),
+          SizedBox(
+            width: ExerciseCardStyles.doneColumnWidth,
+            child: Center(child: _buildDoneCheckbox()),
+          ),
+        ],
       ],
     );
   }

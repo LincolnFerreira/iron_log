@@ -27,6 +27,7 @@ class SeriesTable extends StatefulWidget {
   final bool showTerminateCluster;
   final bool clusterTerminatedEarly;
   final VoidCallback? onTerminateCluster;
+  final bool showDoneColumn;
 
   const SeriesTable({
     super.key,
@@ -47,6 +48,7 @@ class SeriesTable extends StatefulWidget {
     this.showTerminateCluster = false,
     this.clusterTerminatedEarly = false,
     this.onTerminateCluster,
+    this.showDoneColumn = true,
   });
 
   @override
@@ -220,13 +222,18 @@ class _SeriesTableState extends State<SeriesTable> {
                 const Expanded(
                   child: Text('REPS', style: ExerciseCardStyles.headerStyle),
                 ),
-                const SizedBox(width: ExerciseCardStyles.columnGap),
-                const SizedBox(
-                  width: ExerciseCardStyles.doneColumnWidth,
-                  child: Center(
-                    child: Text('FEITO', style: ExerciseCardStyles.headerStyle),
+                if (widget.showDoneColumn) ...[
+                  const SizedBox(width: ExerciseCardStyles.columnGap),
+                  const SizedBox(
+                    width: ExerciseCardStyles.doneColumnWidth,
+                    child: Center(
+                      child: Text(
+                        'FEITO',
+                        style: ExerciseCardStyles.headerStyle,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -260,6 +267,7 @@ class _SeriesTableState extends State<SeriesTable> {
                 seriesKeyIndex: widget.seriesKeyOffset + index,
                 visualStyle: widget.visualStyle,
                 isClusterMiniSet: widget.hideTypeForCluster,
+                showDoneColumn: widget.showDoneColumn,
               );
 
               return [row];

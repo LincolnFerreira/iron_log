@@ -22,6 +22,7 @@ class TechniqueBlockCard extends StatelessWidget {
   final ValueChanged<List<SeriesEntry>> onEntriesChanged;
   final void Function(int globalIndex, bool done)? onToggleDone;
   final ValueChanged<int>? onSeriesRowInteract;
+  final bool showDoneColumn;
   final VoidCallback? onAddDrop;
   final VoidCallback? onAddCluster;
   final VoidCallback? onClusterDrop;
@@ -45,6 +46,7 @@ class TechniqueBlockCard extends StatelessWidget {
     required this.onEntriesChanged,
     this.onToggleDone,
     this.onSeriesRowInteract,
+    this.showDoneColumn = true,
     this.onAddDrop,
     this.onAddCluster,
     this.onClusterDrop,
@@ -84,6 +86,7 @@ class TechniqueBlockCard extends StatelessWidget {
       clusterTerminatedEarly: block.terminatedEarly,
       onTerminateCluster: onTerminateCluster,
       onEntriesChanged: onEntriesChanged,
+      showDoneColumn: showDoneColumn,
       onToggleDone: (localIndex, done) {
         onToggleDone?.call(globalSeriesOffset + localIndex, done);
       },

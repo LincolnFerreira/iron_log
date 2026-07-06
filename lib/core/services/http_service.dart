@@ -132,17 +132,7 @@ class HttpService {
 
       queryParameters: queryParameters,
 
-      options: Options(
-
-        method: method,
-
-        headers: options?.headers,
-
-        responseType: options?.responseType,
-
-        contentType: options?.contentType,
-
-      ),
+      options: (options ?? Options()).copyWith(method: method),
 
     );
 

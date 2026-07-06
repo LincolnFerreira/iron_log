@@ -32,7 +32,7 @@ class TechniqueBlockList extends StatelessWidget {
 
   final ValueChanged<int>? onSeriesRowInteract;
 
-
+  final bool showDoneColumn;
 
   const TechniqueBlockList({
 
@@ -51,6 +51,8 @@ class TechniqueBlockList extends StatelessWidget {
     this.onToggleDone,
 
     this.onSeriesRowInteract,
+
+    this.showDoneColumn = true,
 
   });
 
@@ -522,6 +524,8 @@ class TechniqueBlockList extends StatelessWidget {
           onToggleDone: onToggleDone,
 
           onSeriesRowInteract: onSeriesRowInteract,
+
+          showDoneColumn: showDoneColumn,
 
           onAddDrop: () => _addDrop(index),
 

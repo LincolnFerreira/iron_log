@@ -8,6 +8,8 @@ class ReorderableExercisesList extends StatelessWidget {
   final Function(int oldIndex, int newIndex) onReorder;
   final String? sessionId; // Adicionar sessionId para habilitar remoção
   final VoidCallback? onAddExercise;
+  final bool enableReorder;
+  final bool showAddButton;
 
   const ReorderableExercisesList({
     super.key,
@@ -15,10 +17,32 @@ class ReorderableExercisesList extends StatelessWidget {
     required this.onReorder,
     this.sessionId, // Parâmetro opcional
     this.onAddExercise,
+    this.enableReorder = true,
+    this.showAddButton = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (!enableReorder) {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: exercises.length,
+        itemBuilder: (context, index) {
+          final exercise = exercises[index];
+          return Container(
+            key: ValueKey(exercise.id),
+            margin: const EdgeInsets.only(bottom: 16),
+            child: ExerciseCard(
+              exercise: exercise,
+              sessionId: sessionId,
+            ),
+          );
+        },
+      );
+    }
+
     return ReorderableListView.builder(
       buildDefaultDragHandles: false,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -43,10 +67,10 @@ class ReorderableExercisesList extends StatelessWidget {
 
         onReorder(oldIndex, targetIndex);
       },
-      itemCount: exercises.length + 1, // +1 para o botão
+      itemCount: exercises.length + (showAddButton ? 1 : 0), // +1 para o botão
       itemBuilder: (context, index) {
         // Último item é o botão de adicionar
-        if (index == exercises.length) {
+        if (showAddButton && index == exercises.length) {
           return Padding(
             key: const ValueKey('add_exercise_button'),
             padding: const EdgeInsets.only(bottom: 16),

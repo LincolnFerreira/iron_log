@@ -4,7 +4,7 @@ Fonte de verdade: [spec](../specs/006-flutter-architecture-standard/spec.md) · 
 
 Contratos: [layer-boundaries](../specs/006-flutter-architecture-standard/contracts/layer-boundaries.md) · [riverpod](../specs/006-flutter-architecture-standard/contracts/riverpod-conventions.md) · [folders](../specs/006-flutter-architecture-standard/contracts/folder-structure.md) · [PR checklist](../specs/006-flutter-architecture-standard/contracts/pr-review-checklist.md)
 
-Constituição: [.specify/memory/constitution.md](../.specify/memory/constitution.md) (v1.2.2)
+Constituição Flutter: [.specify/memory/constitution.md](../../.specify/memory/constitution.md) (v1.2.4) · Monorepo (cross-app): [../../.specify/memory/constitution.md](../../../.specify/memory/constitution.md) (v1.0.0)
 
 ## Referências de código
 
