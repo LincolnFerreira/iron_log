@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
-import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
-import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/home/presentation/providers/home_header_providers.dart';
+import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
+import 'package:iron_log/features/home/presentation/providers/workout_calendar_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
 
 import '../molecules/greeting_header.dart';
 import '../molecules/active_sequence_card.dart';
@@ -11,47 +14,26 @@ import '../molecules/todays_workout_card.dart';
 import '../organisms/workout_quick_actions_grid.dart';
 import '../organisms/your_month_section.dart';
 
+/// Template da Home: callbacks na page; estado via Consumers isolados (T073).
 class HomeTemplate extends StatelessWidget {
-  final String userName;
   final VoidCallback onStartWorkout;
   final VoidCallback onChangeWorkout;
   final VoidCallback onQuickCreate;
   final VoidCallback? onRetryWorkout;
   final VoidCallback? onAvatarTap;
   final Future<void> Function()? onRefresh;
-  final String? imageUrl;
-  final Routine? todaysRoutine;
-  final Session? todaysSession;
-  final bool isLoadingWorkout;
-  final String? error;
-  final HomeMetrics? metrics;
-  final List<Session> routineSessions;
   final void Function(Session)? onSelectSession;
-  final int streak;
-  final String? connectivityBanner;
-  final WorkoutDraftSummary? activeDraft;
   final VoidCallback? onContinueWorkout;
 
   const HomeTemplate({
     super.key,
-    this.imageUrl,
-    required this.userName,
     required this.onStartWorkout,
     required this.onChangeWorkout,
     required this.onQuickCreate,
     this.onRetryWorkout,
     this.onAvatarTap,
     this.onRefresh,
-    this.todaysRoutine,
-    this.todaysSession,
-    this.isLoadingWorkout = false,
-    this.error,
-    this.metrics,
-    this.routineSessions = const [],
     this.onSelectSession,
-    this.streak = 0,
-    this.connectivityBanner,
-    this.activeDraft,
     this.onContinueWorkout,
   });
 
@@ -67,19 +49,40 @@ class HomeTemplate extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 24),
-            // Active sequence card
-            // Greeting header with date
-            GreetingHeader(
-              name: userName,
-              title: 'BOM TREINO,',
-              imageUrl: imageUrl,
-              onAvatarTap: onAvatarTap,
+            Consumer(
+              builder: (context, ref, _) {
+                final name = ref.watch(homeGreetingNameProvider);
+                final imageUrl = ref.watch(homeUserPhotoUrlProvider);
+                return GreetingHeader(
+                  name: name,
+                  title: 'BOM TREINO,',
+                  imageUrl: imageUrl,
+                  onAvatarTap: onAvatarTap,
+                );
+              },
             ),
-            if (connectivityBanner != null)
-              _OfflineInfoBanner(message: connectivityBanner!),
-            if (error != null) _HomeInlineError(message: error!),
-            ActiveSequenceCard(streak: streak),
-            // Mini calendário — últimos 14 dias (bloco consistência)
+            Consumer(
+              builder: (context, ref, _) {
+                final banner = ref.watch(
+                  homeProvider.select((s) => s.connectivityBanner),
+                );
+                if (banner == null) return const SizedBox.shrink();
+                return _OfflineInfoBanner(message: banner);
+              },
+            ),
+            Consumer(
+              builder: (context, ref, _) {
+                final error = ref.watch(homeProvider.select((s) => s.error));
+                if (error == null) return const SizedBox.shrink();
+                return _HomeInlineError(message: error);
+              },
+            ),
+            Consumer(
+              builder: (context, ref, _) {
+                final streak = ref.watch(workoutStreakProvider);
+                return ActiveSequenceCard(streak: streak);
+              },
+            ),
             const MiniCalendarStrip(),
             Column(
               spacing: 8,
@@ -89,33 +92,45 @@ class HomeTemplate extends StatelessWidget {
                   '${_getWeekdayAbbr()} • ${DateTime.now().day} DE ${_getMonthName()}',
                   style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
-                // Today's workout card with exercise chips and start button
-                TodaysWorkoutCard(
-                  todaysRoutine: todaysRoutine,
-                  todaysSession: todaysSession,
-                  isLoading: isLoadingWorkout,
-                  onStartWorkout: onStartWorkout,
-                  onNoWorkoutTap: onChangeWorkout,
-                  sessions: routineSessions,
-                  onSelectSession: onSelectSession,
-                  activeDraft: activeDraft,
-                  onContinueWorkout: onContinueWorkout,
+                Consumer(
+                  builder: (context, ref, _) {
+                    final homeState = ref.watch(homeProvider);
+                    final activeDraft =
+                        ref.watch(activeWorkoutDraftProvider).valueOrNull;
+                    return TodaysWorkoutCard(
+                      todaysRoutine: homeState.todaysRoutine,
+                      todaysSession: homeState.todaysSession,
+                      isLoading: homeState.isLoading,
+                      onStartWorkout: onStartWorkout,
+                      onNoWorkoutTap: onChangeWorkout,
+                      sessions: homeState.todaysRoutine?.sessions ?? [],
+                      onSelectSession: onSelectSession,
+                      activeDraft: activeDraft,
+                      onContinueWorkout: activeDraft != null
+                          ? onContinueWorkout
+                          : null,
+                    );
+                  },
                 ),
               ],
             ),
-            // Quick actions grid
             WorkoutQuickActionsGrid(
               onMyRoutinesTap: onChangeWorkout,
               onNewRoutinesTap: () => context.push('/routines'),
               onQuickCreateTap: onQuickCreate,
             ),
-
-            // Your month section with metrics and monthly goal progress
-            YourMonthSection(
-              workoutsCompleted: metrics?.workoutsCompleted ?? 0,
-              monthlyGoal: metrics?.monthlyGoal ?? 12,
-              totalSeries: metrics?.totalSeries ?? 0,
-              totalRoutines: metrics?.totalRoutines ?? 0,
+            Consumer(
+              builder: (context, ref, _) {
+                final metrics = ref.watch(
+                  homeProvider.select((s) => s.metrics),
+                );
+                return YourMonthSection(
+                  workoutsCompleted: metrics?.workoutsCompleted ?? 0,
+                  monthlyGoal: metrics?.monthlyGoal ?? 12,
+                  totalSeries: metrics?.totalSeries ?? 0,
+                  totalRoutines: metrics?.totalRoutines ?? 0,
+                );
+              },
             ),
           ],
         ),

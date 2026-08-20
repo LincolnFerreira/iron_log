@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/core/services/http_service.dart';
-import 'package:iron_log/core/services/google_auth_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/auth_buttons_section.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/login_footer.dart';
 
@@ -103,48 +101,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  // Métodos de autenticação
   Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
+    final controller = ref.read(authControllerProvider.notifier);
     try {
-      final authService = GoogleAuthService();
-      final result = await authService.signInWithGoogle(
-        serverClientId:
-            '222174717889-qcdugbpqpmebh8j86q2t0rhfjqi48s64.apps.googleusercontent.com',
-      );
+      final user = await controller.signInWithGoogle();
+      if (user == null) return; // user cancelled
 
-      if (result == null) return; // user cancelled
-
-      // Após login bem-sucedido, sincroniza/cria o usuário no backend
-      final http = ref.read(httpServiceProvider);
-      final user = result.user ?? FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        try {
-          await http.post(
-            '/user',
-            data: {
-              'firebaseId': user.uid,
-              'email': user.email ?? '',
-              'name': user.displayName,
-            },
+      try {
+        await controller.syncBackendUser(user);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Usuário sincronizado com o servidor'),
+              backgroundColor: Colors.green,
+            ),
           );
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Usuário sincronizado com o servidor'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        } catch (e) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Erro ao sincronizar usuário: ${e.toString()}'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao sincronizar usuário: ${e.toString()}'),
+              backgroundColor: Colors.orange,
+            ),
+          );
         }
       }
     } catch (e) {
@@ -155,7 +136,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             backgroundColor: Colors.red,
           ),
         );
-        print('Login error: $e');
       }
     } finally {
       if (mounted) {

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers/sync_providers.dart';
-import '../../../../core/services/auth_service.dart';
 import '../../../auth/auth.dart';
 import '../../data/datasources/workout_draft_local_datasource.dart';
 import '../../data/mappers/workout_draft_snapshot_mapper.dart';
@@ -17,12 +16,12 @@ final workoutDraftSnapshotMapperProvider = Provider<WorkoutDraftSnapshotMapper>(
 
 final workoutDraftLocalDataSourceProvider =
     Provider<WorkoutDraftLocalDataSource>((ref) {
-      return WorkoutDraftLocalDataSource(ref.watch(driftDatabaseProvider));
+      return WorkoutDraftLocalDataSource(ref.read(driftDatabaseProvider));
     });
 
 final workoutDraftRepositoryProvider = Provider<WorkoutDraftRepository>((ref) {
   return WorkoutDraftRepositoryImpl(
-    ref.watch(workoutDraftLocalDataSourceProvider),
+    ref.read(workoutDraftLocalDataSourceProvider),
   );
 });
 
@@ -32,15 +31,15 @@ final activeDraftIdProvider = StateProvider<String?>((ref) => null);
 final activeWorkoutDraftProvider = FutureProvider<WorkoutDraftSummary?>((
   ref,
 ) async {
-  final userId = ref.watch(authStateProvider).user?.uid;
+  final userId = ref.watch(authStateProvider.select((s) => s.user?.uid));
   if (userId == null || userId.isEmpty) return null;
 
   final draft = await ref
-      .watch(workoutDraftRepositoryProvider)
+      .read(workoutDraftRepositoryProvider)
       .getActiveInProgress(userId);
   if (draft == null) return null;
 
-  final mapper = ref.watch(workoutDraftSnapshotMapperProvider);
+  final mapper = ref.read(workoutDraftSnapshotMapperProvider);
   final snapshot = mapper.decode(draft.snapshotJson);
   final summary = mapper.toSummary(snapshot, draft.id);
   return WorkoutDraftSummary(
@@ -56,25 +55,25 @@ final activeWorkoutDraftProvider = FutureProvider<WorkoutDraftSummary?>((
 final pendingWorkoutDraftsProvider = FutureProvider<List<WorkoutDraft>>((
   ref,
 ) async {
-  final userId = ref.watch(authStateProvider).user?.uid;
+  final userId = ref.watch(authStateProvider.select((s) => s.user?.uid));
   if (userId == null || userId.isEmpty) return [];
 
-  return ref.watch(workoutDraftRepositoryProvider).listPendingUpload(userId);
+  return ref.read(workoutDraftRepositoryProvider).listPendingUpload(userId);
 });
 
 final workoutDraftSyncServiceProvider = Provider<WorkoutDraftSyncService>((ref) {
-  final repository = ref.watch(workoutDraftRepositoryProvider);
+  final repository = ref.read(workoutDraftRepositoryProvider);
   return WorkoutDraftSyncService(
     repository: repository,
     logService: WorkoutLogService(drafts: repository),
-    auth: AuthService(),
+    currentUserId: () => ref.read(authStateProvider).user?.uid,
   );
 });
 
 List<Override> get workoutDraftProvidersOverrides => [
   workoutDraftRepositoryProvider.overrideWith(
     (ref) => WorkoutDraftRepositoryImpl(
-      ref.watch(workoutDraftLocalDataSourceProvider),
+      ref.read(workoutDraftLocalDataSourceProvider),
     ),
   ),
 ];

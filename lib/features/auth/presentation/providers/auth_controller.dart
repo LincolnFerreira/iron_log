@@ -4,16 +4,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:iron_log/core/observability/crash_reporting_service.dart';
 import 'package:iron_log/core/services/firebase_auth_token.dart';
+import 'package:iron_log/core/services/google_auth_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'auth_state.dart';
-import 'presentation/providers/user_profile_provider.dart';
+import 'user_profile_provider.dart';
+import 'package:iron_log/features/auth/auth_providers.dart';
 
 part 'auth_controller.g.dart';
+
+/// Web OAuth client ID (Google Cloud / Firebase) for Android Google Sign-In.
+const _googleServerClientId =
+    '222174717889-qcdugbpqpmebh8j86q2t0rhfjqi48s64.apps.googleusercontent.com';
 
 @Riverpod(keepAlive: true)
 class AuthController extends _$AuthController {
   final CrashReportingService _crashReporting = CrashReportingService();
+  final GoogleAuthService _googleAuth = GoogleAuthService();
   bool _debugTokenLogged = false;
 
   void _maybeLogDebugToken(User user) {
@@ -73,6 +80,23 @@ class AuthController extends _$AuthController {
     }
 
     state = state.copyWith(user: user, isLoading: false);
+  }
+
+  Future<void> syncBackendUser(User user) async {
+    await ref.read(authRepositoryProvider).upsertUser(
+      firebaseId: user.uid,
+      email: user.email ?? '',
+      name: user.displayName,
+    );
+  }
+
+  /// Google Sign-In + retorno do [User] Firebase. `null` se o usuário cancelar.
+  Future<User?> signInWithGoogle() async {
+    final result = await _googleAuth.signInWithGoogle(
+      serverClientId: _googleServerClientId,
+    );
+    if (result == null) return null;
+    return result.user ?? FirebaseAuth.instance.currentUser;
   }
 
   Future<void> signOut() async {

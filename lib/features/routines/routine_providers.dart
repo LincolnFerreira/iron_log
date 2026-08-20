@@ -3,6 +3,7 @@ import 'package:iron_log/core/providers/sync_providers.dart';
 import 'package:iron_log/core/services/http_service.dart';
 
 import 'package:iron_log/features/auth/auth.dart';
+import 'data/datasources/exercise_remote_datasource.dart';
 import 'data/datasources/routine_local_datasource.dart';
 import 'data/datasources/routine_remote_datasource.dart';
 import 'data/repositories/routine_cached_repository_impl.dart';
@@ -11,17 +12,26 @@ import 'presentation/providers/routine_provider.dart';
 
 /// HTTP-only routine API (sem cache). Consumido pelo repositório com cache local.
 final routineRemoteDataSourceProvider = Provider<RoutineRemoteDataSource>((ref) {
-  final httpService = ref.watch(httpServiceProvider);
+  final httpService = ref.read(httpServiceProvider);
   return RoutineRemoteDataSourceImpl(httpService.dio);
+});
+
+final exerciseRemoteDataSourceProvider = Provider<ExerciseRemoteDataSource>((
+  ref,
+) {
+  return ExerciseRemoteDataSource(ref.read(httpServiceProvider));
 });
 
 /// Repositório de rotinas: cache Drift + rede via [RoutineRemoteDataSource].
 final routineRepositoryProviderImpl = Provider<RoutineRepository>((ref) {
   try {
-    final remote = ref.watch(routineRemoteDataSourceProvider);
-    final database = ref.watch(driftDatabaseProvider);
-    final connectivity = ref.watch(connectivityProvider);
-    final userId = ref.watch(authStateProvider).user?.uid ?? '';
+    // userId é dependência reativa (login); infra DI usa read (T074).
+    final userId = ref.watch(
+      authStateProvider.select((s) => s.user?.uid ?? ''),
+    );
+    final remote = ref.read(routineRemoteDataSourceProvider);
+    final database = ref.read(driftDatabaseProvider);
+    final connectivity = ref.read(connectivityProvider);
 
     final localDataSource = RoutineLocalDataSourceImpl(database: database);
 
@@ -45,9 +55,4 @@ final routineRepositoryOverride = routineRepositoryProvider.overrideWith(
 );
 
 /// Lista de overrides para configurar os providers em main.dart
-/// Usage in main.dart:
-///   ProviderScope(
-///     overrides: [...routineProvidersOverrides],
-///     child: const MyApp(),
-///   )
 final routineProvidersOverrides = [routineRepositoryOverride];

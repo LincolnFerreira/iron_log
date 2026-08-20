@@ -1,14 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/core/api/api_endpoints.dart';
-import 'package:iron_log/core/services/auth_service.dart';
 import 'package:iron_log/features/home/data/models/calendar_day_model.dart';
+import 'package:iron_log/features/home/home_providers.dart';
 
 /// Fetches lightweight calendar data from GET /workout/calendar?days=14.
 /// Much cheaper than loading full workout history with series[].
 final workoutCalendarProvider = FutureProvider<CalendarResponse>((ref) async {
-  final auth = AuthService();
-  final response = await auth.get(ApiEndpoints.workoutCalendar(days: 14));
-  return CalendarResponse.fromJson(response.data as Map<String, dynamic>);
+  return ref.read(homeRepositoryProvider).fetchWorkoutCalendar(days: 14);
 });
 
 /// Map of ISO date -> activity type (when provided by backend)

@@ -1,10 +1,8 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/network/connectivity_utils.dart';
 import 'package:iron_log/core/providers/sync_providers.dart';
-import 'package:iron_log/core/services/http_service.dart';
-import 'package:iron_log/features/home/data/models/home_metrics_dto.dart';
 import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
+import 'package:iron_log/features/home/home_providers.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/routines/domain/usecases/routine_usecases.dart';
 import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
@@ -26,8 +24,6 @@ class HomeController extends _$HomeController {
 
   GetRoutinesUseCase get _getRoutinesUseCase =>
       ref.read(getRoutinesUseCaseProvider);
-
-  HttpService get _httpService => ref.read(httpServiceProvider);
 
   Connectivity get _connectivity => ref.read(connectivityProvider);
 
@@ -59,13 +55,7 @@ class HomeController extends _$HomeController {
       HomeMetrics? metrics;
       if (online) {
         try {
-          final metricsResponse = await _httpService.get(ApiEndpoints.meMetrics);
-          if (metricsResponse.statusCode == 200) {
-            final metricsDto = HomeMetricsDto.fromJson(
-              metricsResponse.data as Map<String, dynamic>,
-            );
-            metrics = metricsDto.toEntity();
-          }
+          metrics = await ref.read(homeRepositoryProvider).fetchMetrics();
         } catch (_) {
           // Métricas são não-críticas
         }

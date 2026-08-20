@@ -10,6 +10,7 @@ class ApiEndpoints {
 
   // Auth endpoints
   static const String login = '/auth/login';
+  static const String me = '/auth/me';
   static const String meMetrics = '/auth/me/metrics';
   static const String register = '/auth/register';
   static const String refreshToken = '/auth/refresh';

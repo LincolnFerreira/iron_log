@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../../core/api/api_endpoints.dart';
+
 import '../../../../core/providers/sync_providers.dart';
 import '../../../../core/services/http_error_handler.dart';
-import '../../../../core/services/http_service.dart';
 import '../../../routines/presentation/providers/routine_provider.dart';
 import '../../../auth/auth.dart';
 import '../../data/datasources/workout_outbox_local_datasource.dart';
@@ -21,21 +21,25 @@ import '../../data/services/workout_log_service.dart';
 import '../../domain/entities/workout_exercise.dart';
 import '../../domain/enums/workout_screen_mode.dart';
 import '../../domain/mappers/technique_block_mapper.dart';
+import '../../domain/repositories/workout_day_repository.dart';
+import '../../workout_day_providers.dart';
 
 import 'workout_draft_providers.dart';
 import 'workout_timer_provider.dart';
 
+part 'workout_day_provider.g.dart';
+
 final workoutOutboxLocalDataSourceProvider =
     Provider<WorkoutOutboxLocalDataSource>((ref) {
       return WorkoutOutboxLocalDataSource(
-        ref.watch(driftDatabaseProvider),
-        drafts: ref.watch(workoutDraftRepositoryProvider),
+        ref.read(driftDatabaseProvider),
+        drafts: ref.read(workoutDraftRepositoryProvider),
       );
     });
 
 final workoutLogServiceProvider = Provider<WorkoutLogService>((ref) {
   return WorkoutLogService(
-    drafts: ref.watch(workoutDraftRepositoryProvider),
+    drafts: ref.read(workoutDraftRepositoryProvider),
   );
 });
 
@@ -68,16 +72,6 @@ final workoutScreenModeProvider = StateProvider<WorkoutScreenMode?>(
 // Nulo em modo template
 final workoutSessionIdProvider = StateProvider<String?>((ref) => null);
 
-// Provider para gerenciar os exercícios do workout day
-final workoutDayExercisesProvider =
-    StateNotifierProvider<
-      WorkoutDayExercisesNotifier,
-      AsyncValue<List<WorkoutExercise>>
-    >((ref) {
-      final httpService = ref.read(httpServiceProvider);
-      return WorkoutDayExercisesNotifier(httpService, ref: ref);
-    });
-
 class WorkoutDraftExecutionContext {
   const WorkoutDraftExecutionContext({
     required this.workoutStarted,
@@ -94,18 +88,18 @@ class WorkoutDraftExecutionContext {
   final DateTime? manualDate;
 }
 
-class WorkoutDayExercisesNotifier
-    extends StateNotifier<AsyncValue<List<WorkoutExercise>>> {
-  final HttpService _httpService;
-  final Ref? _ref;
+@Riverpod(keepAlive: true)
+class WorkoutDayExercises extends _$WorkoutDayExercises {
+  WorkoutDayRepository get _repository => ref.read(workoutDayRepositoryProvider);
 
-  WorkoutDayExercisesNotifier(this._httpService, {required Ref? ref})
-    : _ref = ref,
-      super(const AsyncValue.loading());
+  @override
+  AsyncValue<List<WorkoutExercise>> build() => const AsyncValue.loading();
 
   // Controle para evitar múltiplas chamadas simultâneas
   bool _isLoading = false;
   Timer? _draftSaveDebounce;
+  Timer? _memoryUpdateDebounce;
+  final Map<String, WorkoutExercise> _pendingExerciseUpdates = {};
   WorkoutDraftExecutionContext? _draftContext;
   DateTime? _draftStartedAt;
 
@@ -128,39 +122,32 @@ class WorkoutDayExercisesNotifier
       }
 
       // Usa endpoint direto da sessão que já retorna exercícios e dados da rotina
-      final url = ApiEndpoints.sessionById(sessionId);
-      final response = await _httpService.get(url);
+      final sessionData = await _repository.fetchSession(sessionId);
 
-      if (response.statusCode == 200) {
-        final sessionData = response.data;
+      // Extrai exercícios da sessão com expand
+      final sessionExercises =
+          sessionData['exercises'] as List<dynamic>? ?? [];
 
-        // Extrai exercícios da sessão com expand
-        final sessionExercises =
-            sessionData['exercises'] as List<dynamic>? ?? [];
+      // Converte DTOs diretamente para entidades
+      final exercises = sessionExercises
+          .map(
+            (data) => SessionExerciseDto.fromJson(
+              data as Map<String, dynamic>,
+            ).toEntity(),
+          )
+          .toList();
 
-        // Converte DTOs diretamente para entidades
-        final exercises = sessionExercises
-            .map(
-              (data) => SessionExerciseDto.fromJson(
-                data as Map<String, dynamic>,
-              ).toEntity(),
-            )
-            .toList();
+      // Ordena exercícios por campo "order" para garantir exibição correta
+      exercises.sort((a, b) {
+        final aOrder = a.order ?? 999;
+        final bOrder = b.order ?? 999;
+        return aOrder.compareTo(bOrder);
+      });
 
-        // Ordena exercícios por campo "order" para garantir exibição correta
-        exercises.sort((a, b) {
-          final aOrder = a.order ?? 999;
-          final bOrder = b.order ?? 999;
-          return aOrder.compareTo(bOrder);
-        });
+      state = AsyncValue.data(exercises);
 
-        state = AsyncValue.data(exercises);
-
-        if (kDebugMode) {
-          print('✅ Sessão carregada: ${exercises.length} exercícios');
-        }
-      } else {
-        state = AsyncValue.error('Erro ao carregar sessão', StackTrace.current);
+      if (kDebugMode) {
+        print('✅ Sessão carregada: ${exercises.length} exercícios');
       }
     } catch (e, stackTrace) {
       final fallback = await _tryLoadSessionFromCachedRoutine(
@@ -191,14 +178,14 @@ class WorkoutDayExercisesNotifier
     String? routineId,
     required Object error,
   }) async {
-    if (routineId == null || routineId.isEmpty || _ref == null) {
+    if (routineId == null || routineId.isEmpty) {
       return null;
     }
     if (!_isOfflineOrUnreachableError(error)) {
       return null;
     }
     try {
-      final repo = _ref.read(routineRepositoryProvider);
+      final repo = ref.read(routineRepositoryProvider);
       final routine = await repo.getRoutine(routineId);
       final match = routine.sessions.where((s) => s.id == sessionId).toList();
       if (match.isEmpty) return null;
@@ -245,8 +232,8 @@ class WorkoutDayExercisesNotifier
     String exerciseId,
   ) async {
     // Decide a ação baseada no contexto da tela (template / execution / editing)
-    final mode = _ref?.read(workoutScreenModeProvider);
-    final workoutSessionId = _ref?.read(workoutSessionIdProvider);
+    final mode = ref.read(workoutScreenModeProvider);
+    final workoutSessionId = ref.read(workoutSessionIdProvider);
 
     // 1) Modo template: removemos do template da Session (API DELETE /session/:id/exercises/:exerciseId)
     if (mode == WorkoutScreenMode.template) {
@@ -257,21 +244,12 @@ class WorkoutDayExercisesNotifier
           );
         }
 
-        final url = ApiEndpoints.removeExerciseFromSession(
-          sessionId,
-          exerciseId,
-        );
-        final response = await _httpService.delete(url);
+        await _repository.removeExerciseFromSession(sessionId, exerciseId);
+        // Remove da lista local após sucesso no backend
+        removeExercise(exerciseId);
 
-        if (response.statusCode == 200) {
-          // Remove da lista local após sucesso no backend
-          removeExercise(exerciseId);
-
-          if (kDebugMode) {
-            print('✅ Exercício removido do template com sucesso');
-          }
-        } else {
-          throw Exception('Erro ao remover exercício: ${response.statusCode}');
+        if (kDebugMode) {
+          print('✅ Exercício removido do template com sucesso');
         }
       } catch (e) {
         if (kDebugMode) {
@@ -370,16 +348,10 @@ class WorkoutDayExercisesNotifier
         );
       }
 
-      final url = ApiEndpoints.removeExerciseFromSession(sessionId, exerciseId);
-      final response = await _httpService.delete(url);
-
-      if (response.statusCode == 200) {
-        removeExercise(exerciseId);
-        if (kDebugMode) {
-          print('✅ Exercício removido (fallback template)');
-        }
-      } else {
-        throw Exception('Erro ao remover exercício: ${response.statusCode}');
+      await _repository.removeExerciseFromSession(sessionId, exerciseId);
+      removeExercise(exerciseId);
+      if (kDebugMode) {
+        print('✅ Exercício removido (fallback template)');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -423,7 +395,7 @@ class WorkoutDayExercisesNotifier
 
   // Salva os exercícios atualizados da sessão (apenas em modo template)
   Future<void> saveSessionExercises(String sessionId) async {
-    final mode = _ref?.read(workoutScreenModeProvider);
+    final mode = ref.read(workoutScreenModeProvider);
     if (mode != WorkoutScreenMode.template) {
       throw Exception(
         'saveSessionExercises deve ser chamado apenas em modo template. '
@@ -463,15 +435,10 @@ class WorkoutDayExercisesNotifier
         }).toList(),
       };
 
-      final url = '${ApiEndpoints.sessionById(sessionId)}/exercises';
-      final response = await _httpService.patch(url, data: payload);
+      await _repository.patchSessionExercises(sessionId, payload);
 
-      if (response.statusCode == 200) {
-        if (kDebugMode) {
-          print('✅ Exercícios salvos com sucesso');
-        }
-      } else {
-        throw Exception('Erro ao salvar exercícios: ${response.statusCode}');
+      if (kDebugMode) {
+        print('✅ Exercícios salvos com sucesso');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -502,63 +469,53 @@ class WorkoutDayExercisesNotifier
         print('🔍 Carregando treino existente para edição: $workoutId');
       }
 
-      final url = ApiEndpoints.workoutById(workoutId);
-      final response = await _httpService.get(url);
+      final workoutData = await _repository.fetchWorkout(workoutId);
+      final dto = WorkoutEditDto.fromJson(workoutData);
 
-      if (response.statusCode == 200) {
-        final dto = WorkoutEditDto.fromJson(
-          response.data as Map<String, dynamic>,
-        );
+      if (kDebugMode) {
+        print('📦 Workout data:');
+        print('   id         : ${dto.id}');
+        print('   startedAt  : ${dto.startedAt}');
+        print('   endedAt    : ${dto.endedAt}');
+        print('   isManual   : ${dto.isManual}');
+        print('   routineId  : ${dto.routineId}');
+        print('   routineName: ${dto.routineName}');
+        print('   series cnt : ${dto.series.length}');
+      }
+      //TODO: imagino que isso poderia estar sendo feito na propria entity se não estiver errado diante de um clean architecture
+      // Armazena o ID da WorkoutSession para referência durante edição
+      ref.read(workoutSessionIdProvider.notifier).state = dto.id;
+      if (kDebugMode) {
+        print('📌 WorkoutSession ID armazenado: ${dto.id}');
+      }
 
-        if (kDebugMode) {
-          print('📦 Workout data:');
-          print('   id         : ${dto.id}');
-          print('   startedAt  : ${dto.startedAt}');
-          print('   endedAt    : ${dto.endedAt}');
-          print('   isManual   : ${dto.isManual}');
-          print('   routineId  : ${dto.routineId}');
-          print('   routineName: ${dto.routineName}');
-          print('   series cnt : ${dto.series.length}');
-        }
-        //TODO: imagino que isso poderia estar sendo feito na propria entity se não estiver errado diante de um clean architecture
-        // Armazena o ID da WorkoutSession para referência durante edição
-        if (_ref != null) {
-          _ref.read(workoutSessionIdProvider.notifier).state = dto.id;
+      // Calcula e armazena a duração original do treino
+      if (dto.endedAt != null) {
+        try {
+          final originalDuration = dto.endedAt!.difference(dto.startedAt);
+          ref.read(workoutOriginalDurationProvider.notifier).state =
+              originalDuration;
+
           if (kDebugMode) {
-            print('📌 WorkoutSession ID armazenado: ${dto.id}');
+            print(
+              '⏱️ Duração original extraída: ${originalDuration.inMinutes} min',
+            );
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('⚠️ Falha ao calcular duração: $e');
           }
         }
+      }
 
-        // Calcula e armazena a duração original do treino
-        if (dto.endedAt != null && _ref != null) {
-          try {
-            final originalDuration = dto.endedAt!.difference(dto.startedAt);
-            _ref.read(workoutOriginalDurationProvider.notifier).state =
-                originalDuration;
+      final exercises =
+          dto.toWorkoutExercises().map(TechniqueBlockMapper.normalize).toList();
+      state = AsyncValue.data(exercises);
 
-            if (kDebugMode) {
-              print(
-                '⏱️ Duração original extraída: ${originalDuration.inMinutes} min',
-              );
-            }
-          } catch (e) {
-            if (kDebugMode) {
-              print('⚠️ Falha ao calcular duração: $e');
-            }
-          }
-        }
-
-        final exercises =
-            dto.toWorkoutExercises().map(TechniqueBlockMapper.normalize).toList();
-        state = AsyncValue.data(exercises);
-
-        if (kDebugMode) {
-          print(
-            '✅ Treino carregado para edição: ${exercises.length} exercícios',
-          );
-        }
-      } else {
-        state = AsyncValue.error('Erro ao carregar treino', StackTrace.current);
+      if (kDebugMode) {
+        print(
+          '✅ Treino carregado para edição: ${exercises.length} exercícios',
+        );
       }
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -585,7 +542,7 @@ class WorkoutDayExercisesNotifier
     String? sessionId,
     bool isManual = false,
   }) async {
-    final mode = _ref?.read(workoutScreenModeProvider);
+    final mode = ref.read(workoutScreenModeProvider);
     if (mode != WorkoutScreenMode.execution) {
       throw Exception(
         'startExecution deve ser chamado apenas em modo execution. '
@@ -593,12 +550,7 @@ class WorkoutDayExercisesNotifier
       );
     }
 
-    final ref = _ref;
-    if (ref == null) {
-      throw Exception('startExecution requer Ref');
-    }
-
-    try {
+        try {
       if (kDebugMode) {
         print('🚀 Iniciando execução de treino...');
       }
@@ -642,7 +594,7 @@ class WorkoutDayExercisesNotifier
     String exerciseId,
     WorkoutExercise updatedExercise,
   ) {
-    final mode = _ref?.read(workoutScreenModeProvider);
+    final mode = ref.read(workoutScreenModeProvider);
     if (mode != WorkoutScreenMode.execution) {
       throw Exception(
         'updateExerciseExecution deve ser chamado apenas em modo execution. '
@@ -657,7 +609,7 @@ class WorkoutDayExercisesNotifier
     String exerciseId,
     WorkoutExercise updatedExercise,
   ) {
-    final mode = _ref?.read(workoutScreenModeProvider);
+    final mode = ref.read(workoutScreenModeProvider);
     if (mode != WorkoutScreenMode.template) {
       throw Exception(
         'updateExerciseTemplate deve ser chamado apenas em modo template. '
@@ -669,7 +621,7 @@ class WorkoutDayExercisesNotifier
 
   // Atualiza um exercício durante edição de treino passado (log)
   void updateExerciseLog(String exerciseId, WorkoutExercise updatedExercise) {
-    final mode = _ref?.read(workoutScreenModeProvider);
+    final mode = ref.read(workoutScreenModeProvider);
     if (mode != WorkoutScreenMode.editing) {
       throw Exception(
         'updateExerciseLog deve ser chamado apenas em modo editing. '
@@ -696,25 +648,71 @@ class WorkoutDayExercisesNotifier
     String exerciseId,
     WorkoutExercise updatedExercise,
   ) {
-    final normalized = TechniqueBlockMapper.normalize(updatedExercise);
-    debugPrint(
-      '[Provider._updateExerciseInMemory] exerciseId=$exerciseId, entries: ${normalized.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
+    _pendingExerciseUpdates[exerciseId] = updatedExercise;
+    _memoryUpdateDebounce?.cancel();
+    _memoryUpdateDebounce = Timer(
+      const Duration(milliseconds: 350),
+      flushPendingExerciseMemoryUpdates,
     );
-    final currentState = state;
-    if (currentState is AsyncData<List<WorkoutExercise>>) {
-      final currentExercises = currentState.value;
-      debugPrint(
-        '[Provider._updateExerciseInMemory] BEFORE: ${currentExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
-      );
-      final updatedExercises = currentExercises.map((exercise) {
-        return exercise.id == exerciseId ? normalized : exercise;
-      }).toList();
-      debugPrint(
-        '[Provider._updateExerciseInMemory] AFTER: ${updatedExercises.where((ex) => ex.id == exerciseId).firstOrNull?.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
-      );
-      state = AsyncValue.data(updatedExercises);
-      schedulePersistInProgressDraft();
+  }
+
+  /// Aplica imediatamente atualizações de série pendentes (ex.: antes de salvar).
+  void flushPendingExerciseMemoryUpdates() {
+    _memoryUpdateDebounce?.cancel();
+    if (_pendingExerciseUpdates.isEmpty) return;
+
+    final pending = Map<String, WorkoutExercise>.from(_pendingExerciseUpdates);
+    _pendingExerciseUpdates.clear();
+    for (final entry in pending.entries) {
+      _applyExerciseMemoryUpdate(entry.key, entry.value);
     }
+  }
+
+  void _applyExerciseMemoryUpdate(
+    String exerciseId,
+    WorkoutExercise updatedExercise,
+  ) {
+    final normalized = TechniqueBlockMapper.normalize(updatedExercise);
+    final currentState = state;
+    if (currentState is! AsyncData<List<WorkoutExercise>>) return;
+
+    final currentExercises = currentState.value;
+    final existing = currentExercises
+        .where((exercise) => exercise.id == exerciseId)
+        .firstOrNull;
+    if (existing != null && _exerciseDataEquals(existing, normalized)) return;
+
+    final updatedExercises = currentExercises.map((exercise) {
+      return exercise.id == exerciseId ? normalized : exercise;
+    }).toList();
+    state = AsyncValue.data(updatedExercises);
+    schedulePersistInProgressDraft();
+  }
+
+  bool _exerciseDataEquals(WorkoutExercise a, WorkoutExercise b) {
+    if (a.series != b.series ||
+        a.reps != b.reps ||
+        a.weight != b.weight ||
+        a.rir != b.rir ||
+        a.restTime != b.restTime ||
+        a.notes != b.notes ||
+        a.weightUnit != b.weightUnit) {
+      return false;
+    }
+    if (a.entries.length != b.entries.length) return false;
+    for (var i = 0; i < a.entries.length; i++) {
+      final left = a.entries[i];
+      final right = b.entries[i];
+      if (left.weight != right.weight ||
+          left.reps != right.reps ||
+          left.done != right.done ||
+          left.type != right.type ||
+          left.isDerived != right.isDerived ||
+          left.miniSetIndex != right.miniSetIndex) {
+        return false;
+      }
+    }
+    return true;
   }
 
   void setDraftExecutionContext(WorkoutDraftExecutionContext context) {
@@ -725,9 +723,8 @@ class WorkoutDayExercisesNotifier
   }
 
   void schedulePersistInProgressDraft() {
-    final ref = _ref;
     final ctx = _draftContext;
-    if (ref == null || ctx == null || !ctx.workoutStarted) return;
+    if (ctx == null || !ctx.workoutStarted) return;
 
     _draftSaveDebounce?.cancel();
     _draftSaveDebounce = Timer(
@@ -737,9 +734,10 @@ class WorkoutDayExercisesNotifier
   }
 
   Future<void> flushPersistInProgressDraft() async {
-    final ref = _ref;
+    flushPendingExerciseMemoryUpdates();
+
     final ctx = _draftContext;
-    if (ref == null || ctx == null || !ctx.workoutStarted) return;
+    if (ctx == null || !ctx.workoutStarted) return;
 
     final currentState = state;
     if (currentState is! AsyncData<List<WorkoutExercise>>) return;
@@ -790,9 +788,6 @@ class WorkoutDayExercisesNotifier
   }
 
   Future<void> loadDraftForResume(String draftId) async {
-    final ref = _ref;
-    if (ref == null) return;
-
     final draft = await ref
         .read(workoutDraftRepositoryProvider)
         .getById(draftId);
@@ -842,7 +837,7 @@ class WorkoutDayExercisesNotifier
     required List<WorkoutExercise> exercises,
     DateTime? endedAt,
   }) async {
-    final mode = _ref?.read(workoutScreenModeProvider);
+    final mode = ref.read(workoutScreenModeProvider);
     if (mode != WorkoutScreenMode.editing) {
       throw Exception(
         'updateExistingWorkout deve ser chamado apenas em modo editing. '
@@ -857,7 +852,7 @@ class WorkoutDayExercisesNotifier
         );
       }
 
-      final WorkoutLogService workoutLogService = _ref!.read(
+      final WorkoutLogService workoutLogService = ref.read(
         workoutLogServiceProvider,
       );
 
@@ -880,15 +875,10 @@ class WorkoutDayExercisesNotifier
       }
 
       // Envia PATCH para atualizar a WorkoutSession
-      final url = ApiEndpoints.workoutById(workoutSessionId);
-      final response = await _httpService.patch(url, data: payload);
+      await _repository.patchWorkout(workoutSessionId, payload);
 
-      if (response.statusCode == 200) {
-        if (kDebugMode) {
-          print('✅ Treino atualizado com sucesso');
-        }
-      } else {
-        throw Exception('Erro ao atualizar treino: ${response.statusCode}');
+      if (kDebugMode) {
+        print('✅ Treino atualizado com sucesso');
       }
     } catch (e) {
       if (kDebugMode) {

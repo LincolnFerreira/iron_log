@@ -1,17 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/core/services/auth_service.dart';
-import '../../domain/entities/user_profile.dart';
+import 'package:iron_log/features/auth/auth_providers.dart';
+import 'package:iron_log/features/auth/domain/entities/user_profile.dart';
+import 'package:iron_log/features/auth/presentation/providers/auth_controller.dart';
 
 /// Provider para buscar dados do perfil do usuário autenticado
 final userProfileProvider = FutureProvider<UserProfile?>((ref) async {
-  try {
-    final auth = AuthService();
-    auth.initialize();
+  final user = ref.watch(authStateProvider).user;
+  if (user == null) return null;
 
-    // Usa o método getUserProfile que já trata a resposta corretamente
-    return await auth.getUserProfile();
-  } catch (error) {
-    // Em caso de erro, retorna null (usuário não logado ou erro de rede)
+  try {
+    return await ref.read(authRepositoryProvider).getUserProfile();
+  } catch (_) {
     return null;
   }
 });

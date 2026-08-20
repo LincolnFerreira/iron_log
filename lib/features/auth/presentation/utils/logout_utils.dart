@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
-import 'package:iron_log/features/auth/auth_controller.dart';
+import 'package:iron_log/features/auth/presentation/providers/auth_controller.dart';
 
 class LogoutUtils {
   static void showLogoutDialog(BuildContext context, WidgetRef ref) {

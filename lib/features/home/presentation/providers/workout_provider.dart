@@ -1,4 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'workout_provider.g.dart';
 
 class WorkoutState {
   final String currentWorkout;
@@ -17,8 +19,10 @@ class WorkoutState {
   }
 }
 
-class WorkoutNotifier extends StateNotifier<WorkoutState> {
-  WorkoutNotifier() : super(WorkoutState());
+@Riverpod(keepAlive: true)
+class Workout extends _$Workout {
+  @override
+  WorkoutState build() => WorkoutState();
 
   void updateCurrentWorkout(String workout) {
     state = state.copyWith(currentWorkout: workout);
@@ -26,14 +30,7 @@ class WorkoutNotifier extends StateNotifier<WorkoutState> {
 
   Future<void> startWorkout() async {
     state = state.copyWith(isLoading: true);
-    // Implement workout start logic here
-    await Future.delayed(const Duration(seconds: 1)); // Simulated delay
+    await Future.delayed(const Duration(seconds: 1));
     state = state.copyWith(isLoading: false);
   }
 }
-
-final workoutProvider = StateNotifierProvider<WorkoutNotifier, WorkoutState>((
-  ref,
-) {
-  return WorkoutNotifier();
-});

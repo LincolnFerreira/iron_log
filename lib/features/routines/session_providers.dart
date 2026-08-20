@@ -4,36 +4,33 @@ import 'domain/repositories/session_repository.dart';
 import 'domain/usecases/session_usecases.dart';
 import 'data/repositories/session_repository_impl.dart';
 
-// Provider para o repositório usando HttpService unificado
 final sessionRepositoryProviderImpl = Provider<SessionRepository>((ref) {
-  final httpService = ref.watch(httpServiceProvider);
+  final httpService = ref.read(httpServiceProvider);
   return SessionRepositoryImpl(httpService.dio);
 });
 
-// Providers para use cases
 final createSessionUseCaseProvider = Provider<CreateSessionUseCase>((ref) {
-  final repository = ref.watch(sessionRepositoryProviderImpl);
-  return CreateSessionUseCase(repository);
+  return CreateSessionUseCase(ref.read(sessionRepositoryProviderImpl));
 });
 
 final updateSessionUseCaseProvider = Provider<UpdateSessionUseCase>((ref) {
-  final repository = ref.watch(sessionRepositoryProviderImpl);
-  return UpdateSessionUseCase(repository);
+  return UpdateSessionUseCase(ref.read(sessionRepositoryProviderImpl));
 });
 
 final deleteSessionUseCaseProvider = Provider<DeleteSessionUseCase>((ref) {
-  final repository = ref.watch(sessionRepositoryProviderImpl);
-  return DeleteSessionUseCase(repository);
+  return DeleteSessionUseCase(ref.read(sessionRepositoryProviderImpl));
 });
 
 final updateSessionExercisesUseCaseProvider =
     Provider<UpdateSessionExercisesUseCase>((ref) {
-      final repository = ref.watch(sessionRepositoryProviderImpl);
-      return UpdateSessionExercisesUseCase(repository);
+      return UpdateSessionExercisesUseCase(
+        ref.read(sessionRepositoryProviderImpl),
+      );
     });
 
 final removeExerciseFromSessionUseCaseProvider =
     Provider<RemoveExerciseFromSessionUseCase>((ref) {
-      final repository = ref.watch(sessionRepositoryProviderImpl);
-      return RemoveExerciseFromSessionUseCase(repository);
+      return RemoveExerciseFromSessionUseCase(
+        ref.read(sessionRepositoryProviderImpl),
+      );
     });
