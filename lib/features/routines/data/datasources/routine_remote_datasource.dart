@@ -20,6 +20,8 @@ abstract class RoutineRemoteDataSource {
   Future<RoutineModel> updateRoutine(String id, RoutineUpdate updates);
 
   Future<void> deleteRoutine(String id);
+
+  Future<void> setActiveRoutine(String routineId);
 }
 
 class RoutineRemoteDataSourceImpl implements RoutineRemoteDataSource {
@@ -85,6 +87,15 @@ class RoutineRemoteDataSourceImpl implements RoutineRemoteDataSource {
       await _dio.delete('/routine/$id');
     } catch (e) {
       throw Exception('Erro ao deletar rotina remotamente: $e');
+    }
+  }
+
+  @override
+  Future<void> setActiveRoutine(String routineId) async {
+    try {
+      await _dio.patch('/user-profiles/active-routine/$routineId');
+    } catch (e) {
+      throw Exception('Erro ao definir rotina ativa: $e');
     }
   }
 }

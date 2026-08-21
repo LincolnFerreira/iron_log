@@ -207,7 +207,7 @@ class _SeriesTableState extends State<SeriesTable> {
                 const SizedBox(width: ExerciseCardStyles.columnGap),
                 if (!widget.hideTypeForCluster) ...[
                   const Expanded(
-                    flex: 3,
+                    flex: 2,
                     child: Text('TIPO', style: ExerciseCardStyles.headerStyle),
                   ),
                   const SizedBox(width: ExerciseCardStyles.columnGap),

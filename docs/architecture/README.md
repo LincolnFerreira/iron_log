@@ -13,7 +13,7 @@ Constituição Flutter: [.specify/memory/constitution.md](../../.specify/memory/
 | Feature completa (plano + CRUD) | `lib/features/routines/` |
 | Execução de treino | `lib/features/workout_day/` |
 | Infra compartilhada | `lib/core/` |
-| **Não copiar** | `lib/features/analytics/`, `lib/features/workout_session/` |
+| Removidos (008 P3) | `analytics/`, `workout_session/` — não reinstalar |
 
 ## Como criar uma feature nova
 

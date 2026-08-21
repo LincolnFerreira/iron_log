@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/core/services/auth_service.dart';
-import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/routine_providers.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'unified_exercise_search.g.dart';
 
 // ============================================================================
 // STATE CLASS
@@ -41,31 +43,27 @@ class ExerciseSearchState {
 }
 
 // ============================================================================
-// STATE NOTIFIER
-// ============================================================================
-
-/// Notifier que gerencia a busca de exercícios com debounce integrado
-class ExerciseSearchNotifier extends StateNotifier<ExerciseSearchState> {
+// NOTIFIER
+@Riverpod(keepAlive: true)
+class ExerciseSearch extends _$ExerciseSearch {
   Timer? _debounceTimer;
   int _searchCounter = 0;
 
-  ExerciseSearchNotifier() : super(ExerciseSearchState.initial());
+  @override
+  ExerciseSearchState build() {
+    ref.onDispose(() => _debounceTimer?.cancel());
+    return ExerciseSearchState.initial();
+  }
 
-  /// Atualiza a query e faz debounce da busca
   void updateQuery(String query) {
-    // Atualiza a query imediatamente
     state = state.copyWith(query: query);
-
-    // Cancela timer anterior
     _debounceTimer?.cancel();
 
     if (query.isEmpty) {
-      // Limpa resultados se a query estiver vazia
       state = state.copyWith(results: [], isLoading: false);
       return;
     }
 
-    // Inicia loading e debounce
     state = state.copyWith(isLoading: true);
     final currentCounter = ++_searchCounter;
 
@@ -74,7 +72,6 @@ class ExerciseSearchNotifier extends StateNotifier<ExerciseSearchState> {
     });
   }
 
-  /// Realiza a busca de exercícios (ignora respostas antigas usando token)
   Future<void> _performSearch(String query, int token) async {
     if (query.length < 2) {
       if (token == _searchCounter) {
@@ -84,23 +81,12 @@ class ExerciseSearchNotifier extends StateNotifier<ExerciseSearchState> {
     }
 
     try {
-      final auth = AuthService();
-      auth.initialize();
-      final response = await auth.authenticatedRequest(
-        method: 'GET',
-        path: ApiEndpoints.exerciseSearchPath,
-        queryParameters: {'q': query, 'limit': 30},
-      );
+      final searchExercises = await ref
+          .read(exerciseRemoteDataSourceProvider)
+          .searchExercises(query);
 
-      // Ignora respostas que não pertençam à última busca
       if (token != _searchCounter) return;
 
-      final results = (response.data as List).cast<Map<String, dynamic>>();
-      final searchExercises = results
-          .map((exercise) => SearchExercise.fromJson(exercise))
-          .toList();
-
-      // Atualiza resultados e termina loading
       state = state.copyWith(results: searchExercises, isLoading: false);
     } catch (e) {
       if (token == _searchCounter) {
@@ -109,58 +95,27 @@ class ExerciseSearchNotifier extends StateNotifier<ExerciseSearchState> {
     }
   }
 
-  /// Cria um novo exercício e o retorna
   Future<SearchExercise?> createExercise(String name) async {
     if (name.trim().isEmpty) return null;
 
     try {
-      final auth = AuthService();
-      auth.initialize();
+      final created = await ref
+          .read(exerciseRemoteDataSourceProvider)
+          .findOrCreateExercise(name);
+      if (created == null) return null;
 
-      final response = await auth.authenticatedRequest(
-        method: 'GET',
-        path: ApiEndpoints.exerciseFindOrCreate,
-        queryParameters: {'name': name.trim()},
-      );
-
-      if (response.statusCode == 200 && response.data != null) {
-        final created = SearchExercise.fromJson(
-          response.data as Map<String, dynamic>,
-        );
-
-        // Adiciona ao início da lista
-        state = state.copyWith(results: [created, ...state.results]);
-
-        return created;
-      }
-      return null;
+      state = state.copyWith(results: [created, ...state.results]);
+      return created;
     } catch (e) {
       return null;
     }
   }
 
-  /// Limpa a busca
   void clearSearch() {
     _debounceTimer?.cancel();
     state = ExerciseSearchState.initial();
   }
-
-  @override
-  void dispose() {
-    _debounceTimer?.cancel();
-    super.dispose();
-  }
 }
-
-// ============================================================================
-// PROVIDER
-// ============================================================================
-
-/// Provider para gerenciar a busca unificada de exercícios
-final exerciseSearchProvider =
-    StateNotifierProvider<ExerciseSearchNotifier, ExerciseSearchState>((ref) {
-      return ExerciseSearchNotifier();
-    });
 
 // Providers auxiliares para acesso fácil aos estados individuais
 final exerciseSearchQueryProvider = Provider<String>((ref) {

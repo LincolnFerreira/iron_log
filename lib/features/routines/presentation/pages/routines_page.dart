@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iron_log/core/api/api_endpoints.dart';
 import 'package:iron_log/core/routes/app_router.dart';
-import 'package:iron_log/core/services/auth_service.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_update.dart';
@@ -455,7 +453,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
     Routine routine,
   ) async {
     try {
-      await AuthService().patch(ApiEndpoints.userActiveRoutine(routine.id));
+      await ref.read(routineRepositoryProvider).setActiveRoutine(routine.id);
       // Reload so isActive reflects correctly in all cards.
       if (!context.mounted) return;
       await ref.read(routineNotifierProvider.notifier).loadRoutines();

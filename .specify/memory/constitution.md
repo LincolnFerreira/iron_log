@@ -169,8 +169,8 @@ Visão dos módulos ativos em `lib/features/` e papel de cada um.
 | **workout_history** | `features/workout_history/` | Listagem, filtros, detalhe, edição e registro retroativo | Abre `WorkoutDayScreen.edit` / `.manual` via `Navigator` |
 | **workout_creation** | `features/workout_creation/` | Treino rápido — reordenar split semanal | Rota `/workout/quick-create`; UI de rotação, não execução completa |
 | **settings** | `features/settings/` | Preferências, logout, versão | `IronTokens` visual local (exceção ao tema global) |
-| **analytics** | `features/analytics/` | Stub — gráfico evolução | MUST NOT usar como referência |
-| **workout_session** | `features/workout_session/` | Stub legado | MUST NOT usar como referência |
+
+> Removidos na 008 (P3): stubs `features/analytics/` e `features/workout_session/`.
 
 ### Core (`lib/core/`)
 

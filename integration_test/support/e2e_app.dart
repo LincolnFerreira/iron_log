@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:iron_log/core/providers/sync_providers.dart';
 import 'package:iron_log/core/services/http_service.dart';
+import 'package:iron_log/features/home/home_providers.dart';
 import 'package:iron_log/features/routines/routine_providers.dart';
 import 'package:iron_log/features/workout_day/presentation/pages/workout_day_screen.dart';
 import 'package:patrol/patrol.dart';
@@ -19,6 +20,7 @@ List<Override> e2eProviderOverrides() {
   return [
     httpServiceProvider.overrideWithValue(ensureHttpService()),
     ...routineProvidersOverrides,
+    ...homeProvidersOverrides,
     ...syncProvidersOverrides,
   ];
 }

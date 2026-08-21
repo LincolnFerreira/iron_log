@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:iron_log/core/api/api_endpoints.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
-import 'package:iron_log/core/services/auth_service.dart';
-import '../../data/models/exercise_browse_dto.dart';
-import '../../domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/routine_providers.dart';
 
-class CreateExerciseModal extends StatefulWidget {
+class CreateExerciseModal extends ConsumerStatefulWidget {
   final String initialName;
 
   const CreateExerciseModal({super.key, this.initialName = ''});
 
   @override
-  State<CreateExerciseModal> createState() => _CreateExerciseModalState();
+  ConsumerState<CreateExerciseModal> createState() =>
+      _CreateExerciseModalState();
 }
 
-class _CreateExerciseModalState extends State<CreateExerciseModal> {
+class _CreateExerciseModalState extends ConsumerState<CreateExerciseModal> {
   final _nameController = TextEditingController();
   final _equipmentController = TextEditingController();
 
@@ -40,19 +39,19 @@ class _CreateExerciseModalState extends State<CreateExerciseModal> {
   void initState() {
     super.initState();
     _nameController.text = widget.initialName;
-    _fetchMuscleGroups();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchMuscleGroups();
+    });
   }
 
   Future<void> _fetchMuscleGroups() async {
     try {
-      final response = await AuthService().get(ApiEndpoints.exerciseBrowse);
-      final dto = ExerciseBrowseDto.fromJson(
-        response.data as Map<String, dynamic>,
-      );
-      final groups = dto.muscles;
+      final result = await ref
+          .read(exerciseRemoteDataSourceProvider)
+          .browseExercises();
       if (mounted) {
         setState(() {
-          _muscleGroups = groups;
+          _muscleGroups = result.muscles;
           _loadingMuscles = false;
         });
       }
@@ -77,18 +76,13 @@ class _CreateExerciseModalState extends State<CreateExerciseModal> {
 
     try {
       final equipment = _equipmentController.text.trim();
-      final response = await AuthService().post(
-        ApiEndpoints.exerciseCreate,
-        data: {
-          'name': name,
-          if (_selectedMuscle != null) 'primaryMuscle': _selectedMuscle,
-          if (equipment.isNotEmpty) 'equipment': equipment,
-        },
-      );
-
-      final created = SearchExercise.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      final created = await ref
+          .read(exerciseRemoteDataSourceProvider)
+          .createExercise(
+            name: name,
+            primaryMuscle: _selectedMuscle,
+            equipment: equipment.isEmpty ? null : equipment,
+          );
 
       if (mounted) Navigator.of(context).pop(created);
     } catch (e) {

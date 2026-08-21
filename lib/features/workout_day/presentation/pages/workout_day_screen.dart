@@ -481,6 +481,9 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     _isStartingWorkout,
                 onStartWorkout: _handleStartWorkout,
                 onFinishWorkout: () async {
+                  ref
+                      .read(workoutDayExercisesProvider.notifier)
+                      .flushPendingExerciseMemoryUpdates();
                   final exercises =
                       ref.read(workoutDayExercisesProvider).value ?? [];
                   final mode = WorkoutFinishFlow.resolveMode(

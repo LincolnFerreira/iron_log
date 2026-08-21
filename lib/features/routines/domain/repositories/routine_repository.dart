@@ -13,4 +13,5 @@ abstract class RoutineRepository {
   });
   Future<Routine> updateRoutine(String id, RoutineUpdate updates);
   Future<void> deleteRoutine(String id);
+  Future<void> setActiveRoutine(String routineId);
 }

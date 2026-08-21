@@ -1,17 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:iron_log/core/services/speech_to_text_service.dart';
 import 'package:iron_log/features/workout_day/data/parsers/voice_to_workout_parser.dart';
 import 'package:iron_log/features/workout_day/data/models/voice_parsed_result.dart';
 import 'package:iron_log/core/database/app_database.dart';
 import 'package:iron_log/features/workout_day/data/repositories/local_workout_repository.dart';
-import 'package:iron_log/core/services/auth_service.dart';
+import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+
+part 'voice_input_provider.g.dart';
 
 enum VoiceInputStatus {
   idle,
@@ -63,16 +67,24 @@ class VoiceInputState {
   }
 }
 
-class VoiceInputNotifier extends StateNotifier<VoiceInputState> {
-  final SpeechToTextService _speech;
-  final Ref _ref;
+@Riverpod(keepAlive: true)
+class VoiceInput extends _$VoiceInput {
+  late final SpeechToTextService _speech;
   StreamSubscription? _sub;
   StreamSubscription? _levelSub;
   SpeechToTextService? _activeSpeech;
 
-  VoiceInputNotifier(this._ref, {SpeechToTextService? speech})
-    : _speech = speech ?? SpeechToTextService(),
-      super(VoiceInputState(status: VoiceInputStatus.idle));
+  @override
+  VoiceInputState build() {
+    _speech = SpeechToTextService();
+    ref.onDispose(() {
+      _sub?.cancel();
+      _levelSub?.cancel();
+      try { _activeSpeech?.dispose(); } catch (_) {}
+      try { _speech.dispose(); } catch (_) {}
+    });
+    return VoiceInputState(status: VoiceInputStatus.idle);
+  }
 
   Future<void> startRecording({
     String locale = 'pt_BR',
@@ -181,7 +193,7 @@ class VoiceInputNotifier extends StateNotifier<VoiceInputState> {
     final List<ResolvedParsedExercise> result = [];
 
     // Read current session exercises from provider (if available)
-    final asyncExercises = _ref.read(workoutDayExercisesProvider);
+    final asyncExercises = ref.read(workoutDayExercisesProvider);
     final List<WorkoutExercise> sessionExercises =
         asyncExercises is AsyncData<List<WorkoutExercise>>
         ? asyncExercises.value
@@ -319,14 +331,11 @@ class VoiceInputNotifier extends StateNotifier<VoiceInputState> {
     final db = AppDatabase();
     final repo = LocalWorkoutRepository(db);
 
-    // Try to get current user id from AuthService (firebase UID or profile id)
-    final auth = AuthService();
-    final currentUser = auth.currentUser;
-    final userId = currentUser?.uid ?? '';
+    final userId = ref.read(authStateProvider).user?.uid ?? '';
 
     try {
       // If there are session exercises available, require resolution for each parsed entry
-      final asyncExercises = _ref.read(workoutDayExercisesProvider);
+      final asyncExercises = ref.read(workoutDayExercisesProvider);
       final sessionExercises =
           asyncExercises is AsyncData<List<WorkoutExercise>>
           ? asyncExercises.value
@@ -385,7 +394,7 @@ class VoiceInputNotifier extends StateNotifier<VoiceInputState> {
     state = state.copyWith(status: VoiceInputStatus.saving);
 
     // Read current session exercises from provider (if available)
-    final asyncExercises = _ref.read(workoutDayExercisesProvider);
+    final asyncExercises = ref.read(workoutDayExercisesProvider);
     final List<WorkoutExercise> sessionExercises =
         asyncExercises is AsyncData<List<WorkoutExercise>>
         ? asyncExercises.value
@@ -407,8 +416,8 @@ class VoiceInputNotifier extends StateNotifier<VoiceInputState> {
     }
 
     try {
-      final mode = _ref.read(workoutScreenModeProvider);
-      final notifier = _ref.read(workoutDayExercisesProvider.notifier);
+      final mode = ref.read(workoutScreenModeProvider);
+      final notifier = ref.read(workoutDayExercisesProvider.notifier);
 
       for (var rIdx = 0; rIdx < state.resolved.length; rIdx++) {
         final resolved = state.resolved[rIdx];
@@ -492,22 +501,6 @@ class VoiceInputNotifier extends StateNotifier<VoiceInputState> {
       rethrow;
     }
   }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    _levelSub?.cancel();
-    try {
-      _activeSpeech?.dispose();
-    } catch (_) {}
-    try {
-      _speech.dispose();
-    } catch (_) {}
-    super.dispose();
-  }
 }
 
-final voiceInputProvider =
-    StateNotifierProvider<VoiceInputNotifier, VoiceInputState>((ref) {
-      return VoiceInputNotifier(ref);
-    });
+

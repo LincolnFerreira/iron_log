@@ -1,5 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/workout_split.dart';
+
+part 'workout_creation_provider.g.dart';
 
 class WorkoutCreationState {
   final List<WorkoutSplit> workoutSplits;
@@ -25,37 +27,35 @@ class WorkoutCreationState {
   }
 }
 
-class WorkoutCreationNotifier extends StateNotifier<WorkoutCreationState> {
-  WorkoutCreationNotifier() : super(const WorkoutCreationState()) {
-    _initializeDefaultSplits();
-  }
-
-  void _initializeDefaultSplits() {
-    final defaultSplits = [
-      const WorkoutSplit(
-        id: '1',
-        name: 'Push',
-        exerciseCount: 8,
-        preferredDays: ['Seg', 'Qui'],
-        type: 'push',
-      ),
-      const WorkoutSplit(
-        id: '2',
-        name: 'Pull',
-        exerciseCount: 7,
-        preferredDays: ['Ter', 'Sex'],
-        type: 'pull',
-      ),
-      const WorkoutSplit(
-        id: '3',
-        name: 'Legs',
-        exerciseCount: 9,
-        preferredDays: ['Qua', 'Sab'],
-        type: 'legs',
-      ),
-    ];
-
-    state = state.copyWith(workoutSplits: defaultSplits);
+@Riverpod(keepAlive: true)
+class WorkoutCreation extends _$WorkoutCreation {
+  @override
+  WorkoutCreationState build() {
+    return const WorkoutCreationState(
+      workoutSplits: [
+        WorkoutSplit(
+          id: '1',
+          name: 'Push',
+          exerciseCount: 8,
+          preferredDays: ['Seg', 'Qui'],
+          type: 'push',
+        ),
+        WorkoutSplit(
+          id: '2',
+          name: 'Pull',
+          exerciseCount: 7,
+          preferredDays: ['Ter', 'Sex'],
+          type: 'pull',
+        ),
+        WorkoutSplit(
+          id: '3',
+          name: 'Legs',
+          exerciseCount: 9,
+          preferredDays: ['Qua', 'Sab'],
+          type: 'legs',
+        ),
+      ],
+    );
   }
 
   void reorderSplits(int oldIndex, int newIndex) {
@@ -90,9 +90,7 @@ class WorkoutCreationNotifier extends StateNotifier<WorkoutCreationState> {
   Future<void> saveWorkoutRotation() async {
     state = state.copyWith(isLoading: true);
     try {
-      // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
-      // Here you would save to your backend/local storage
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(
@@ -106,8 +104,3 @@ class WorkoutCreationNotifier extends StateNotifier<WorkoutCreationState> {
     state = state.copyWith(error: null);
   }
 }
-
-final workoutCreationProvider =
-    StateNotifierProvider<WorkoutCreationNotifier, WorkoutCreationState>((ref) {
-      return WorkoutCreationNotifier();
-    });

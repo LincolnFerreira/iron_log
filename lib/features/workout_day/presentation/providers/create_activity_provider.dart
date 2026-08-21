@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/core/api/api_endpoints.dart';
-import 'package:iron_log/core/services/auth_service.dart';
 import 'package:iron_log/features/home/presentation/providers/workout_calendar_provider.dart';
+import 'package:iron_log/features/workout_day/workout_day_providers.dart';
 
 /// DTO para criar uma atividade (training, cardio, ou rest)
 class CreateActivityDto {
@@ -61,37 +60,21 @@ final createActivityProvider =
       ref,
       dto,
     ) async {
-      final auth = AuthService();
-      auth.initialize();
-
       try {
         if (kDebugMode) {
           debugPrint('create-activity: sending payload=${dto.toJson()}');
         }
 
-        final response = await auth.post(
-          ApiEndpoints.createWorkout,
-          data: dto.toJson(),
-        );
+        final data = await ref
+            .read(workoutDayRepositoryProvider)
+            .createWorkoutActivity(dto.toJson());
 
         if (kDebugMode) {
-          debugPrint('create-activity: response=${response.data}');
+          debugPrint('create-activity: response=$data');
         }
 
-        final data = response.data;
-        if (data == null || data is! Map<String, dynamic>) {
-          throw Exception(
-            'Unexpected response from server when creating activity',
-          );
-        }
-
-        final result = CreateActivityResponse.fromJson(
-          data,
-        );
-
-        // Invalida o provider de calendar para refrescar UI
+        final result = CreateActivityResponse.fromJson(data);
         ref.invalidate(workoutCalendarProvider);
-
         return result;
       } catch (e) {
         throw Exception('Failed to create activity: $e');

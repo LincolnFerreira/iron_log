@@ -1,10 +1,11 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/routine.dart';
-import '../../domain/usecases/session_usecases.dart';
-import '../../session_providers.dart';
-import '../../data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/usecases/session_usecases.dart';
+import 'package:iron_log/features/routines/session_providers.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-// Session State
+part 'session_provider.g.dart';
+
 class SessionState {
   final bool isLoading;
   final String? error;
@@ -33,21 +34,21 @@ class SessionState {
   }
 }
 
-// Session Notifier
-class SessionNotifier extends StateNotifier<SessionState> {
-  final CreateSessionUseCase _createSessionUseCase;
-  final UpdateSessionUseCase _updateSessionUseCase;
-  final DeleteSessionUseCase _deleteSessionUseCase;
-  final UpdateSessionExercisesUseCase _updateSessionExercisesUseCase;
-  final RemoveExerciseFromSessionUseCase _removeExerciseFromSessionUseCase;
+@Riverpod(keepAlive: true)
+class SessionNotifier extends _$SessionNotifier {
+  @override
+  SessionState build() => const SessionState();
 
-  SessionNotifier(
-    this._createSessionUseCase,
-    this._updateSessionUseCase,
-    this._deleteSessionUseCase,
-    this._updateSessionExercisesUseCase,
-    this._removeExerciseFromSessionUseCase,
-  ) : super(const SessionState());
+  CreateSessionUseCase get _createSessionUseCase =>
+      ref.read(createSessionUseCaseProvider);
+  UpdateSessionUseCase get _updateSessionUseCase =>
+      ref.read(updateSessionUseCaseProvider);
+  DeleteSessionUseCase get _deleteSessionUseCase =>
+      ref.read(deleteSessionUseCaseProvider);
+  UpdateSessionExercisesUseCase get _updateSessionExercisesUseCase =>
+      ref.read(updateSessionExercisesUseCaseProvider);
+  RemoveExerciseFromSessionUseCase get _removeExerciseFromSessionUseCase =>
+      ref.read(removeExerciseFromSessionUseCaseProvider);
 
   Future<Session?> createSession({
     required String routineId,
@@ -158,25 +159,3 @@ class SessionNotifier extends StateNotifier<SessionState> {
     state = state.copyWith(selectedSession: session);
   }
 }
-
-// Session Provider
-final sessionNotifierProvider =
-    StateNotifierProvider<SessionNotifier, SessionState>((ref) {
-      final createSessionUseCase = ref.watch(createSessionUseCaseProvider);
-      final updateSessionUseCase = ref.watch(updateSessionUseCaseProvider);
-      final deleteSessionUseCase = ref.watch(deleteSessionUseCaseProvider);
-      final updateSessionExercisesUseCase = ref.watch(
-        updateSessionExercisesUseCaseProvider,
-      );
-      final removeExerciseFromSessionUseCase = ref.watch(
-        removeExerciseFromSessionUseCaseProvider,
-      );
-
-      return SessionNotifier(
-        createSessionUseCase,
-        updateSessionUseCase,
-        deleteSessionUseCase,
-        updateSessionExercisesUseCase,
-        removeExerciseFromSessionUseCase,
-      );
-    });

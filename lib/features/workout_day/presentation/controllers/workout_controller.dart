@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 
 import '../../data/workout_local_ids.dart';
 import '../../domain/entities/workout_exercise.dart';
@@ -10,6 +12,8 @@ import '../../data/services/workout_log_service.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/workout_draft_providers.dart';
 import '../providers/workout_timer_provider.dart';
+
+part 'workout_controller.g.dart';
 
 class FinishResult {
   final bool success;
@@ -29,15 +33,10 @@ class FinishResult {
   });
 }
 
-final workoutControllerProvider =
-    StateNotifierProvider<WorkoutController, AsyncValue<void>>(
-      (ref) => WorkoutController(ref),
-    );
-
-class WorkoutController extends StateNotifier<AsyncValue<void>> {
-  final Ref ref;
-
-  WorkoutController(this.ref) : super(const AsyncData(null));
+@Riverpod(keepAlive: true)
+class WorkoutController extends _$WorkoutController {
+  @override
+  AsyncValue<void> build() => const AsyncData(null);
 
   void startWorkout() {
     ref.read(workoutTimerProvider.notifier).startTimer();

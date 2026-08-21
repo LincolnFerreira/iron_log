@@ -28,6 +28,9 @@ import '../providers/workout_timer_provider.dart';
 import '../widgets/voice_input_bottom_sheet.dart';
 import './workout_summary_screen.dart';
 
+/// LEGACY — isolated from product barrel/routes (008 / SC-004).
+/// Do not re-export from [workout_day.dart] or wire in GoRouter.
+/// Prefer [WorkoutDayScreen] + [WorkoutRouteLocations].
 @Deprecated('Use WorkoutDayScreen via GoRouter workout routes (WorkoutRouteLocations)')
 class WorkoutSessionScreen extends ConsumerStatefulWidget {
   final String? routineId;

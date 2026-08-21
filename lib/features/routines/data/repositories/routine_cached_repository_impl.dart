@@ -218,6 +218,15 @@ class RoutineCachedRepositoryImpl implements RoutineRepository {
     }
   }
 
+  @override
+  Future<void> setActiveRoutine(String routineId) async {
+    final isOnline = await _hasInternetConnection();
+    if (!isOnline) {
+      throw Exception('Sem conexão para definir rotina ativa');
+    }
+    await _remote.setActiveRoutine(routineId);
+  }
+
   Stream<List<Routine>> watchRoutines() {
     return _localDataSource.watchRoutines(_userId).map(_toRoutineList);
   }

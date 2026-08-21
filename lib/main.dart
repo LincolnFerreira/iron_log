@@ -13,8 +13,10 @@ import 'core/observability/crash_reporting_service.dart';
 import 'core/providers/app_provider_observer.dart';
 import 'core/services/auth_service.dart';
 import 'core/widgets/app_error_fallback.dart';
+import 'features/home/home_providers.dart';
 import 'features/routines/routine_providers.dart';
 import 'features/workout_day/presentation/providers/workout_draft_providers.dart';
+import 'features/workout_history/workout_history_providers.dart';
 
 late final CrashReportingService _crashReportingService;
 
@@ -68,7 +70,9 @@ Future<void> main() async {
           observers: kDebugMode ? [AppProviderObserver()] : const [],
           overrides: [
             ...routineProvidersOverrides,
+            ...homeProvidersOverrides,
             ...workoutDraftProvidersOverrides,
+            ...workoutHistoryProvidersOverrides,
           ],
           child: const MyApp(),
         ),

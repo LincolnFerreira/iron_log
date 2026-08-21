@@ -1,16 +1,13 @@
-import 'package:flutter/material.dart';
-
 enum ExerciseTag {
-  multi('Multi', Colors.blue),
-  iso('Iso', Colors.green),
-  cardio('Cardio', Colors.orange),
-  functional('Funcional', Colors.purple),
-  stretch('Alongamento', Colors.teal);
+  multi('Multi'),
+  iso('Iso'),
+  cardio('Cardio'),
+  functional('Funcional'),
+  stretch('Alongamento');
 
-  const ExerciseTag(this.label, this.color);
+  const ExerciseTag(this.label);
 
   final String label;
-  final Color color;
 
   static ExerciseTag fromString(String tag) {
     switch (tag.toLowerCase()) {

@@ -1,35 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:async';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'workout_timer_provider.g.dart';
 
 /// Provider that manages the workout session timer
 /// Stores the start timestamp and provides elapsed time calculation
-final workoutTimerProvider =
-    StateNotifierProvider<WorkoutTimerNotifier, DateTime?>((ref) {
-      return WorkoutTimerNotifier();
-    });
-
-/// Provides the formatted elapsed time (MM:SS) that rebuilds every second
-final elapsedTimeProvider = StreamProvider<String>((ref) async* {
-  final startTime = ref.watch(workoutTimerProvider);
-
-  if (startTime == null) {
-    yield '00:00';
-    return;
-  }
-
-  while (true) {
-    final elapsed = DateTime.now().difference(startTime);
-    final minutes = elapsed.inMinutes.toString().padLeft(2, '0');
-    final seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
-    yield '$minutes:$seconds';
-
-    // Update every second
-    await Future.delayed(const Duration(seconds: 1));
-  }
-});
-
-class WorkoutTimerNotifier extends StateNotifier<DateTime?> {
-  WorkoutTimerNotifier() : super(null);
+@Riverpod(keepAlive: true)
+class WorkoutTimer extends _$WorkoutTimer {
+  @override
+  DateTime? build() => null;
 
   /// Starts the timer from current time
   void startTimer() {
@@ -52,3 +31,22 @@ class WorkoutTimerNotifier extends StateNotifier<DateTime?> {
     return DateTime.now().difference(state!);
   }
 }
+
+/// Provides the formatted elapsed time (MM:SS) that rebuilds every second
+final elapsedTimeProvider = StreamProvider<String>((ref) async* {
+  final startTime = ref.watch(workoutTimerProvider);
+
+  if (startTime == null) {
+    yield '00:00';
+    return;
+  }
+
+  while (true) {
+    final elapsed = DateTime.now().difference(startTime);
+    final minutes = elapsed.inMinutes.toString().padLeft(2, '0');
+    final seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
+    yield '$minutes:$seconds';
+
+    await Future.delayed(const Duration(seconds: 1));
+  }
+});

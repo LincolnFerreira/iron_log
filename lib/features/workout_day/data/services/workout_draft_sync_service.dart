@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
-import '../../../../core/api/api_endpoints.dart';
-import '../../../../core/services/auth_service.dart';
 import '../../domain/entities/workout_draft.dart';
 import '../../domain/repositories/workout_draft_repository.dart';
 import 'workout_log_service.dart';
@@ -12,17 +10,17 @@ class WorkoutDraftSyncService {
   WorkoutDraftSyncService({
     required WorkoutDraftRepository repository,
     required WorkoutLogService logService,
-    required AuthService auth,
+    required String? Function() currentUserId,
   }) : _repository = repository,
        _logService = logService,
-       _auth = auth;
+       _currentUserId = currentUserId;
 
   final WorkoutDraftRepository _repository;
   final WorkoutLogService _logService;
-  final AuthService _auth;
+  final String? Function() _currentUserId;
 
   Future<DraftFlushResult> flushPendingUploads() async {
-    final uid = _auth.currentUser?.uid;
+    final uid = _currentUserId();
     if (uid == null || uid.isEmpty) {
       return const DraftFlushResult(synced: 0, failed: 0);
     }

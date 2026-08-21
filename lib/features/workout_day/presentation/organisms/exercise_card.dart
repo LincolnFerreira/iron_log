@@ -10,6 +10,7 @@ import '../components/atoms/exercise_history_chip.dart';
 import '../components/atoms/ai_suggestion_chip.dart';
 import '../components/atoms/dashed_action_button.dart';
 import '../exercise_card_styles.dart';
+import '../exercise_tag_styles.dart';
 import '../workout_test_keys.dart';
 import '../widgets/technique/technique_block_list.dart';
 import '../components/molecules/exercise_history_modal.dart';
@@ -205,10 +206,10 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               const SizedBox(width: 8),
               CustomBadge(
                 text: widget.exercise.tag.label,
-                backgroundColor: widget.exercise.tag.color.withValues(
+                backgroundColor: exerciseTagColor(widget.exercise.tag).withValues(
                   alpha: 0.12,
                 ),
-                textColor: widget.exercise.tag.color,
+                textColor: exerciseTagColor(widget.exercise.tag),
               ),
               // Menu button
               PopupMenuButton<String>(
@@ -336,19 +337,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                 seriesIndex: rowIndex,
               );
             },
-            onToggleDone: (index, done) {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      done
-                          ? 'Série ${index + 1} marcada como feita'
-                          : 'Série ${index + 1} desmarcada',
-                    ),
-                  ),
-                );
-              }
-            },
+            onToggleDone: (_, __) {},
           ),
           DashedActionButton(
             onPressed: () {
@@ -851,12 +840,6 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   // Atualiza o exercício localmente no provider com os valores actuais.
   // Não persiste no backend aqui — isso acontece apenas ao finalizar o treino.
   void _updateExercise() {
-    debugPrint(
-      '[ExerciseCard._updateExercise] called for ${widget.exercise.name}',
-    );
-    debugPrint(
-      '[ExerciseCard._updateExercise] _currentEntries before copyWith: ${_currentEntries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
-    );
     final updated = TechniqueBlockMapper.withBlocks(
       widget.exercise.copyWith(
         series: _series,
@@ -867,9 +850,6 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         notes: _notes.isEmpty ? null : _notes,
       ),
       _blocks,
-    );
-    debugPrint(
-      '[ExerciseCard._updateExercise] updated.entries: ${updated.entries.map((e) => "s${e.index}(w=${e.weight} r=${e.reps})").join(", ")}',
     );
 
     final mode = ref.read(workoutScreenModeProvider);

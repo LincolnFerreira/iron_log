@@ -35,6 +35,9 @@ class _TestRoutineRepository implements RoutineRepository {
   @override
   Future<Routine> updateRoutine(String id, RoutineUpdate updates) =>
       throw UnimplementedError();
+
+  @override
+  Future<void> setActiveRoutine(String routineId) => throw UnimplementedError();
 }
 
 void main() {

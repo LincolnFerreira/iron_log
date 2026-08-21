@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import '../../../domain/entities/workout_exercise.dart';
+import '../../exercise_tag_styles.dart';
 
 class SessionFloatingBar extends StatelessWidget {
   final List<WorkoutExercise> exercises;
@@ -162,7 +163,7 @@ class SessionFloatingBar extends StatelessWidget {
       );
     }
 
-    final tagColor = _nextExercise!.tag.color;
+    final tagColor = exerciseTagColor(_nextExercise!.tag);
     return Container(
       width: 42,
       height: 42,
@@ -202,7 +203,7 @@ class SessionFloatingBar extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: preview[i].tag.color.withOpacity(0.15),
+                color: exerciseTagColor(preview[i].tag).withOpacity(0.15),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isDark ? AppColors.dark30 : Colors.white,
@@ -217,7 +218,7 @@ class SessionFloatingBar extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 8,
                     fontWeight: FontWeight.w700,
-                    color: preview[i].tag.color,
+                    color: exerciseTagColor(preview[i].tag),
                   ),
                 ),
               ),

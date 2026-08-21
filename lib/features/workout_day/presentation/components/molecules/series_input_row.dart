@@ -61,8 +61,8 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     super.initState();
     _weightController = TextEditingController();
     _repController = TextEditingController();
-    _weightFocusNode = FocusNode()..addListener(_onFocusChanged);
-    _repFocusNode = FocusNode()..addListener(_onFocusChanged);
+    _weightFocusNode = FocusNode();
+    _repFocusNode = FocusNode();
     _syncControllersFromEntry();
     widget.activateWeightToken?.addListener(_onActivateWeight);
   }
@@ -87,17 +87,11 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
   @override
   void dispose() {
     widget.activateWeightToken?.removeListener(_onActivateWeight);
-    _weightFocusNode.removeListener(_onFocusChanged);
-    _repFocusNode.removeListener(_onFocusChanged);
     _weightFocusNode.dispose();
     _repFocusNode.dispose();
     _weightController.dispose();
     _repController.dispose();
     super.dispose();
-  }
-
-  void _onFocusChanged() {
-    if (mounted) setState(() {});
   }
 
   void _onActivateWeight() {
@@ -209,69 +203,78 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
     List<TextInputFormatter>? inputFormatters,
     Widget? suffix,
   }) {
-    final focused = focusNode.hasFocus;
+    return ListenableBuilder(
+      listenable: focusNode,
+      builder: (context, _) {
+        final focused = focusNode.hasFocus;
 
-    return SizedBox(
-      height: _fieldHeight,
-      child: Container(
-        alignment: Alignment.center,
-        decoration: ExerciseCardStyles.fieldBoxDecoration(
-          compact: _compact,
-          focused: focused,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                key: fieldKey,
-                controller: controller,
-                focusNode: focusNode,
-                keyboardType: keyboardType,
-                textInputAction: textInputAction,
-                inputFormatters: inputFormatters,
-                textAlign: TextAlign.center,
-                style: _fieldTextStyle,
-                onTap: widget.onInteract,
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
-                decoration: ExerciseCardStyles.inlineFieldDecoration(
-                  hintText: hintText,
-                  compact: _compact,
-                ),
+        final field = SizedBox(
+          height: _fieldHeight,
+          child: Container(
+            alignment: Alignment.center,
+            decoration: ExerciseCardStyles.fieldBoxDecoration(
+              compact: _compact,
+              focused: focused,
+            ),
+            child: TextField(
+              key: fieldKey,
+              controller: controller,
+              focusNode: focusNode,
+              keyboardType: keyboardType,
+              textInputAction: textInputAction,
+              inputFormatters: inputFormatters,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: _fieldTextStyle,
+              onTap: widget.onInteract,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              decoration: ExerciseCardStyles.inlineFieldDecoration(
+                hintText: hintText,
+                compact: _compact,
               ),
             ),
-            if (suffix != null) ...[
-              suffix,
-              SizedBox(width: _compact ? 4 : 6),
-            ],
+          ),
+        );
+
+        if (suffix == null) return field;
+
+        return Row(
+          children: [
+            Expanded(child: field),
+            const SizedBox(width: 4),
+            suffix,
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildTypeField() {
-    const itemStyle = ExerciseCardStyles.fieldTextStyle;
+    final itemStyle =
+        _compact ? ExerciseCardStyles.compactFieldTextStyle : ExerciseCardStyles.fieldTextStyle;
+    final radius =
+        _compact ? ExerciseCardStyles.compactFieldRadius : ExerciseCardStyles.fieldRadius;
 
     return SizedBox(
-      height: ExerciseCardStyles.fieldHeight,
+      height: _fieldHeight,
       child: DropdownButtonFormField<int>(
         initialValue: widget.entry.type,
         isExpanded: true,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-        iconSize: 20,
+        icon: Icon(Icons.keyboard_arrow_down_rounded, size: _compact ? 16 : 20),
+        iconSize: _compact ? 16 : 20,
         style: itemStyle,
         dropdownColor: Colors.white,
-        borderRadius: BorderRadius.circular(ExerciseCardStyles.fieldRadius),
+        borderRadius: BorderRadius.circular(radius),
         menuMaxHeight: 240,
-        items: const [
+        items: [
           DropdownMenuItem(value: 0, child: Text('Aquec.', style: itemStyle)),
           DropdownMenuItem(value: 1, child: Text('Prep.', style: itemStyle)),
           DropdownMenuItem(value: 2, child: Text('Trab', style: itemStyle)),
           DropdownMenuItem(value: 3, child: Text('Falha', style: itemStyle)),
         ],
         onChanged: _handleTypeChanged,
-        decoration: ExerciseCardStyles.dropdownDecoration(),
+        decoration: ExerciseCardStyles.dropdownDecoration(compact: _compact),
       ),
     );
   }

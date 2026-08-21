@@ -11,8 +11,8 @@ abstract final class ExerciseCardStyles {
   static const labelMuted = Color(0xFF8E96B3);
   static const textPrimary = Color(0xFF2D3548);
 
-  static const fieldHeight = 42.0;
-  static const compactFieldHeight = 30.0;
+  static const fieldHeight = 44.0;
+  static const compactFieldHeight = 32.0;
   static const fieldRadius = 12.0;
   static const compactFieldRadius = 8.0;
   static const checkboxSize = 24.0;
@@ -112,18 +112,30 @@ abstract final class ExerciseCardStyles {
     );
   }
 
-  /// Dropdown de tipo de série: [isDense] + padding vertical para caber em [fieldHeight]
-  /// sem encolher o texto como o [fieldDecoration] genérico.
-  static InputDecoration dropdownDecoration() {
+  /// Dropdown de tipo de série: [isDense] + altura fixa alinhada ao restante da linha.
+  static InputDecoration dropdownDecoration({bool compact = false}) {
+    final height = compact ? compactFieldHeight : fieldHeight;
+    final radius = compact ? compactFieldRadius : fieldRadius;
     return InputDecoration(
       isDense: true,
       filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
-      constraints: const BoxConstraints(minHeight: fieldHeight),
-      border: _outlineBorder(fieldBorder),
-      enabledBorder: _outlineBorder(fieldBorder),
-      focusedBorder: _outlineBorder(accent.withValues(alpha: 0.55)),
+      fillColor: compact ? accentBg : Colors.white,
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: compact ? 6 : 8,
+        vertical: 0,
+      ),
+      constraints: BoxConstraints(minHeight: height),
+      border: _outlineBorder(compact ? Colors.transparent : fieldBorder, radius),
+      enabledBorder: _outlineBorder(
+        compact ? Colors.transparent : fieldBorder,
+        radius,
+      ),
+      focusedBorder: _outlineBorder(
+        compact
+            ? accent.withValues(alpha: 0.4)
+            : accent.withValues(alpha: 0.55),
+        radius,
+      ),
     );
   }
 
@@ -171,8 +183,8 @@ abstract final class ExerciseCardStyles {
       isDense: true,
       filled: false,
       contentPadding: EdgeInsets.symmetric(
-        horizontal: compact ? 6 : 10,
-        vertical: compact ? 4 : 11,
+        horizontal: compact ? 4 : 8,
+        vertical: 0,
       ),
       border: InputBorder.none,
       enabledBorder: InputBorder.none,

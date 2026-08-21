@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
-import 'package:iron_log/features/workout_history/presentation/providers/workout_history_provider.dart';
+import 'package:iron_log/features/workout_history/workout_history_providers.dart';
 
 /// Último treino registrado de uma rotina (null se inexistente ou erro de rede).
 final routineLastWorkoutProvider =

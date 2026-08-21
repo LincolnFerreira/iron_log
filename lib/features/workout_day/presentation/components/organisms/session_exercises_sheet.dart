@@ -4,6 +4,7 @@ import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import '../../../domain/entities/workout_exercise.dart';
 import '../../../domain/entities/suggestion_result.dart';
+import '../../exercise_tag_styles.dart';
 import '../../organisms/exercise_card.dart';
 import '../../providers/exercise_suggestion_provider.dart';
 import '../../providers/exercise_last_sets_provider.dart';
@@ -438,7 +439,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: exercise.tag.color.withOpacity(0.1),
+                    color: exerciseTagColor(exercise.tag).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -446,7 +447,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: exercise.tag.color,
+                      color: exerciseTagColor(exercise.tag),
                     ),
                   ),
                 ),
