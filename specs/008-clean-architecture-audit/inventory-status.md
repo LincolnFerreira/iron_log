@@ -1,6 +1,6 @@
 # Inventory Status — 008 Clean Architecture Audit
 
-**Updated**: 2026-08-20 (post `/speckit-analyze` remediação C1–C3 / A1 / U1)  
+**Updated**: 2026-08-21 (Phase 9 convergence — constituição v1.2.3 + agent context)  
 **Spec**: [spec.md](./spec.md) · **Slices**: [contracts/remediation-slices.md](./contracts/remediation-slices.md)
 
 **Canonical inventory** (post-US1): this file. Spec “Inventário Inicial” is the audit snapshot.
@@ -94,9 +94,19 @@ test ! -d lib/features/workout_session → OK
 # - Auth: login sem GoogleAuthService; userProfile via AuthRepository; ApiEndpoints.me
 ```
 
-**Smoke SC-005 (T064)**: **OPEN** — pending manual QA on device/emulator before merge.  
-Checklist: login → home (métricas/calendário) → iniciar/registrar treino → histórico.
+**Smoke SC-005 (T064 / T077)**: **READY — awaiting device confirmation**  
+Emulator `emulator-5554` disponível. Checklist (executar no device/emulador):
 
-**flutter analyze (T067)**: re-run on auth + routines after remediação.
+1. Login (Google)
+2. Home — métricas/calendário carregam
+3. Iniciar ou registrar treino (execução ou manual) — rotas `WorkoutRouteLocations`
+4. Registrar ≥1 série; voltar/finalizar conforme fluxo
+5. Abrir Histórico
+
+Agent close-out 2026-08-21: greps SC-003/SC-004/SC-007 verdes; stubs ausentes;
+`flutter analyze` sem errors novos (infos/warnings pré-existentes). **Marcar done
+após QA humana no emulador** — não falsificar SC-005.
+
+**flutter analyze (T067)**: re-run 2026-08-21 em home/auth/workout_day/routines — sem errors.
 
 **PR checklist**: use `specs/006-flutter-architecture-standard/contracts/pr-review-checklist.md` + this inventory for each remediation PR (FR-010).

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iron_log/core/app_colors.dart';
 
 /// Tokens visuais do card de exercício (séries, campos e ações secundárias).
 abstract final class ExerciseCardStyles {
@@ -6,6 +7,8 @@ abstract final class ExerciseCardStyles {
   static const accentBg = Color(0x0A5B5FE9);
   static const accentBorder = Color(0x525B5FE9);
   static const accentChipBg = Color(0x1A5B5FE9);
+
+  /// Fallbacks light (preferir helpers resolvidos via [BuildContext]).
   static const fieldBorder = Color(0xFFDFE3EE);
   static const rowDivider = Color(0xFFF0F2F8);
   static const labelMuted = Color(0xFF8E96B3);
@@ -18,11 +21,47 @@ abstract final class ExerciseCardStyles {
   static const checkboxSize = 24.0;
   static const compactCheckboxSize = 20.0;
   static const checkboxRadius = 7.0;
-  static const seriesLabelWidth = 52.0;
-  static const doneColumnWidth = 56.0;
-  static const columnGap = 8.0;
+  static const seriesLabelWidth = 48.0;
+  static const doneColumnWidth = 44.0;
+  static const columnGap = 6.0;
   static const rowPaddingV = 8.0;
   static const compactRowPaddingV = 4.0;
+
+  /// Distribuição da mini-tabela: tipo | peso | reps.
+  static const typeColumnFlex = 5;
+  static const weightColumnFlex = 6;
+  static const repsColumnFlex = 4;
+
+  static bool isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color resolvedFieldFill(
+    BuildContext context, {
+    bool compact = false,
+  }) {
+    final dark = isDark(context);
+    if (compact) {
+      return dark
+          ? AppColors.primaryDark.withValues(alpha: 0.12)
+          : accentBg;
+    }
+    return dark ? AppColors.dark30 : Colors.white;
+  }
+
+  static Color resolvedFieldBorder(BuildContext context) =>
+      isDark(context) ? AppColors.dark40 : fieldBorder;
+
+  static Color resolvedTextPrimary(BuildContext context) =>
+      isDark(context) ? AppColors.textPrimaryDark : textPrimary;
+
+  static Color resolvedLabelMuted(BuildContext context) =>
+      isDark(context) ? AppColors.gray50 : labelMuted;
+
+  static Color resolvedRowDivider(BuildContext context) =>
+      isDark(context) ? AppColors.dark40.withValues(alpha: 0.7) : rowDivider;
+
+  static Color resolvedDropdownMenu(BuildContext context) =>
+      isDark(context) ? AppColors.dark30 : Colors.white;
 
   static const techniqueHeaderStyle = TextStyle(
     fontSize: 10,
@@ -46,6 +85,10 @@ abstract final class ExerciseCardStyles {
     color: labelMuted,
   );
 
+  static TextStyle headerStyleOf(BuildContext context) => headerStyle.copyWith(
+        color: resolvedLabelMuted(context),
+      );
+
   static const seriesLabelStyle = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w500,
@@ -64,6 +107,17 @@ abstract final class ExerciseCardStyles {
     color: textPrimary,
   );
 
+  static TextStyle fieldTextStyleOf(
+    BuildContext context, {
+    bool compact = false,
+  }) {
+    return TextStyle(
+      fontSize: compact ? 13 : 14,
+      fontWeight: FontWeight.w500,
+      color: resolvedTextPrimary(context),
+    );
+  }
+
   static const compactUnitHintStyle = TextStyle(
     fontSize: 10,
     fontWeight: FontWeight.w400,
@@ -76,30 +130,43 @@ abstract final class ExerciseCardStyles {
     color: labelMuted,
   );
 
-  static InputDecoration fieldDecoration({
+  static TextStyle unitHintStyleOf(
+    BuildContext context, {
+    bool compact = false,
+  }) {
+    return TextStyle(
+      fontSize: compact ? 10 : 11,
+      fontWeight: FontWeight.w400,
+      color: resolvedLabelMuted(context),
+    );
+  }
+
+  static InputDecoration fieldDecoration(
+    BuildContext context, {
     String? hintText,
     bool compact = false,
   }) {
     final height = compact ? compactFieldHeight : fieldHeight;
-    final textStyle = compact ? compactFieldTextStyle : fieldTextStyle;
+    final textStyle = fieldTextStyleOf(context, compact: compact);
     final radius = compact ? compactFieldRadius : fieldRadius;
+    final border = resolvedFieldBorder(context);
     return InputDecoration(
       hintText: hintText,
-      hintStyle: textStyle.copyWith(color: labelMuted),
+      hintStyle: textStyle.copyWith(color: resolvedLabelMuted(context)),
       isDense: true,
       filled: true,
-      fillColor: compact ? accentBg : Colors.white,
+      fillColor: resolvedFieldFill(context, compact: compact),
       contentPadding: EdgeInsets.symmetric(
         horizontal: compact ? 6 : 10,
         vertical: compact ? 4 : 0,
       ),
       constraints: BoxConstraints(minHeight: height),
       border: _outlineBorder(
-        compact ? Colors.transparent : fieldBorder,
+        compact ? Colors.transparent : border,
         radius,
       ),
       enabledBorder: _outlineBorder(
-        compact ? Colors.transparent : fieldBorder,
+        compact ? Colors.transparent : border,
         radius,
       ),
       focusedBorder: _outlineBorder(
@@ -108,34 +175,7 @@ abstract final class ExerciseCardStyles {
             : accent.withValues(alpha: 0.55),
         radius,
       ),
-      focusedErrorBorder: _outlineBorder(fieldBorder, radius),
-    );
-  }
-
-  /// Dropdown de tipo de série: [isDense] + altura fixa alinhada ao restante da linha.
-  static InputDecoration dropdownDecoration({bool compact = false}) {
-    final height = compact ? compactFieldHeight : fieldHeight;
-    final radius = compact ? compactFieldRadius : fieldRadius;
-    return InputDecoration(
-      isDense: true,
-      filled: true,
-      fillColor: compact ? accentBg : Colors.white,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: compact ? 6 : 8,
-        vertical: 0,
-      ),
-      constraints: BoxConstraints(minHeight: height),
-      border: _outlineBorder(compact ? Colors.transparent : fieldBorder, radius),
-      enabledBorder: _outlineBorder(
-        compact ? Colors.transparent : fieldBorder,
-        radius,
-      ),
-      focusedBorder: _outlineBorder(
-        compact
-            ? accent.withValues(alpha: 0.4)
-            : accent.withValues(alpha: 0.55),
-        radius,
-      ),
+      focusedErrorBorder: _outlineBorder(border, radius),
     );
   }
 
@@ -147,43 +187,46 @@ abstract final class ExerciseCardStyles {
   }
 
   static BoxDecoration fieldBoxDecoration({
+    required BuildContext context,
     bool compact = false,
     bool focused = false,
   }) {
+    final radius = compact ? compactFieldRadius : fieldRadius;
     if (compact) {
       return BoxDecoration(
-        color: accentBg,
-        borderRadius: BorderRadius.circular(compactFieldRadius),
+        color: resolvedFieldFill(context, compact: true),
+        borderRadius: BorderRadius.circular(radius),
         border: focused
             ? Border.all(color: accent.withValues(alpha: 0.4), width: 1)
             : null,
       );
     }
     return BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(fieldRadius),
+      color: resolvedFieldFill(context),
+      borderRadius: BorderRadius.circular(radius),
       border: Border.all(
         color: focused
             ? accent.withValues(alpha: 0.55)
-            : fieldBorder,
+            : resolvedFieldBorder(context),
         width: 1,
       ),
     );
   }
 
   /// TextField sem borda própria — a caixa externa ([fieldBoxDecoration]) define o tamanho.
-  static InputDecoration inlineFieldDecoration({
+  static InputDecoration inlineFieldDecoration(
+    BuildContext context, {
     String? hintText,
     bool compact = false,
   }) {
-    final textStyle = compact ? compactFieldTextStyle : fieldTextStyle;
+    final textStyle = fieldTextStyleOf(context, compact: compact);
     return InputDecoration(
       hintText: hintText,
-      hintStyle: textStyle.copyWith(color: labelMuted),
+      hintStyle: textStyle.copyWith(color: resolvedLabelMuted(context)),
       isDense: true,
       filled: false,
       contentPadding: EdgeInsets.symmetric(
-        horizontal: compact ? 4 : 8,
+        horizontal: compact ? 4 : 6,
         vertical: 0,
       ),
       border: InputBorder.none,
@@ -250,11 +293,12 @@ abstract final class ExerciseCardStyles {
   }
 
   static ThemeData checkboxTheme(BuildContext context) {
+    final border = resolvedFieldBorder(context);
     return Theme.of(context).copyWith(
       checkboxTheme: CheckboxThemeData(
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
-        side: const BorderSide(color: fieldBorder, width: 1.5),
+        side: BorderSide(color: border, width: 1.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(checkboxRadius),
         ),
@@ -262,6 +306,7 @@ abstract final class ExerciseCardStyles {
           if (states.contains(WidgetState.selected)) return accent;
           return Colors.transparent;
         }),
+        checkColor: WidgetStateProperty.all(Colors.white),
       ),
     );
   }

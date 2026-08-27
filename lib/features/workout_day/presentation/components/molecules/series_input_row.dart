@@ -183,13 +183,12 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
       ? ExerciseCardStyles.compactFieldHeight
       : ExerciseCardStyles.fieldHeight;
 
-  TextStyle get _fieldTextStyle => _compact
-      ? ExerciseCardStyles.compactFieldTextStyle
-      : ExerciseCardStyles.fieldTextStyle;
-
-  TextStyle get _unitHintStyle => _compact
-      ? ExerciseCardStyles.compactUnitHintStyle
-      : ExerciseCardStyles.unitHintStyle;
+  static const _typeLabels = <int, String>{
+    0: 'Aquec.',
+    1: 'Prep.',
+    2: 'Trab',
+    3: 'Falha',
+  };
 
   Widget _buildInsetField({
     Key? fieldKey,
@@ -207,74 +206,121 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
       listenable: focusNode,
       builder: (context, _) {
         final focused = focusNode.hasFocus;
+        final textStyle = ExerciseCardStyles.fieldTextStyleOf(
+          context,
+          compact: _compact,
+        );
 
-        final field = SizedBox(
+        return SizedBox(
           height: _fieldHeight,
           child: Container(
             alignment: Alignment.center,
             decoration: ExerciseCardStyles.fieldBoxDecoration(
+              context: context,
               compact: _compact,
               focused: focused,
             ),
-            child: TextField(
-              key: fieldKey,
-              controller: controller,
-              focusNode: focusNode,
-              keyboardType: keyboardType,
-              textInputAction: textInputAction,
-              inputFormatters: inputFormatters,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              style: _fieldTextStyle,
-              onTap: widget.onInteract,
-              onChanged: onChanged,
-              onSubmitted: onSubmitted,
-              decoration: ExerciseCardStyles.inlineFieldDecoration(
-                hintText: hintText,
-                compact: _compact,
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: fieldKey,
+                    controller: controller,
+                    focusNode: focusNode,
+                    keyboardType: keyboardType,
+                    textInputAction: textInputAction,
+                    inputFormatters: inputFormatters,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: textStyle,
+                    onTap: widget.onInteract,
+                    onChanged: onChanged,
+                    onSubmitted: onSubmitted,
+                    decoration: ExerciseCardStyles.inlineFieldDecoration(
+                      context,
+                      hintText: hintText,
+                      compact: _compact,
+                    ),
+                  ),
+                ),
+                if (suffix != null)
+                  Padding(
+                    padding: EdgeInsets.only(right: _compact ? 4 : 8),
+                    child: suffix,
+                  ),
+              ],
             ),
           ),
-        );
-
-        if (suffix == null) return field;
-
-        return Row(
-          children: [
-            Expanded(child: field),
-            const SizedBox(width: 4),
-            suffix,
-          ],
         );
       },
     );
   }
 
   Widget _buildTypeField() {
-    final itemStyle =
-        _compact ? ExerciseCardStyles.compactFieldTextStyle : ExerciseCardStyles.fieldTextStyle;
-    final radius =
-        _compact ? ExerciseCardStyles.compactFieldRadius : ExerciseCardStyles.fieldRadius;
+    final itemStyle = ExerciseCardStyles.fieldTextStyleOf(
+      context,
+      compact: _compact,
+    );
+    final muted = ExerciseCardStyles.resolvedLabelMuted(context);
+    final radius = _compact
+        ? ExerciseCardStyles.compactFieldRadius
+        : ExerciseCardStyles.fieldRadius;
+    final iconSize = _compact ? 16.0 : 18.0;
 
     return SizedBox(
       height: _fieldHeight,
-      child: DropdownButtonFormField<int>(
-        initialValue: widget.entry.type,
-        isExpanded: true,
-        icon: Icon(Icons.keyboard_arrow_down_rounded, size: _compact ? 16 : 20),
-        iconSize: _compact ? 16 : 20,
-        style: itemStyle,
-        dropdownColor: Colors.white,
-        borderRadius: BorderRadius.circular(radius),
-        menuMaxHeight: 240,
-        items: [
-          DropdownMenuItem(value: 0, child: Text('Aquec.', style: itemStyle)),
-          DropdownMenuItem(value: 1, child: Text('Prep.', style: itemStyle)),
-          DropdownMenuItem(value: 2, child: Text('Trab', style: itemStyle)),
-          DropdownMenuItem(value: 3, child: Text('Falha', style: itemStyle)),
-        ],
-        onChanged: _handleTypeChanged,
-        decoration: ExerciseCardStyles.dropdownDecoration(compact: _compact),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: ExerciseCardStyles.fieldBoxDecoration(
+          context: context,
+          compact: _compact,
+        ),
+        padding: EdgeInsets.only(
+          left: _compact ? 4 : 6,
+          right: _compact ? 2 : 4,
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<int>(
+            value: widget.entry.type,
+            isExpanded: true,
+            isDense: true,
+            borderRadius: BorderRadius.circular(radius),
+            menuMaxHeight: 240,
+            icon: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: iconSize,
+              color: muted,
+            ),
+            iconSize: iconSize,
+            style: itemStyle,
+            dropdownColor: ExerciseCardStyles.resolvedDropdownMenu(context),
+            items: _typeLabels.entries
+                .map(
+                  (e) => DropdownMenuItem<int>(
+                    value: e.key,
+                    child: Text(e.value, style: itemStyle),
+                  ),
+                )
+                .toList(),
+            selectedItemBuilder: (context) {
+              return _typeLabels.values
+                  .map(
+                    (label) => Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: itemStyle,
+                      ),
+                    ),
+                  )
+                  .toList();
+            },
+            onChanged: _handleTypeChanged,
+          ),
+        ),
       ),
     );
   }
@@ -293,7 +339,10 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
       onChanged: _handleWeightChanged,
       onSubmitted: _handleWeightSubmitted,
       hintText: '-',
-      suffix: Text(widget.weightUnit.label, style: _unitHintStyle),
+      suffix: Text(
+        widget.weightUnit.label,
+        style: ExerciseCardStyles.unitHintStyleOf(context, compact: _compact),
+      ),
     );
   }
 
@@ -343,18 +392,21 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
   Widget _buildSeriesLabel() {
     final label =
         widget.seriesLabelOverride ?? 'Série ${widget.entry.index + 1}';
+    final muted = ExerciseCardStyles.resolvedLabelMuted(context);
+    final primary = ExerciseCardStyles.resolvedTextPrimary(context);
 
     return SizedBox(
       width: ExerciseCardStyles.seriesLabelWidth,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             label,
             overflow: TextOverflow.ellipsis,
             style: ExerciseCardStyles.seriesLabelStyle.copyWith(
-              color: ExerciseCardStyles.textPrimary,
+              color: primary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -362,7 +414,7 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
             Text(
               widget.stepSubtitle!,
               overflow: TextOverflow.ellipsis,
-              style: ExerciseCardStyles.seriesLabelStyle,
+              style: ExerciseCardStyles.seriesLabelStyle.copyWith(color: muted),
             ),
         ],
       ),
@@ -376,12 +428,21 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
         _buildSeriesLabel(),
         const SizedBox(width: ExerciseCardStyles.columnGap),
         if (widget.showTypeColumn) ...[
-          Expanded(flex: 2, child: _buildTypeField()),
+          Expanded(
+            flex: ExerciseCardStyles.typeColumnFlex,
+            child: _buildTypeField(),
+          ),
           const SizedBox(width: ExerciseCardStyles.columnGap),
         ],
-        Expanded(child: _buildWeightField()),
+        Expanded(
+          flex: ExerciseCardStyles.weightColumnFlex,
+          child: _buildWeightField(),
+        ),
         const SizedBox(width: ExerciseCardStyles.columnGap),
-        Expanded(child: _buildRepsField()),
+        Expanded(
+          flex: ExerciseCardStyles.repsColumnFlex,
+          child: _buildRepsField(),
+        ),
         if (widget.showDoneColumn) ...[
           const SizedBox(width: ExerciseCardStyles.columnGap),
           SizedBox(
@@ -416,8 +477,10 @@ class _SeriesInputRowState extends State<SeriesInputRow> {
       decoration: BoxDecoration(
         border: widget.isFirstRow
             ? null
-            : const Border(
-                top: BorderSide(color: ExerciseCardStyles.rowDivider),
+            : Border(
+                top: BorderSide(
+                  color: ExerciseCardStyles.resolvedRowDivider(context),
+                ),
               ),
       ),
       child: _buildRowContent(),

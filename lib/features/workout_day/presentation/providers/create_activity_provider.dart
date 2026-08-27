@@ -80,3 +80,22 @@ final createActivityProvider =
         throw Exception('Failed to create activity: $e');
       }
     });
+
+/// Submit latch for [CardioCreationPage] — loading lives here, not in setState.
+class CardioCreationSubmitNotifier extends Notifier<AsyncValue<void>> {
+  @override
+  AsyncValue<void> build() => const AsyncData(null);
+
+  Future<bool> save(CreateActivityDto dto) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(createActivityProvider(dto).future);
+    });
+    return !state.hasError;
+  }
+}
+
+final cardioCreationSubmitProvider =
+    NotifierProvider<CardioCreationSubmitNotifier, AsyncValue<void>>(
+  CardioCreationSubmitNotifier.new,
+);

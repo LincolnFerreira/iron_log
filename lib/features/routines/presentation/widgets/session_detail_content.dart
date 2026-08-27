@@ -10,6 +10,8 @@ import 'package:iron_log/core/components/exercise_search/unified_exercise_search
 
 import 'package:iron_log/core/app_colors.dart';
 
+import 'package:iron_log/core/components/app_snackbar.dart';
+
 import '../../domain/entities/routine.dart';
 
 import '../../domain/entities/search_exercise.dart';
@@ -27,6 +29,8 @@ import '../providers/exercise_browse_provider.dart';
 import '../providers/session_provider.dart';
 
 import '../providers/session_editor_state.dart';
+
+import '../providers/routine_ui_feedback_provider.dart';
 
 import 'session_exercise_loading.dart';
 
@@ -223,6 +227,31 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
   @override
 
   Widget build(BuildContext context) {
+
+    ref.listen(routineUiFeedbackProvider, (previous, next) {
+      if (next == null || !mounted) return;
+      switch (next.kind) {
+        case RoutineUiFeedbackKind.success:
+          AppSnackbar.success(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case RoutineUiFeedbackKind.warning:
+          AppSnackbar.warning(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case RoutineUiFeedbackKind.error:
+          AppSnackbar.error(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+      }
+      ref.read(routineUiFeedbackProvider.notifier).clear();
+    });
 
     final selectedExerciseIds = ref.watch(sessionAllExerciseIdsProvider);
 
@@ -572,12 +601,12 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
     if (selectedExerciseIds.isEmpty) {
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-
-        const SnackBar(content: Text('Selecione pelo menos um exercício')),
-
+      showRoutineUiFeedback(
+        ref,
+        RoutineUiFeedbackMessage.warning(
+          title: 'Exercícios',
+          message: 'Selecione pelo menos um exercício',
+        ),
       );
 
       _setSaving(false);
@@ -674,24 +703,14 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
       if (updateSuccess) {
 
-        ScaffoldMessenger.of(context).showSnackBar(
-
-          SnackBar(
-
-            content: Text(
-
-              isEditing
-
-                  ? 'Sessão atualizada com sucesso!'
-
-                  : 'Sessão criada com sucesso!',
-
-            ),
-
-            duration: const Duration(seconds: 2),
-
+        showRoutineUiFeedback(
+          ref,
+          RoutineUiFeedbackMessage.success(
+            title: isEditing ? 'Sessão atualizada' : 'Sessão criada',
+            message: isEditing
+                ? 'Sessão atualizada com sucesso!'
+                : 'Sessão criada com sucesso!',
           ),
-
         );
 
         context.pop();
@@ -700,16 +719,12 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
         final error = ref.read(sessionNotifierProvider).error;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-
-          SnackBar(
-
-            content: Text(error ?? 'Erro ao salvar exercícios da sessão'),
-
-            duration: const Duration(seconds: 3),
-
+        showRoutineUiFeedback(
+          ref,
+          RoutineUiFeedbackMessage.error(
+            title: 'Erro ao salvar',
+            message: error ?? 'Erro ao salvar exercícios da sessão',
           ),
-
         );
 
       }
@@ -722,16 +737,12 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
       final error = ref.read(sessionNotifierProvider).error;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-
-        SnackBar(
-
-          content: Text(error ?? 'Erro ao salvar sessão'),
-
-          duration: const Duration(seconds: 3),
-
+      showRoutineUiFeedback(
+        ref,
+        RoutineUiFeedbackMessage.error(
+          title: 'Erro ao salvar',
+          message: error ?? 'Erro ao salvar sessão',
         ),
-
       );
 
     }

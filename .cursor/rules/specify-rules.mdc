@@ -5,7 +5,7 @@ alwaysApply: true
 <!-- SPECKIT START -->
 # Iron Log Flutter — Agent Context
 
-**Constitution**: `.specify/memory/constitution.md` (v1.2.2)
+**Constitution**: `.specify/memory/constitution.md` (v1.2.3)
 
 **Arquitetura oficial**: `specs/006-flutter-architecture-standard/spec.md`
 
@@ -22,7 +22,7 @@ Backend: `iron_log_back_end` (NestJS + Prisma). Contrato API:
 - `lib/core/` — HTTP, DB, sync, rotas, tema, componentes compartilhados
 - `lib/features/<feature>/` — `domain/` | `data/` | `presentation/`
 - Referência: `routines/`, `workout_day/`. Stubs `analytics/` e
-  `workout_session/` foram removidos (008 P3).
+  `workout_session/` foram removidos (008 P3) — MUST NOT reinstalar.
 
 ## Riverpod — regras essenciais
 
@@ -35,12 +35,11 @@ Backend: `iron_log_back_end` (NestJS + Prisma). Contrato API:
 | Side-effect | `ref.listen` | snackbar, navegação pós-login |
 
 **Código novo**: `@riverpod` + `AsyncNotifier`/`Notifier`, `AsyncValue.guard`.
-**Proibido código novo**: `StateNotifier`, `ChangeNotifier`, `provider`, BLoC,
-GetIt, `ref.watch(repository)` na UI, snackbar no `build`.
+**Proibido**: `StateNotifier`, `ChangeNotifier`, `provider`, BLoC, GetIt,
+`ref.watch(repository)` na UI, snackbar no `build`.
 
-**Legado**: `StateNotifier` existente — feature ativa **008** migra **todos** os
-notifiers inventariados em PRs pequenos (exceção de escopo à regra “só ao
-tocar”). MUST NOT criar novos `StateNotifier`.
+**008**: inventário `StateNotifier` migrado (SC-007). MUST NOT criar novos
+`StateNotifier`.
 
 **Nomenclatura**: nomes declarativos (`workoutDayExercises`, `authRepository`).
 Evitar abreviações opacas (`m.`, `svc`, `repo` sem contexto).
@@ -61,8 +60,8 @@ GoRouter em `core/routes/app_router.dart`. Home:
 Execução de treino: `lib/core/routes/workout_route_locations.dart` — rotas
 `/workout/execution`, `/workout/manual`, `/workout/edit/:id`, `/workout/resume/:draftId`,
 `/workout/summary`. Usar `context.push(WorkoutRouteLocations.*)`; evitar
-`Navigator.push` para fluxos de treino. `WorkoutSessionScreen` — isolar (008),
-sem export/rota de produto.
+`Navigator.push` para fluxos de treino. `WorkoutSessionScreen` — legado isolado
+(`@Deprecated`, sem export/rota de produto).
 
 ## Testes
 
@@ -71,14 +70,14 @@ Unit/widget: `test/` + `getTestProviderOverrides()`. E2E: Patrol em
 
 ## Plano ativo
 
-**Plan**: `specs/008-clean-architecture-audit/plan.md`  
-**Tasks**: `specs/008-clean-architecture-audit/tasks.md`  
-**Spec**: `specs/008-clean-architecture-audit/spec.md`  
-**Contracts**: `specs/008-clean-architecture-audit/contracts/`  
-**Quickstart**: `specs/008-clean-architecture-audit/quickstart.md`
+**Plan**: `specs/010-state-management-audit/plan.md`  
+**Tasks**: `specs/010-state-management-audit/tasks.md`  
+**Spec**: `specs/010-state-management-audit/spec.md`  
+**Contracts**: `specs/010-state-management-audit/contracts/`  
+**Quickstart**: `specs/010-state-management-audit/quickstart.md`
 
-Remediação P1→P2→P3 (HTTP fora da presentation, isolar tela legada, deletar
-stubs, migrar StateNotifier inventariados). Padrão estrutural ainda definido
-em `specs/006-flutter-architecture-standard/`. PR checklist 006:
-`contracts/pr-review-checklist.md` + slices 008 `remediation-slices.md`.
+010 auditoria estado + ciclo de widget: `ref.listen`, watch/read, setState boundary.
+Padrão Riverpod: `specs/006-flutter-architecture-standard/contracts/riverpod-conventions.md`.
+Gabaritos: `contracts/state-patterns.md` + home pós-008 + `elapsedTimeProvider`.
+008 concluída (camadas/StateNotifier); não reabrir.
 <!-- SPECKIT END -->

@@ -2,6 +2,17 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "adb: reverse 3000",
+      "type": "shell",
+      "command": "adb reverse tcp:3000 tcp:3000",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    },
+    {
       "label": "build-web",
       "type": "shell",
       "command": "pwsh -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\build_web_prod.ps1",

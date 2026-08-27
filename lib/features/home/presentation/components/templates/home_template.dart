@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:iron_log/features/home/presentation/providers/home_provider.dart
 import 'package:iron_log/features/home/presentation/providers/workout_calendar_provider.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
 
+import '../molecules/api_debug_host_panel.dart';
 import '../molecules/greeting_header.dart';
 import '../molecules/active_sequence_card.dart';
 import '../molecules/mini_calendar_strip.dart';
@@ -70,6 +72,7 @@ class HomeTemplate extends StatelessWidget {
                 return _OfflineInfoBanner(message: banner);
               },
             ),
+            if (kDebugMode) const ApiDebugHostPanel(),
             Consumer(
               builder: (context, ref, _) {
                 final error = ref.watch(homeProvider.select((s) => s.error));

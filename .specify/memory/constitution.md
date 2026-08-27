@@ -1,11 +1,11 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.1.0
-- Modified principles: none renamed; guidance expanded in new sections
-- Added sections: Mapa de Módulos; Domínio Workout (fluxos, modos, start/finish)
-- Removed sections: none
+- Version change: 1.2.2 → 1.2.3
+- Modified principles: none renamed
+- Clarified: Domínio Workout / navegação pós-008 (GoRouter + WorkoutSessionScreen isolada)
+- Removed follow-up TODOs: migrar execução para go_router; unificar telas (concluídos na 008)
 - Templates: plan-template.md ✅ | specify-rules.mdc ✅ | spec-template.md ✅ | tasks-template.md ✅
-- Follow-up TODOs: migrar execução de treino para go_router; unificar WorkoutDayScreen vs WorkoutSessionScreen
+- Follow-up TODOs: none for workout navigation
 -->
 
 # Iron Log Constitution
@@ -66,10 +66,9 @@ distintos. UI MUST `ref.watch` apenas providers de **estado** (controllers,
 - `autoDispose` padrão em telas; `@Riverpod(keepAlive: true)` para sessão,
   auth, tema e infra de boot
 
-**Legado permitido até migração incremental**: `StateNotifierProvider` +
-`StateNotifier` existentes (`AuthNotifier`, `workoutDayExercisesProvider`,
-etc.). MUST NOT criar novos `StateNotifier`. Migrar para `AsyncNotifier` ao
-tocar o arquivo em PR pequeno — **proibido** rewrite em massa.
+**Legado**: inventário `StateNotifier` da feature **008** foi migrado para
+`@riverpod` + `AsyncNotifier`/`Notifier` (SC-007). MUST NOT criar novos
+`StateNotifier`. Código novo MUST seguir AsyncNotifier/Notifier.
 
 `provider`, `flutter_bloc`, `ChangeNotifier`, GetIt e service locator MUST NOT
 ser usados em código novo. Pastas `presentation/bloc/` podem conter Riverpod
@@ -148,8 +147,10 @@ Schema canônico de dados: `iron_log_back_end/prisma/schema.prisma`.
 Espelho local: `lib/core/database/` (Drift, schema v4).
 
 Navegação shell: `go_router` em `lib/core/routes/app_router.dart`.
-Execução de treino usa `Navigator.push` imperativo (fora do router) até
-migração planejada.
+Execução/edição/registro/resumo de treino MUST usar
+`WorkoutRouteLocations` + rotas GoRouter (`/workout/execution`, `/manual`,
+`/edit/:id`, `/resume/:draftId`, `/summary`) — MUST NOT abrir o fluxo de
+produto via `Navigator.push` / `MaterialPageRoute` paralelo.
 
 Localização: strings em português (pt-BR) inline até introdução formal de l10n.
 
@@ -161,12 +162,12 @@ Visão dos módulos ativos em `lib/features/` e papel de cada um.
 
 | Módulo | Caminho | Responsabilidade | Camadas / notas |
 |--------|---------|------------------|-----------------|
-| **auth** | `features/auth/` | Splash, login (Google/email), `AuthNotifier`, perfil | `domain/`, `presentation/`; `authStateProvider` governa redirect do router |
+| **auth** | `features/auth/` | Splash, login (Google/email), `AuthController`, perfil | `domain/`/`data/`/`presentation/`; `authStateProvider` governa redirect do router |
 | **onboarding** | `features/onboarding/` | Frequência e metodologia inicial | `controller/` com `@riverpod`; rotas `/onboarding`, `/methodology` |
-| **home** | `features/home/` | Dashboard: rotina/sessão do dia, métricas, calendário, streak | `components/` (atomic), `state/home_provider.dart`; ponto de **start** do treino ao vivo |
+| **home** | `features/home/` | Dashboard: rotina/sessão do dia, métricas, calendário, streak | `data/`/`domain/`/`presentation/`; start do treino ao vivo via `WorkoutRouteLocations` |
 | **routines** | `features/routines/` | CRUD rotinas, sessões, editor, busca exercícios | Referência **data/domain/presentation**; cache offline via `RoutineCachedRepositoryImpl` |
 | **workout_day** | `features/workout_day/` | Execução, registro série a série, voz, técnicas, timer, summary | Módulo central de **execução**; ver seção Domínio Workout |
-| **workout_history** | `features/workout_history/` | Listagem, filtros, detalhe, edição e registro retroativo | Abre `WorkoutDayScreen.edit` / `.manual` via `Navigator` |
+| **workout_history** | `features/workout_history/` | Listagem, filtros, detalhe, edição e registro retroativo | Abre `WorkoutDayScreen` via `WorkoutRouteLocations.edit` / `.manual` |
 | **workout_creation** | `features/workout_creation/` | Treino rápido — reordenar split semanal | Rota `/workout/quick-create`; UI de rotação, não execução completa |
 | **settings** | `features/settings/` | Preferências, logout, versão | `IronTokens` visual local (exceção ao tema global) |
 
@@ -194,12 +195,17 @@ Visão dos módulos ativos em `lib/features/` e papel de cada um.
 | `/routines/:routineId/sessions/new` | Nova sessão | routines → `SessionEditorPage` |
 | `/routines/:routineId/sessions/:sessionId` | Editar sessão (plano) | routines → `SessionEditorPage` |
 | `/workout/quick-create` | Rotação rápida | workout_creation |
+| `/workout/execution` | Treino ao vivo | workout_day → `WorkoutDayScreen` |
+| `/workout/manual` | Registro retroativo | workout_day → `WorkoutDayScreen` |
+| `/workout/edit/:id` | Editar treino | workout_day → `WorkoutDayScreen` |
+| `/workout/resume/:draftId` | Retomar rascunho | workout_day → `WorkoutDayScreen` |
+| `/workout/summary` | Resumo pós-finish | workout_day → summary |
 | `/cardio-creation` | Registrar cardio | workout_day → `CardioCreationPage` |
 | `/history` | Histórico | workout_history |
 | `/settings` | Configurações | settings |
 
-**Fora do go_router (imperativo):** `WorkoutDayScreen` (execução/edição/registro),
-aberta de Home ou Histórico via `MaterialPageRoute`.
+**Produto**: execução/edição/registro MUST passar por `WorkoutRouteLocations` +
+`WorkoutDayScreen`. `WorkoutSessionScreen` é legado isolado (sem export/rota).
 
 ## Domínio Workout
 
@@ -333,15 +339,15 @@ Persistência: `WorkoutLogService` (`data/services/workout_log_service.dart`).
 - POST/PATCH `/workout` com exercícios, `techniqueBlocks`, RIR, restSeconds
 - Offline no finish: enfileira em `WorkoutOutbox` (exceto start com skip outbox)
 
-### Telas de execução (duas UIs)
+### Telas de execução
 
 | Tela | Status | Uso |
 |------|--------|-----|
-| `WorkoutDayScreen` | **Canônica hoje** | Home, Histórico, E2E Patrol |
-| `WorkoutSessionScreen` | Alternativa search-first | Exportada em `workout_day.dart`; mesma lógica de lifecycle |
+| `WorkoutDayScreen` | **Canônica (produto)** | Home, Histórico, E2E Patrol; rotas `WorkoutRouteLocations` |
+| `WorkoutSessionScreen` | **Legado isolado (008)** | `@Deprecated`; sem export em `workout_day.dart`; sem rota GoRouter |
 
-Novas features de execução MUST estender `WorkoutDayScreen` ou consolidar nas
-duas telas explicitamente — MUST NOT criar terceira tela sem emenda.
+Novas features de execução MUST estender `WorkoutDayScreen` — MUST NOT
+reativar `WorkoutSessionScreen` nem criar terceira tela sem emenda.
 
 ### Providers e serviços workout (referência rápida)
 
@@ -416,4 +422,4 @@ endpoint duplicado) MUST ser justificada na tabela Complexity Tracking do plano.
 Orientação runtime para agentes: `.cursor/rules/specify-rules.mdc` e plano
 ativo em `specs/<feature>/plan.md`.
 
-**Version**: 1.2.2 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-06-23
+**Version**: 1.2.3 | **Ratified**: 2026-06-11 | **Last Amended**: 2026-08-21

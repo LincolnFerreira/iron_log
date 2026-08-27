@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/auth/presentation/utils/logout_utils.dart';
@@ -10,6 +11,7 @@ import 'package:iron_log/features/workout_day/presentation/providers/workout_dra
 import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
 import 'package:iron_log/features/home/presentation/components/templates/home_template.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
+import 'package:iron_log/features/home/presentation/providers/home_ui_feedback_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -49,6 +51,32 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(homeUiFeedbackProvider, (previous, next) {
+      if (next == null || !mounted) return;
+
+      switch (next.kind) {
+        case HomeUiFeedbackKind.success:
+          AppSnackbar.success(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case HomeUiFeedbackKind.warning:
+          AppSnackbar.warning(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case HomeUiFeedbackKind.error:
+          AppSnackbar.error(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+      }
+      ref.read(homeUiFeedbackProvider.notifier).clear();
+    });
+
     // Estado reativo vive em Consumers dentro de [HomeTemplate] (T073).
     return Scaffold(
       body: HomeTemplate(

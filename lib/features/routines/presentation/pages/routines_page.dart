@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import '../../domain/entities/routine.dart';
 import '../../domain/entities/routine_update.dart';
 import '../providers/routine_provider.dart';
+import '../providers/routine_ui_feedback_provider.dart';
 import '../components/molecules/routine_card.dart';
 import '../widgets/routine_loading_skeletons.dart';
 
@@ -58,7 +60,45 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
 
   @override
   Widget build(BuildContext context) {
-    final routineState = ref.watch(routineNotifierProvider);
+    ref.listen(routineUiFeedbackProvider, (previous, next) {
+      if (next == null || !mounted) return;
+
+      VoidCallback? onAction;
+      if (next.actionLabel != null && next.actionRoutineId != null) {
+          final routineId = next.actionRoutineId!;
+        onAction = () {
+          final routines = ref.read(routineNotifierProvider).routines;
+          final index = routines.indexWhere((r) => r.id == routineId);
+          if (index >= 0 && mounted) {
+            _navigateToRoutineDetail(context, routines[index]);
+          }
+        };
+      }
+
+      switch (next.kind) {
+        case RoutineUiFeedbackKind.success:
+          AppSnackbar.success(
+            context: context,
+            title: next.title,
+            message: next.message,
+            actionLabel: next.actionLabel,
+            onAction: onAction,
+          );
+        case RoutineUiFeedbackKind.warning:
+          AppSnackbar.warning(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case RoutineUiFeedbackKind.error:
+          AppSnackbar.error(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+      }
+      ref.read(routineUiFeedbackProvider.notifier).clear();
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -77,22 +117,38 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
           ),
         ],
       ),
-      body: _buildBody(routineState),
+      // Isola rebuilds da lista: ignora selectedRoutine e não rebuilda o AppBar.
+      body: Consumer(
+        builder: (context, ref, _) {
+          final view = ref.watch(
+            routineNotifierProvider.select(
+              (s) => (
+                isLoading: s.isLoading,
+                error: s.error,
+                routines: s.routines,
+              ),
+            ),
+          );
+          return _buildBody(view);
+        },
+      ),
     );
   }
 
-  Widget _buildBody(RoutineState state) {
-    if (state.isLoading) {
+  Widget _buildBody(
+    ({bool isLoading, String? error, List<Routine> routines}) view,
+  ) {
+    if (view.isLoading) {
       return const RoutinesListSkeleton();
     }
 
-    if (state.error != null) {
+    if (view.error != null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Erro: ${state.error}',
+              'Erro: ${view.error}',
               style: const TextStyle(color: Colors.red),
               textAlign: TextAlign.center,
             ),
@@ -107,7 +163,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
       );
     }
 
-    if (state.routines.isEmpty) {
+    if (view.routines.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -130,9 +186,9 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: state.routines.length,
+      itemCount: view.routines.length,
       itemBuilder: (context, index) {
-        final routine = state.routines[index];
+        final routine = view.routines[index];
         return RoutineCard(
           routine: routine,
           onTap: () => _navigateToRoutineDetail(context, routine),
@@ -145,9 +201,6 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
   }
 
   void _showCreateRoutineDialog(BuildContext context, WidgetRef ref) {
-    final pageContext = context;
-    final messenger = ScaffoldMessenger.of(pageContext);
-
     final nameController = TextEditingController();
     final divisionSuggestions = <String>[
       'Push/Pull/Legs',
@@ -160,7 +213,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
     var isSubmitting = false;
     String? selectedDivision;
     showModalBottomSheet<void>(
-      context: pageContext,
+      context: context,
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
@@ -388,17 +441,14 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                                     final err = ref
                                         .read(routineNotifierProvider)
                                         .error;
-                                    if (pageContext.mounted) {
-                                      messenger.showSnackBar(
-                                        SnackBar(
-                                          content: Text(
+                                    showRoutineUiFeedback(
+                                      ref,
+                                      RoutineUiFeedbackMessage.error(
+                                        title: 'Erro ao criar',
+                                        message:
                                             err ?? 'Não foi possível criar a rotina',
-                                          ),
-                                          backgroundColor:
-                                              Theme.of(pageContext).colorScheme.error,
-                                        ),
-                                      );
-                                    }
+                                      ),
+                                    );
                                     return;
                                   }
 
@@ -408,22 +458,13 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                                     Navigator.of(sheetContext).pop();
                                   }
 
-                                  if (!pageContext.mounted) return;
-
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      content: const Text('Rotina criada'),
-                                      action: SnackBarAction(
-                                        label: 'Adicionar sessões',
-                                        onPressed: () {
-                                          if (pageContext.mounted) {
-                                            _navigateToRoutineDetail(
-                                              pageContext,
-                                              created,
-                                            );
-                                          }
-                                        },
-                                      ),
+                                  showRoutineUiFeedback(
+                                    ref,
+                                    RoutineUiFeedbackMessage.success(
+                                      title: 'Rotina criada',
+                                      message: 'Rotina criada com sucesso',
+                                      actionLabel: 'Adicionar sessões',
+                                      actionRoutineId: created.id,
                                     ),
                                   );
                                 },
@@ -459,16 +500,19 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
       await ref.read(routineNotifierProvider.notifier).loadRoutines();
       // Also refresh home so today's session reflects the new active routine.
       ref.read(homeProvider.notifier).refresh();
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"${routine.name}" definida como rotina ativa')),
+      showRoutineUiFeedback(
+        ref,
+        RoutineUiFeedbackMessage.success(
+          title: 'Rotina ativa',
+          message: '"${routine.name}" definida como rotina ativa',
+        ),
       );
     } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao definir rotina ativa: $e'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+      showRoutineUiFeedback(
+        ref,
+        RoutineUiFeedbackMessage.error(
+          title: 'Erro',
+          message: 'Erro ao definir rotina ativa: $e',
         ),
       );
     }

@@ -6,5 +6,5 @@ import 'package:iron_log/features/routines/routine_providers.dart';
 final exerciseBrowseProvider = FutureProvider<ExerciseBrowseResult>((
   ref,
 ) async {
-  return ref.watch(exerciseRemoteDataSourceProvider).browseExercises();
+  return ref.read(exerciseRemoteDataSourceProvider).browseExercises();
 });

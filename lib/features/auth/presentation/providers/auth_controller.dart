@@ -82,21 +82,59 @@ class AuthController extends _$AuthController {
     state = state.copyWith(user: user, isLoading: false);
   }
 
-  Future<void> syncBackendUser(User user) async {
-    await ref.read(authRepositoryProvider).upsertUser(
-      firebaseId: user.uid,
-      email: user.email ?? '',
-      name: user.displayName,
-    );
+  void clearFeedback() {
+    if (state.feedback != null) {
+      state = state.copyWith(feedback: null);
+    }
   }
 
-  /// Google Sign-In + retorno do [User] Firebase. `null` se o usuário cancelar.
+  Future<void> syncBackendUser(User user) async {
+    try {
+      await ref.read(authRepositoryProvider).upsertUser(
+        firebaseId: user.uid,
+        email: user.email ?? '',
+        name: user.displayName,
+      );
+      state = state.copyWith(
+        feedback: AuthFeedback.success(
+          title: 'Sucesso',
+          message: 'Usuário sincronizado com o servidor',
+        ),
+      );
+    } catch (e) {
+      state = state.copyWith(
+        feedback: AuthFeedback.warning(
+          title: 'Sincronização',
+          message: 'Erro ao sincronizar usuário: $e',
+        ),
+      );
+    }
+  }
+
+  /// Google Sign-In + retorno do [User] Firebase. `null` se cancelar ou falhar.
   Future<User?> signInWithGoogle() async {
-    final result = await _googleAuth.signInWithGoogle(
-      serverClientId: _googleServerClientId,
-    );
-    if (result == null) return null;
-    return result.user ?? FirebaseAuth.instance.currentUser;
+    state = state.copyWith(isSigningIn: true, feedback: null);
+    try {
+      final result = await _googleAuth.signInWithGoogle(
+        serverClientId: _googleServerClientId,
+      );
+      if (result == null) {
+        state = state.copyWith(isSigningIn: false);
+        return null;
+      }
+      final user = result.user ?? FirebaseAuth.instance.currentUser;
+      state = state.copyWith(isSigningIn: false);
+      return user;
+    } catch (e) {
+      state = state.copyWith(
+        isSigningIn: false,
+        feedback: AuthFeedback.error(
+          title: 'Erro no login',
+          message: e.toString(),
+        ),
+      );
+      return null;
+    }
   }
 
   Future<void> signOut() async {

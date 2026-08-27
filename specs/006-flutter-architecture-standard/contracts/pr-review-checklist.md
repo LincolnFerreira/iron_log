@@ -17,6 +17,7 @@ Use em todo PR que toca `lib/`. Itens marcados **(new)** aplicam-se estritamente
 - [ ] **(new)** Sem `StateNotifier`, `provider`, `bloc` em código novo
 - [ ] **(new)** UI `watch` só estado; `read` para repositories/services
 - [ ] **(new)** Side-effects (snackbar, nav) via `ref.listen`, não no `build`
+- [ ] **(010)** Greps e checklist de estado: `specs/010-state-management-audit/contracts/state-enforcement.md`
 - [ ] **(new)** Async ops usam `AsyncValue.guard` em controllers codegen
 - [ ] **(legacy)** Se tocou `StateNotifier` legado, avaliou migração para `AsyncNotifier` no mesmo PR?
 

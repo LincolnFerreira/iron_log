@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/features/home/data/models/active_rest_dto.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
+import 'package:iron_log/features/home/presentation/providers/home_ui_feedback_provider.dart';
 
 class RestDayCreationSheet extends ConsumerStatefulWidget {
   final String date;
@@ -258,10 +259,11 @@ class _RestDayCreationSheetState extends ConsumerState<RestDayCreationSheet> {
 
   Future<void> _handleSave() async {
     if (_selectedType == 'active_rest' && _selectedActivityType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecione um tipo de atividade'),
-          backgroundColor: Colors.orange,
+      showHomeUiFeedback(
+        ref,
+        HomeUiFeedbackMessage.warning(
+          title: 'Atividade obrigatória',
+          message: 'Selecione um tipo de atividade',
         ),
       );
       return;
@@ -282,21 +284,23 @@ class _RestDayCreationSheetState extends ConsumerState<RestDayCreationSheet> {
       await ref.read(createRestDayProvider(dto).future);
 
       if (mounted) {
-        Navigator.pop(context);
-        widget.onCreated?.call();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Descanso registrado com sucesso!'),
-            backgroundColor: Colors.green,
+        showHomeUiFeedback(
+          ref,
+          HomeUiFeedbackMessage.success(
+            title: 'Descanso registrado',
+            message: 'Descanso registrado com sucesso!',
           ),
         );
+        Navigator.pop(context);
+        widget.onCreated?.call();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao salvar: $e'),
-            backgroundColor: Colors.red,
+        showHomeUiFeedback(
+          ref,
+          HomeUiFeedbackMessage.error(
+            title: 'Erro ao salvar',
+            message: 'Erro ao salvar: $e',
           ),
         );
       }

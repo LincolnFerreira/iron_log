@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iron_log/features/home/presentation/providers/home_ui_feedback_provider.dart';
 import '../providers/create_activity_provider.dart';
 
 /// Página para criação rápida de cardio
@@ -20,7 +21,6 @@ class _CardioCreationPageState extends ConsumerState<CardioCreationPage> {
   int durationMinutes = 30;
   String intensity = 'moderate';
   final TextEditingController notesController = TextEditingController();
-  bool isLoading = false;
 
   final List<String> cardioTypes = [
     'running',
@@ -49,57 +49,50 @@ class _CardioCreationPageState extends ConsumerState<CardioCreationPage> {
   Future<void> _saveCardio() async {
     if (!mounted) return;
 
-    setState(() => isLoading = true);
+    final dateStr = selectedDate.toIso8601String().split('T')[0];
+    final dto = CreateActivityDto(
+      type: 'cardio',
+      cardioType: cardioType,
+      intensity: intensity,
+      duration: durationMinutes * 60,
+      notes: notesController.text.isEmpty ? null : notesController.text,
+      date: dateStr,
+    );
 
-    try {
-      final dateStr = selectedDate.toIso8601String().split('T')[0];
+    final ok = await ref.read(cardioCreationSubmitProvider.notifier).save(dto);
+    if (!mounted) return;
 
-      // Criar DTO para enviar ao backend
-      final dto = CreateActivityDto(
-        type: 'cardio',
-        cardioType: cardioType,
-        intensity: intensity,
-        duration: durationMinutes * 60, // converter para segundos
-        notes: notesController.text.isEmpty ? null : notesController.text,
-        date: dateStr,
-      );
-
-      // Chamar backend via provider
-      final result = await ref.read(createActivityProvider(dto).future);
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '✅ Cardio ($cardioType) registrado com sucesso! Duration: ${durationMinutes}min',
-          ),
-          duration: const Duration(seconds: 2),
+    if (ok) {
+      // Home overvive ao pop — listener em HomePage exibe o snackbar.
+      showHomeUiFeedback(
+        ref,
+        HomeUiFeedbackMessage.success(
+          title: 'Cardio registrado',
+          message:
+              'Cardio ($cardioType) registrado com sucesso! '
+              'Duração: ${durationMinutes}min',
         ),
       );
-
-      // Voltar para home
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) context.pop();
-      });
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('❌ Erro ao salvar cardio: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      context.pop();
+      return;
     }
+
+    final err = ref.read(cardioCreationSubmitProvider).error;
+    showHomeUiFeedback(
+      ref,
+      HomeUiFeedbackMessage.error(
+        title: 'Erro ao salvar',
+        message: 'Erro ao salvar cardio: ${err ?? 'desconhecido'}',
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(
+      cardioCreationSubmitProvider.select((s) => s.isLoading),
+    );
+
     return Scaffold(
       appBar: AppBar(title: const Text('Registrar Cardio'), centerTitle: true),
       body: SingleChildScrollView(
@@ -107,27 +100,16 @@ class _CardioCreationPageState extends ConsumerState<CardioCreationPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Data
             _buildDateSection(),
             const SizedBox(height: 24),
-
-            // Tipo de Cardio
             _buildCardioTypeSection(),
             const SizedBox(height: 24),
-
-            // Duração
             _buildDurationSection(),
             const SizedBox(height: 24),
-
-            // Intensidade
             _buildIntensitySection(),
             const SizedBox(height: 24),
-
-            // Notas
             _buildNotesSection(),
             const SizedBox(height: 32),
-
-            // Botão Salvar
             SizedBox(
               width: double.infinity,
               height: 48,

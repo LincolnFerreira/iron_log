@@ -206,30 +206,41 @@ class _SeriesTableState extends State<SeriesTable> {
                 SizedBox(width: ExerciseCardStyles.seriesLabelWidth),
                 const SizedBox(width: ExerciseCardStyles.columnGap),
                 if (!widget.hideTypeForCluster) ...[
-                  const Expanded(
-                    flex: 2,
-                    child: Text('TIPO', style: ExerciseCardStyles.headerStyle),
+                  Expanded(
+                    flex: ExerciseCardStyles.typeColumnFlex,
+                    child: Text(
+                      'TIPO',
+                      textAlign: TextAlign.center,
+                      style: ExerciseCardStyles.headerStyleOf(context),
+                    ),
                   ),
                   const SizedBox(width: ExerciseCardStyles.columnGap),
                 ],
                 Expanded(
+                  flex: ExerciseCardStyles.weightColumnFlex,
                   child: Text(
                     'PESO (${widget.weightUnit.label.toUpperCase()})',
-                    style: ExerciseCardStyles.headerStyle,
+                    textAlign: TextAlign.center,
+                    style: ExerciseCardStyles.headerStyleOf(context),
                   ),
                 ),
                 const SizedBox(width: ExerciseCardStyles.columnGap),
-                const Expanded(
-                  child: Text('REPS', style: ExerciseCardStyles.headerStyle),
+                Expanded(
+                  flex: ExerciseCardStyles.repsColumnFlex,
+                  child: Text(
+                    'REPS',
+                    textAlign: TextAlign.center,
+                    style: ExerciseCardStyles.headerStyleOf(context),
+                  ),
                 ),
                 if (widget.showDoneColumn) ...[
                   const SizedBox(width: ExerciseCardStyles.columnGap),
-                  const SizedBox(
+                  SizedBox(
                     width: ExerciseCardStyles.doneColumnWidth,
                     child: Center(
                       child: Text(
                         'FEITO',
-                        style: ExerciseCardStyles.headerStyle,
+                        style: ExerciseCardStyles.headerStyleOf(context),
                       ),
                     ),
                   ),

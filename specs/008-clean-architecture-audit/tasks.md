@@ -277,3 +277,14 @@ Task: "Migrate SyncStateNotifier"
 - Commit por task ou por slice de `remediation-slices.md`  
 - FR-011: sem redesign de UX nestas tasks  
 - Exceção constituição StateNotifier: escopo completo, PRs pequenos (Complexity Tracking no plan)
+
+---
+
+## Phase 9: Convergence
+
+**Purpose**: Fechar gaps restantes para encerrar a 008 (docs de governo + SC-005). Código P1–P3 / greps SC-003/SC-004/SC-007 já satisfazem o inventário runtime.
+
+- [X] T075 CRITICAL Sync `.specify/memory/constitution.md` Domínio Workout + Sync Impact TODOs with 008 outcomes — `WorkoutSessionScreen` isolated (not product-exported), execution via `WorkoutRouteLocations`/GoRouter — per Constitution Domínio Workout / FR-006 / SC-004 (contradicts)
+- [X] T076 Refresh `.cursor/rules/specify-rules.mdc` SPECKIT agent context — StateNotifier inventário já migrado (não “ainda a migrar”); stubs removidos; aponta só `routines`/`workout_day` — per SC-002 / plan: agent context (partial)
+- [ ] T077 Complete SC-005 smoke (login → home → treino → histórico), mark open T064 done, set `inventory-status.md` Smoke SC-005 to done — per SC-005 / T064 (partial)
+  - **Blocked**: requires Firebase login on emulator/device. Close-out greps + analyze already green (see inventory). After smoke: check T064 + T077 and set Smoke to **done**.

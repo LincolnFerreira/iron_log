@@ -22,6 +22,7 @@ import '../../domain/enums/workout_screen_mode.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/exercise_last_sets_provider.dart';
 import '../providers/exercise_suggestion_provider.dart';
+import '../providers/workout_ui_feedback_provider.dart';
 
 class ExerciseCard extends ConsumerStatefulWidget {
   final WorkoutExercise exercise;
@@ -360,13 +361,13 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
             child: Container(
               height: ExerciseCardStyles.fieldHeight,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: ExerciseCardStyles.fieldBoxDecoration(),
+              decoration: ExerciseCardStyles.fieldBoxDecoration(context: context),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.chat_bubble_outline,
                     size: 18,
-                    color: ExerciseCardStyles.labelMuted,
+                    color: ExerciseCardStyles.resolvedLabelMuted(context),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -377,8 +378,8 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                       style: TextStyle(
                         fontSize: 13,
                         color: _notes.isEmpty
-                            ? ExerciseCardStyles.labelMuted
-                            : ExerciseCardStyles.textPrimary,
+                            ? ExerciseCardStyles.resolvedLabelMuted(context)
+                            : ExerciseCardStyles.resolvedTextPrimary(context),
                       ),
                     ),
                   ),
@@ -667,14 +668,13 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                       setState(() => _notes = notesController.text);
                       _updateExercise();
                       Navigator.pop(context);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Observações salvas!'),
-                            duration: Duration(milliseconds: 1500),
-                          ),
-                        );
-                      }
+                      showWorkoutUiFeedback(
+                        ref,
+                        WorkoutUiFeedbackMessage.success(
+                          title: 'Observações',
+                          message: 'Observações salvas!',
+                        ),
+                      );
                     },
                     child: const Text('Salvar'),
                   ),
@@ -777,63 +777,38 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     final mode = ref.read(workoutScreenModeProvider);
 
     try {
-      // Mostra loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              SizedBox(width: 16),
-              Text('Removendo exercício...'),
-            ],
-          ),
-        ),
-      );
-
-      // Chama o provider para remover do backend / atualizar workout conforme contexto
       await ref
           .read(workoutDayExercisesProvider.notifier)
           .removeExerciseFromSession(widget.sessionId!, widget.exercise.id);
 
-      // Mostra sucesso contextualizado
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-        String successMessage;
-        if (mode == WorkoutScreenMode.execution) {
-          successMessage =
-              'Exercício removido deste treino. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
-        } else if (mode == WorkoutScreenMode.editing) {
-          successMessage =
-              'Exercício removido deste treino registrado com sucesso. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
-        } else if (mode == WorkoutScreenMode.template) {
-          successMessage = 'Exercício removido do plano deste dia.';
-        } else {
-          successMessage = 'Exercício removido com sucesso.';
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(successMessage),
-            backgroundColor: Colors.green,
-          ),
-        );
+      String successMessage;
+      if (mode == WorkoutScreenMode.execution) {
+        successMessage =
+            'Exercício removido deste treino. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
+      } else if (mode == WorkoutScreenMode.editing) {
+        successMessage =
+            'Exercício removido deste treino registrado com sucesso. Para remover do planejamento, edite a sessão correspondente em "Sessões".';
+      } else if (mode == WorkoutScreenMode.template) {
+        successMessage = 'Exercício removido do plano deste dia.';
+      } else {
+        successMessage = 'Exercício removido com sucesso.';
       }
+
+      showWorkoutUiFeedback(
+        ref,
+        WorkoutUiFeedbackMessage.success(
+          title: 'Exercício removido',
+          message: successMessage,
+        ),
+      );
     } catch (e) {
-      // Mostra erro
-      if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao remover exercício: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      showWorkoutUiFeedback(
+        ref,
+        WorkoutUiFeedbackMessage.error(
+          title: 'Erro ao remover',
+          message: 'Erro ao remover exercício: $e',
+        ),
+      );
     }
   }
 

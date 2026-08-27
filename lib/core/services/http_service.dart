@@ -12,7 +12,7 @@ import '../env.dart';
 
 class ApiConfig {
 
-  // Dev padrão: 10.0.2.2 (emulador Android). Celular físico: --dart-define=API_HOST=<IP LAN>
+  // Local: 127.0.0.1:3000 + adb reverse. Cloud: FLAVOR=prod.
 
   static final String baseUrl = Env.apiBaseUrl;
 
@@ -183,19 +183,12 @@ class HttpService {
 
 
   /// Getter para acesso direto ao Dio (se necessário para casos específicos)
-
   Dio get dio {
-
     if (!_initialized) {
-
       throw StateError('HttpService must be initialized before use');
-
     }
-
     return _dio;
-
   }
-
 }
 
 

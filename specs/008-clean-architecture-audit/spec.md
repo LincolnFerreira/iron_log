@@ -4,7 +4,7 @@
 
 **Created**: 2026-08-20
 
-**Status**: Implementation complete — SC-005 smoke pending (T064)
+**Status**: Implementation complete — SC-005 smoke awaiting device confirmation (T077)
 
 **Input**: User description: "quero organizar a estrutura do aplicativo na questão de clean architecture, imagino que tem coisas sem estar no lugar correto, consegue verificar pra mim?"
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/routes/workout_route_locations.dart';
 import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/workout_mode.dart';
 import 'package:iron_log/features/workout_day/presentation/controllers/workout_controller.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_ui_feedback_provider.dart';
 import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/workout_timer_provider.dart';
 
@@ -156,9 +156,11 @@ class WorkoutFinishFlow {
       } else {
         if (isMounted()) {
           onWorkoutNotStarted();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Nenhuma sessão disponível para selecionar.'),
+          showWorkoutUiFeedback(
+            ref,
+            WorkoutUiFeedbackMessage.warning(
+              title: 'Sessão necessária',
+              message: 'Nenhuma sessão disponível para selecionar.',
             ),
           );
         }
@@ -169,8 +171,12 @@ class WorkoutFinishFlow {
     if (result.success && result.summary != null) {
       if (mode == WorkoutMode.edit) {
         if (!isMounted()) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Treino atualizado com sucesso!')),
+        showWorkoutUiFeedback(
+          ref,
+          WorkoutUiFeedbackMessage.success(
+            title: 'Treino atualizado',
+            message: 'Treino atualizado com sucesso!',
+          ),
         );
         Navigator.of(context).pop();
       } else {
@@ -186,21 +192,22 @@ class WorkoutFinishFlow {
     if (isMounted()) {
       onWorkoutNotStarted();
       if (result.savedLocally) {
-        AppSnackbar.warning(
-          context: context,
-          title: 'Treino salvo no dispositivo',
-          message:
-              'O envio falhou, mas seus dados estão seguros. '
-              'Reenvie depois em Configurações → Treinos pendentes.',
+        showWorkoutUiFeedback(
+          ref,
+          WorkoutUiFeedbackMessage.warning(
+            title: 'Treino salvo no dispositivo',
+            message:
+                'O envio falhou, mas seus dados estão seguros. '
+                'Reenvie depois em Configurações → Treinos pendentes.',
+          ),
         );
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Erro ao finalizar treino: ${result.error ?? 'unknown'}',
-          ),
-          backgroundColor: Theme.of(context).colorScheme.error,
+      showWorkoutUiFeedback(
+        ref,
+        WorkoutUiFeedbackMessage.error(
+          title: 'Erro ao finalizar',
+          message: result.error ?? 'Erro desconhecido',
         ),
       );
     }

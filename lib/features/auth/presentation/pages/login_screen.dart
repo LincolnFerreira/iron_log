@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/auth_buttons_section.dart';
 import 'package:iron_log/features/auth/presentation/components/molecules/login_footer.dart';
@@ -12,10 +13,40 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  bool _isLoading = false;
-
   @override
   Widget build(BuildContext context) {
+    ref.listen(authControllerProvider.select((s) => s.feedback), (
+      previous,
+      next,
+    ) {
+      if (next == null) return;
+      switch (next.kind) {
+        case AuthFeedbackKind.success:
+          AppSnackbar.success(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case AuthFeedbackKind.warning:
+          AppSnackbar.warning(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case AuthFeedbackKind.error:
+          AppSnackbar.error(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+      }
+      ref.read(authControllerProvider.notifier).clearFeedback();
+    });
+
+    final isSigningIn = ref.watch(
+      authControllerProvider.select((s) => s.isSigningIn),
+    );
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: SafeArea(
@@ -25,7 +56,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             children: [
               const Spacer(flex: 2),
 
-              // Logo + título lado a lado
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -52,7 +82,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
               const SizedBox(height: 12),
 
-              // Tagline com "Progresso real." em azul
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -77,17 +106,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
               const SizedBox(height: 64),
 
-              // Botões de autenticação
               AuthButtonsSection(
                 onGoogleSignIn: _signInWithGoogle,
-                isLoading: _isLoading,
+                isLoading: isSigningIn,
               ),
 
               const SizedBox(height: 24),
 
               const Spacer(flex: 3),
 
-              // Rodapé
               LoginFooter(
                 onCreateAccount: _createAccount,
                 onForgotPassword: _forgotPassword,
@@ -102,60 +129,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _signInWithGoogle() async {
-    setState(() => _isLoading = true);
     final controller = ref.read(authControllerProvider.notifier);
-    try {
-      final user = await controller.signInWithGoogle();
-      if (user == null) return; // user cancelled
-
-      try {
-        await controller.syncBackendUser(user);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Usuário sincronizado com o servidor'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Erro ao sincronizar usuário: ${e.toString()}'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro no login: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
+    final user = await controller.signInWithGoogle();
+    if (user == null) return;
+    await controller.syncBackendUser(user);
   }
 
   void _createAccount() {
-    // Reutiliza o fluxo de login com Google para criar conta
     _signInWithGoogle();
   }
 
   void _forgotPassword() {
-    // TODO: Implementar recuperação de senha
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Recuperação de senha em breve!'),
-        backgroundColor: Colors.purple,
-      ),
+    AppSnackbar.warning(
+      context: context,
+      title: 'Em breve',
+      message: 'Recuperação de senha em breve!',
     );
   }
 }

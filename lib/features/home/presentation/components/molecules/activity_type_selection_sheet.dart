@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iron_log/features/workout_day/presentation/providers/create_activity_provider.dart';
+import 'package:iron_log/features/home/presentation/providers/home_ui_feedback_provider.dart';
 import 'package:iron_log/features/home/presentation/providers/workout_calendar_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/create_activity_provider.dart';
 
 /// Modal que oferece três opções de atividade: Treino, Cardio e Descanso
 /// Apresentado quando usuário clica em um dia vazio do calendário
@@ -119,48 +120,39 @@ class ActivityTypeSelectionSheet extends ConsumerWidget {
               // Prevent duplicate rest marking if calendar already shows rest
               final existingRests = ref.read(restDaysProvider);
               if (existingRests.contains(dateStr)) {
-                Navigator.pop(ctx); // close confirmation
-                final scaffold = ScaffoldMessenger.of(context);
-                scaffold.showSnackBar(
-                  const SnackBar(
-                    content: Text('⚠️ Dia já marcado como descanso'),
-                    duration: Duration(seconds: 2),
+                Navigator.pop(ctx);
+                showHomeUiFeedback(
+                  ref,
+                  HomeUiFeedbackMessage.warning(
+                    title: 'Descanso já registrado',
+                    message: 'Dia já marcado como descanso',
                   ),
                 );
                 return;
               }
 
               try {
-                // Criar DTO para rest
                 final dto = CreateActivityDto(type: 'rest', date: dateStr);
-
-                // capture navigator/scaffold states to avoid using BuildContext across async gaps
                 final navigator = Navigator.of(context);
-                final scaffold = ScaffoldMessenger.of(context);
 
-                // Chamar backend
                 await ref.read(createActivityProvider(dto).future);
 
-                // Close confirmation and then the sheet, then show SnackBar
-                Navigator.pop(ctx);
-                navigator.pop();
-
-                scaffold.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '✅ Descanso marcado para ${_formatDate(date)}',
-                    ),
-                    duration: const Duration(seconds: 2),
+                showHomeUiFeedback(
+                  ref,
+                  HomeUiFeedbackMessage.success(
+                    title: 'Descanso marcado',
+                    message: 'Descanso marcado para ${_formatDate(date)}',
                   ),
                 );
+                Navigator.pop(ctx);
+                navigator.pop();
               } catch (e) {
                 Navigator.pop(ctx);
-                final scaffold = ScaffoldMessenger.of(context);
-                scaffold.showSnackBar(
-                  SnackBar(
-                    content: Text('❌ Erro ao marcar descanso: $e'),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 3),
+                showHomeUiFeedback(
+                  ref,
+                  HomeUiFeedbackMessage.error(
+                    title: 'Erro ao marcar descanso',
+                    message: 'Erro ao marcar descanso: $e',
                   ),
                 );
               }

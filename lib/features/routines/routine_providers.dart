@@ -51,7 +51,7 @@ final routineRepositoryProviderImpl = Provider<RoutineRepository>((ref) {
 
 /// Override do provider abstrato - MUST be applied in ProviderScope at app startup
 final routineRepositoryOverride = routineRepositoryProvider.overrideWith(
-  (ref) => ref.watch(routineRepositoryProviderImpl),
+  (ref) => ref.read(routineRepositoryProviderImpl),
 );
 
 /// Lista de overrides para configurar os providers em main.dart

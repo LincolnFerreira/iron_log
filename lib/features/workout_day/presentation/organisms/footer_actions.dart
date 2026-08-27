@@ -8,6 +8,7 @@ import '../providers/exercise_suggestion_provider.dart';
 import '../providers/exercise_last_sets_provider.dart';
 import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 import '../providers/workout_day_provider.dart';
+import '../providers/workout_ui_feedback_provider.dart';
 import '../../domain/enums/workout_screen_mode.dart';
 
 class FooterActions extends ConsumerStatefulWidget {
@@ -609,13 +610,11 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
     }
 
     if (!silent && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Série ${seriesIndex + 1}: $weightStr kg × $repsStr reps',
-          ),
-          duration: const Duration(seconds: 2),
-          backgroundColor: AppColors.success,
+      showWorkoutUiFeedback(
+        ref,
+        WorkoutUiFeedbackMessage.success(
+          title: 'Série atualizada',
+          message: 'Série ${seriesIndex + 1}: $weightStr kg × $repsStr reps',
         ),
       );
     }

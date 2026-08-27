@@ -1,77 +1,41 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-    // ─── Dev: Emulador Android (10.0.2.2 → localhost da máquina) ───────────────
     {
-      "name": "Dev: Debug",
-      "request": "launch",
+      "name": "Cloud · Debug",
       "type": "dart",
-      "program": "lib/main.dart",
-      "args": ["--dart-define=FLAVOR=dev"]
-    },
-    {
-      "name": "Dev: Release",
       "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "args": ["--dart-define=FLAVOR=dev"],
-      "flutterMode": "release"
-    },
-    // ─── Dev Local: Celular físico na Wi-Fi (ajuste API_HOST ao IP da máquina) ─
-    {
-      "name": "Dev Local: Debug",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "args": [
-        "--dart-define=FLAVOR=dev",
-        "--dart-define=API_HOST=192.168.1.25"
-      ]
-    },
-    {
-      "name": "Dev Local: Release",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "args": [
-        "--dart-define=FLAVOR=dev",
-        "--dart-define=API_HOST=192.168.1.25"
-      ],
-      "flutterMode": "release"
-    },
-    {
-      "name": "Prod: Debug",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "args": ["--dart-define=FLAVOR=prod"]
-    },
-    {
-      "name": "Prod: Release",
-      "request": "launch",
-      "type": "dart",
       "program": "lib/main.dart",
       "args": ["--dart-define=FLAVOR=prod"],
-      "flutterMode": "release"
+      "presentation": { "group": "Cloud", "order": 1 }
     },
     {
-      "name": "Flutter Web: Chrome (Dev)",
-      "request": "launch",
+      "name": "Cloud · Release",
       "type": "dart",
+      "request": "launch",
       "program": "lib/main.dart",
-      "deviceId": "chrome",
-      "args": ["--dart-define=FLAVOR=dev"]
+      "args": ["--dart-define=FLAVOR=prod"],
+      "flutterMode": "release",
+      "presentation": { "group": "Cloud", "order": 2 }
     },
     {
-      "name": "PWA: Open built site in Chrome (serve build/web)",
-      "type": "pwa-chrome",
+      "name": "Local API · Debug",
+      "type": "dart",
       "request": "launch",
-      "url": "http://localhost:8000",
-      "webRoot": "${workspaceFolder}/build/web",
-      "preLaunchTask": "serve-web"
+      "program": "lib/main.dart",
+      "args": ["--dart-define=FLAVOR=dev"],
+      "preLaunchTask": "adb: reverse 3000",
+      "presentation": { "group": "Local API", "order": 1 }
+    },
+    {
+      "name": "Local API · Release",
+      "type": "dart",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "args": ["--dart-define=FLAVOR=dev"],
+      "flutterMode": "release",
+      "preLaunchTask": "adb: reverse 3000",
+      "presentation": { "group": "Local API", "order": 2 }
     }
   ]
 }

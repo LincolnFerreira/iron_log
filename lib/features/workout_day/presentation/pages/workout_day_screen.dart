@@ -17,6 +17,7 @@ import '../organisms/footer_actions.dart';
 import '../organisms/exercise_skeleton_card.dart';
 import '../providers/workout_day_provider.dart';
 import '../providers/workout_timer_provider.dart';
+import '../providers/workout_ui_feedback_provider.dart';
 import '../controllers/workout_controller.dart';
 import '../controllers/workout_finish_flow.dart';
 import '../../domain/enums/workout_screen_mode.dart';
@@ -149,13 +150,15 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      AppSnackbar.warning(
-        context: context,
-        title: 'Rascunho indisponível',
-        message: e is WorkoutDraftCorruptException
-            ? 'Os dados salvos estão corrompidos e não puderam ser restaurados. '
-                  'O rascunho permanece no dispositivo para revisão em Treinos pendentes.'
-            : 'Não foi possível carregar o treino salvo. Tente novamente.',
+      showWorkoutUiFeedback(
+        ref,
+        WorkoutUiFeedbackMessage.warning(
+          title: 'Rascunho indisponível',
+          message: e is WorkoutDraftCorruptException
+              ? 'Os dados salvos estão corrompidos e não puderam ser restaurados. '
+                    'O rascunho permanece no dispositivo para revisão em Treinos pendentes.'
+              : 'Não foi possível carregar o treino salvo. Tente novamente.',
+        ),
       );
       if (kDebugMode) {
         print('Erro ao carregar rascunho: $e');
@@ -312,10 +315,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
           print('Aviso: falha ao atualizar data no backend: $e');
         }
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Não foi possível salvar a nova data.'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+          showWorkoutUiFeedback(
+            ref,
+            WorkoutUiFeedbackMessage.error(
+              title: 'Data do treino',
+              message: 'Não foi possível salvar a nova data.',
             ),
           );
         }
@@ -325,7 +329,41 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(workoutUiFeedbackProvider, (previous, next) {
+      if (next == null || !mounted) return;
+      switch (next.kind) {
+        case WorkoutUiFeedbackKind.success:
+          AppSnackbar.success(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case WorkoutUiFeedbackKind.warning:
+          AppSnackbar.warning(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case WorkoutUiFeedbackKind.error:
+          AppSnackbar.error(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+        case WorkoutUiFeedbackKind.info:
+          AppSnackbar.warning(
+            context: context,
+            title: next.title,
+            message: next.message,
+          );
+      }
+      ref.read(workoutUiFeedbackProvider.notifier).clear();
+    });
+
     final exercisesAsync = ref.watch(workoutDayExercisesProvider);
+    final controllerLoading = ref.watch(
+      workoutControllerProvider.select((state) => state.isLoading),
+    );
 
     Future<void> openReorderSheet() async {
       final current = ref.read(workoutDayExercisesProvider).value ?? [];
@@ -476,9 +514,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 onMoreOptions: openReorderSheet,
                 isManual: _selectedDate != null,
                 workoutStarted: _workoutStarted,
-                isLoading:
-                    ref.watch(workoutControllerProvider).isLoading ||
-                    _isStartingWorkout,
+                isLoading: controllerLoading || _isStartingWorkout,
                 onStartWorkout: _handleStartWorkout,
                 onFinishWorkout: () async {
                   ref
@@ -509,15 +545,13 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 onDiscard: () => _discardWorkout(),
                 onSaveTrain: () async {
                   if (widget.sessionId == null || widget.sessionId!.isEmpty) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Nenhuma sessão associada para salvar.',
-                          ),
-                        ),
-                      );
-                    }
+                    showWorkoutUiFeedback(
+                      ref,
+                      WorkoutUiFeedbackMessage.warning(
+                        title: 'Sessão',
+                        message: 'Nenhuma sessão associada para salvar.',
+                      ),
+                    );
                     return;
                   }
 
@@ -525,22 +559,21 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     await ref
                         .read(workoutDayExercisesProvider.notifier)
                         .saveSessionExercises(widget.sessionId!);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Treino salvo com sucesso'),
-                        ),
-                      );
-                    }
+                    showWorkoutUiFeedback(
+                      ref,
+                      WorkoutUiFeedbackMessage.success(
+                        title: 'Treino salvo',
+                        message: 'Treino salvo com sucesso',
+                      ),
+                    );
                   } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Erro ao salvar treino: $e'),
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                      );
-                    }
+                    showWorkoutUiFeedback(
+                      ref,
+                      WorkoutUiFeedbackMessage.error(
+                        title: 'Erro ao salvar',
+                        message: 'Erro ao salvar treino: $e',
+                      ),
+                    );
                   }
                 },
               )
@@ -617,10 +650,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao iniciar treino: $e'),
-            backgroundColor: Colors.red,
+        showWorkoutUiFeedback(
+          ref,
+          WorkoutUiFeedbackMessage.error(
+            title: 'Erro ao iniciar',
+            message: 'Erro ao iniciar treino: $e',
           ),
         );
       }
@@ -694,10 +728,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Treino descartado'),
-          backgroundColor: Colors.red,
+      showWorkoutUiFeedback(
+        ref,
+        WorkoutUiFeedbackMessage.warning(
+          title: 'Treino descartado',
+          message: 'Treino descartado',
         ),
       );
       Navigator.pop(context);
