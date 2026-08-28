@@ -37,7 +37,7 @@ class SavedSessionsSection extends StatelessWidget {
               child: Text(
                 'Nenhuma sessão encontrada',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ),
@@ -75,7 +75,7 @@ class _SessionSelectCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: isSelected
-            ? AppColors.primaryLight.withOpacity(0.06)
+            ? AppColors.primaryLight.withValues(alpha: 0.06)
             : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
@@ -87,8 +87,8 @@ class _SessionSelectCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.primaryLight.withOpacity(0.4)
-                    : theme.colorScheme.outline.withOpacity(0.2),
+                    ? AppColors.primaryLight.withValues(alpha: 0.4)
+                    : theme.colorScheme.outline.withValues(alpha: 0.2),
                 width: isSelected ? 1.5 : 1,
               ),
             ),
@@ -99,8 +99,8 @@ class _SessionSelectCard extends StatelessWidget {
                   height: 40,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppColors.primaryLight.withOpacity(0.14)
-                        : AppColors.primaryLight.withOpacity(0.06),
+                        ? AppColors.primaryLight.withValues(alpha: 0.14)
+                        : AppColors.primaryLight.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -108,7 +108,7 @@ class _SessionSelectCard extends StatelessWidget {
                     size: 20,
                     color: isSelected
                         ? AppColors.primaryLight
-                        : AppColors.primaryLight.withOpacity(0.5),
+                        : AppColors.primaryLight.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -130,8 +130,8 @@ class _SessionSelectCard extends StatelessWidget {
                         Text(
                           session.muscles.join(' · '),
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withOpacity(
-                              0.55,
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.55,
                             ),
                           ),
                           maxLines: 1,
@@ -152,7 +152,7 @@ class _SessionSelectCard extends StatelessWidget {
                   Icon(
                     Icons.radio_button_unchecked_rounded,
                     size: 22,
-                    color: theme.colorScheme.onSurface.withOpacity(0.25),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
                   ),
               ],
             ),

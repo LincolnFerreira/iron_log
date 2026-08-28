@@ -1,5 +1,4 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/database/app_database.dart';
 import 'package:iron_log/core/services/http_service.dart';
 import 'package:iron_log/core/sync/sync_manager.dart';

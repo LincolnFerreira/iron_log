@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../app_colors.dart';
-import '../observability/crash_reporting_service.dart';
+import 'package:iron_log/core/app_colors.dart';
+import 'package:iron_log/core/observability/crash_reporting_service.dart';
 
 /// Fallback quando um widget falha no build (release-friendly).
 class AppErrorFallback extends StatefulWidget {

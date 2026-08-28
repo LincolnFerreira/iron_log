@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:iron_log/features/onboarding/presentation/atoms/primary_button.dart';
 import 'package:iron_log/features/onboarding/presentation/molecules/step_header.dart';
-import '../atoms/primary_button.dart';
 
 class SetupPageTemplate extends StatelessWidget {
   final String title;
@@ -36,7 +36,7 @@ class SetupPageTemplate extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
-            top: BorderSide(color: Colors.grey.withOpacity(0.3), width: 1),
+            top: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
           ),
         ),
         child: PrimaryButton(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/components/exercise_search/unified_exercise_search.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
-import 'unified_exercise_search.dart';
 
 /// Componente unificado para exibir resultados da busca de exercícios
 class UnifiedExerciseSearchResults extends ConsumerWidget {
@@ -120,12 +120,12 @@ class UnifiedExerciseSearchResults extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: _getCategoryColor(
                       exercise.category!,
-                    ).withOpacity(0.1),
+                    ).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: _getCategoryColor(
                         exercise.category!,
-                      ).withOpacity(0.3),
+                      ).withValues(alpha: 0.3),
                     ),
                   ),
                   child: Text(

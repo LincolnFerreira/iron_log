@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
 import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/series_input_row.dart';
 import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
 import 'package:iron_log/features/workout_day/presentation/series_visual_style.dart';
 import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
-import 'series_input_row.dart';
 
 /// Mini-tabela de séries com colunas alinhadas: tipo, peso, reps, feito.
 class SeriesTable extends StatefulWidget {

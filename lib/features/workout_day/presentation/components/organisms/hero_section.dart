@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
-import '../atoms/trophy_icon.dart';
-import '../atoms/celebration_title.dart';
-import '../atoms/contextual_subtitle.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/celebration_title.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/contextual_subtitle.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/trophy_icon.dart';
 
 /// Seção hero no topo - celebração visual
 class HeroSection extends StatelessWidget {
@@ -14,7 +14,7 @@ class HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,

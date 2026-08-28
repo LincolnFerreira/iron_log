@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/core/app_colors.dart';
-import '../../domain/entities/search_exercise.dart';
-import 'create_exercise_modal.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/presentation/widgets/create_exercise_modal.dart';
 
 class EmptyExerciseState extends StatelessWidget {
   final String query;
@@ -25,14 +25,14 @@ class EmptyExerciseState extends StatelessWidget {
             Icon(
               Icons.fitness_center,
               size: 48,
-              color: AppColors.primaryLight.withOpacity(0.5),
+              color: AppColors.primaryLight.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 12),
             Text(
               'Nenhum exercício encontrado\npara "$query"',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 20),

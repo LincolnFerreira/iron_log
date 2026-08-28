@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/features/home/presentation/providers/home_ui_feedback_provider.dart';
-import '../providers/create_activity_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/create_activity_provider.dart';
 
 /// Página para criação rápida de cardio
 /// Permite seleção de tipo, duração, intensidade e notas
@@ -328,7 +328,7 @@ class _IntensityButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.2) : Colors.grey[100],
+          color: selected ? color.withValues(alpha: 0.2) : Colors.grey[100],
           border: Border.all(
             color: selected ? color : Colors.grey[300]!,
             width: selected ? 2 : 1,

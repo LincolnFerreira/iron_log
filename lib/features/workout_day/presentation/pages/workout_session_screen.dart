@@ -7,26 +7,26 @@ import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
-import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
-import '../../../routines/domain/entities/routine.dart';
-import '../../data/services/workout_log_service.dart';
-import '../../domain/entities/exercise_tag.dart';
-import '../../domain/entities/workout_draft.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../../domain/enums/workout_screen_mode.dart';
-import '../../domain/workout_mode.dart';
-import '../components/molecules/add_exercise_search_results.dart';
-import '../components/molecules/add_exercise_added_list.dart';
-import '../components/organisms/session_exercises_sheet.dart';
-import '../components/organisms/session_floating_bar.dart';
-import '../controllers/workout_controller.dart';
-import '../organisms/exercise_skeleton_card.dart';
-import '../providers/workout_day_provider.dart';
-import '../providers/workout_timer_provider.dart';
-import '../widgets/voice_input_bottom_sheet.dart';
-import './workout_summary_screen.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
+import 'package:iron_log/features/workout_day/domain/workout_mode.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/add_exercise_added_list.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/add_exercise_search_results.dart';
+import 'package:iron_log/features/workout_day/presentation/components/organisms/session_exercises_sheet.dart';
+import 'package:iron_log/features/workout_day/presentation/components/organisms/session_floating_bar.dart';
+import 'package:iron_log/features/workout_day/presentation/controllers/workout_controller.dart';
+import 'package:iron_log/features/workout_day/presentation/organisms/exercise_skeleton_card.dart';
+import 'package:iron_log/features/workout_day/presentation/pages/workout_summary_screen.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_timer_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/voice_input_bottom_sheet.dart';
 
 /// LEGACY — isolated from product barrel/routes (008 / SC-004).
 /// Do not re-export from [workout_day.dart] or wire in GoRouter.
@@ -421,8 +421,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
               height: 42,
               child: Material(
                 color: isDark
-                    ? AppColors.primaryDark.withOpacity(0.15)
-                    : AppColors.primaryLight.withOpacity(0.1),
+                    ? AppColors.primaryDark.withValues(alpha: 0.15)
+                    : AppColors.primaryLight.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(12),
@@ -457,8 +457,8 @@ class _WorkoutSessionScreenState extends ConsumerState<WorkoutSessionScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: isDark
-          ? theme.colorScheme.tertiaryContainer.withOpacity(0.2)
-          : theme.colorScheme.tertiaryContainer.withOpacity(0.3),
+          ? theme.colorScheme.tertiaryContainer.withValues(alpha: 0.2)
+          : theme.colorScheme.tertiaryContainer.withValues(alpha: 0.3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

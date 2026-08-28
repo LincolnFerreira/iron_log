@@ -1,6 +1,6 @@
-import '../entities/routine.dart';
-import '../repositories/session_repository.dart';
-import '../../data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/repositories/session_repository.dart';
 
 class CreateSessionUseCase {
   final SessionRepository repository;

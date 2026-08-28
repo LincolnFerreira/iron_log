@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
-import '../../domain/entities/routine.dart';
-import '../../domain/entities/routine_update.dart';
-import '../providers/routine_provider.dart';
-import '../providers/routine_ui_feedback_provider.dart';
-import '../components/molecules/routine_card.dart';
-import '../widgets/routine_loading_skeletons.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
+import 'package:iron_log/features/routines/presentation/components/molecules/routine_card.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_ui_feedback_provider.dart';
+import 'package:iron_log/features/routines/presentation/widgets/routine_loading_skeletons.dart';
 
 class RoutinesPage extends ConsumerStatefulWidget {
   const RoutinesPage({super.key});
@@ -65,7 +65,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
 
       VoidCallback? onAction;
       if (next.actionLabel != null && next.actionRoutineId != null) {
-          final routineId = next.actionRoutineId!;
+        final routineId = next.actionRoutineId!;
         onAction = () {
           final routines = ref.read(routineNotifierProvider).routines;
           final index = routines.indexWhere((r) => r.id == routineId);
@@ -188,7 +188,7 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
       padding: const EdgeInsets.all(16),
       itemCount: view.routines.length,
       itemBuilder: (context, index) {
-        final routine = view.routines[index];
+        final routine = view.routines[index]; 
         return RoutineCard(
           routine: routine,
           onTap: () => _navigateToRoutineDetail(context, routine),
@@ -233,7 +233,9 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                     decoration: BoxDecoration(
-                      color: Theme.of(sheetContext).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(
+                        sheetContext,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: Theme.of(
@@ -252,13 +254,17 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                                 children: [
                                   Text(
                                     'Criar rotina',
-                                    style: Theme.of(sheetContext).textTheme.titleMedium
+                                    style: Theme.of(sheetContext)
+                                        .textTheme
+                                        .titleMedium
                                         ?.copyWith(fontWeight: FontWeight.w700),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     'Monte sua divisão agora e ajuste sessões depois.',
-                                    style: Theme.of(sheetContext).textTheme.bodySmall,
+                                    style: Theme.of(
+                                      sheetContext,
+                                    ).textTheme.bodySmall,
                                   ),
                                 ],
                               ),
@@ -274,18 +280,20 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                         const SizedBox(height: 8),
                         Text(
                           'Passo 1',
-                          style: Theme.of(sheetContext).textTheme.labelMedium?.copyWith(
-                            color: Theme.of(sheetContext).colorScheme.primary,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: .35,
-                          ),
+                          style: Theme.of(sheetContext).textTheme.labelMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  sheetContext,
+                                ).colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: .35,
+                              ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Nome da rotina',
-                          style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: Theme.of(sheetContext).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 10),
                         TextField(
@@ -315,7 +323,9 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                color: Theme.of(sheetContext).colorScheme.primary,
+                                color: Theme.of(
+                                  sheetContext,
+                                ).colorScheme.primary,
                               ),
                             ),
                             errorText: showNameError
@@ -326,9 +336,8 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                         const SizedBox(height: 16),
                         Text(
                           'Divisão',
-                          style: Theme.of(sheetContext).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: Theme.of(sheetContext).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -346,8 +355,13 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                               child: ChoiceChip(
                                 label: Text(
                                   suggestion,
-                                  style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
-                                        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                                  style: Theme.of(sheetContext)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        fontWeight: selected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
                                       ),
                                 ),
                                 selected: selected,
@@ -357,11 +371,19 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                                 ).colorScheme.primaryContainer,
                                 side: BorderSide(
                                   color: selected
-                                      ? Theme.of(sheetContext).colorScheme.primary.withValues(alpha: .24)
-                                      : Theme.of(sheetContext).colorScheme.outline.withValues(alpha: .24),
+                                      ? Theme.of(sheetContext)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: .24)
+                                      : Theme.of(sheetContext)
+                                            .colorScheme
+                                            .outline
+                                            .withValues(alpha: .24),
                                 ),
                                 onSelected: (_) {
-                                  selectedDivision = selected ? null : suggestion;
+                                  selectedDivision = selected
+                                      ? null
+                                      : suggestion;
                                   setState(() {});
                                 },
                               ),
@@ -374,9 +396,10 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            color: Theme.of(sheetContext).colorScheme.primaryContainer.withValues(
-                              alpha: .35,
-                            ),
+                            color: Theme.of(sheetContext)
+                                .colorScheme
+                                .primaryContainer
+                                .withValues(alpha: .35),
                             border: Border.all(
                               color: Theme.of(
                                 sheetContext,
@@ -385,9 +408,12 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                           ),
                           child: Text(
                             '✨ Você pode montar manualmente e editar sessões/exercícios depois.',
-                            style: Theme.of(sheetContext).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(sheetContext).colorScheme.onSurfaceVariant,
-                            ),
+                            style: Theme.of(sheetContext).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    sheetContext,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                         ),
                       ],
@@ -401,7 +427,9 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                           style: OutlinedButton.styleFrom(
                             minimumSize: const Size.fromHeight(44),
                             side: BorderSide(
-                              color: Theme.of(sheetContext).colorScheme.outline.withValues(alpha: .3),
+                              color: Theme.of(
+                                sheetContext,
+                              ).colorScheme.outline.withValues(alpha: .3),
                             ),
                           ),
                           onPressed: isSubmitting
@@ -446,7 +474,8 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                                       RoutineUiFeedbackMessage.error(
                                         title: 'Erro ao criar',
                                         message:
-                                            err ?? 'Não foi possível criar a rotina',
+                                            err ??
+                                            'Não foi possível criar a rotina',
                                       ),
                                     );
                                     return;
@@ -472,7 +501,9 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Text('Criar rotina'),
                         ),

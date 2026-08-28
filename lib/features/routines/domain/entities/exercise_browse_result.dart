@@ -1,4 +1,4 @@
-import 'search_exercise.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 
 /// Resposta do endpoint GET /exercises/browse.
 class ExerciseBrowseResult {

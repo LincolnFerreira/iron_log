@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/workout_split.dart';
-import '../../widgets/workout_split_card.dart';
+import 'package:iron_log/features/workout_creation/domain/entities/workout_split.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/workout_split_card.dart';
 
 class DraggableWorkoutItem extends StatelessWidget {
   final WorkoutSplit split;

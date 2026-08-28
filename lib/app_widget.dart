@@ -3,9 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_theme.dart';
 import 'package:iron_log/core/providers/sync_providers.dart';
+import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/core/services/http_service.dart';
 import 'package:iron_log/core/sync/workout_outbox_sync.dart';
-import 'core/routes/app_router.dart';
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});

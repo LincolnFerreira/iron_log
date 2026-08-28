@@ -23,7 +23,7 @@ class ExerciseBrowseList extends ConsumerWidget {
         padding: EdgeInsets.symmetric(vertical: 8),
         child: ExerciseListLoadingSkeleton(message: 'Carregando exercícios...'),
       ),
-      error: (_, __) => Padding(
+      error: (_, _) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Center(
           child: Text(

@@ -1,10 +1,7 @@
 import 'package:dio/dio.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'auth_interceptor.dart';
-
-import '../env.dart';
+import 'package:iron_log/core/env.dart';
+import 'package:iron_log/core/services/auth_interceptor.dart';
 
 
 
@@ -150,7 +147,7 @@ class HttpService {
 
 
 
-  Future<Response> post(String path, {dynamic data}) {
+  Future<Response> post(String path, {data}) {
 
     return request(method: 'POST', path: path, data: data);
 
@@ -158,7 +155,7 @@ class HttpService {
 
 
 
-  Future<Response> put(String path, {dynamic data}) {
+  Future<Response> put(String path, {data}) {
 
     return request(method: 'PUT', path: path, data: data);
 
@@ -166,7 +163,7 @@ class HttpService {
 
 
 
-  Future<Response> patch(String path, {dynamic data}) {
+  Future<Response> patch(String path, {data}) {
 
     return request(method: 'PATCH', path: path, data: data);
 

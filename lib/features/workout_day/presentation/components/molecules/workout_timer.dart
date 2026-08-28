@@ -26,7 +26,7 @@ class WorkoutTimer extends ConsumerWidget {
           color: Theme.of(context).primaryColor,
         ),
       ),
-      error: (_, __) => Text(
+      error: (_, _) => Text(
         '00:00',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w600,

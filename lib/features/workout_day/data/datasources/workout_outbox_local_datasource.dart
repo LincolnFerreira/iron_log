@@ -1,6 +1,6 @@
 import 'package:iron_log/core/database/app_database.dart';
-import '../../domain/entities/workout_draft.dart';
-import '../../domain/repositories/workout_draft_repository.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/repositories/workout_draft_repository.dart';
 
 /// @deprecated Novos writes vão para [WorkoutDraftRepository].
 class WorkoutOutboxLocalDataSource {

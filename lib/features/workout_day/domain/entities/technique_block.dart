@@ -1,5 +1,5 @@
-import 'series_entry.dart';
-import 'technique_type.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
 
 class TechniqueBlock {
   final String? id;

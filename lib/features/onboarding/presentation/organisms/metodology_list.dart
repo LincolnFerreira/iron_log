@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../molecules/metodology_card.dart';
+import 'package:iron_log/features/onboarding/presentation/molecules/metodology_card.dart';
 
 class MetodologyList extends StatelessWidget {
   final int? groupValue;

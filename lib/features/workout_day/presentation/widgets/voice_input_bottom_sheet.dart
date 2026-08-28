@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/voice_input_provider.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
-import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 
 class VoiceInputBottomSheet extends ConsumerStatefulWidget {
   final String? sessionId;
@@ -101,7 +101,7 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withOpacity(0.12),
+                      color: AppColors.primaryLight.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
@@ -186,8 +186,8 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                                 boxShadow: isRecording
                                     ? [
                                         BoxShadow(
-                                          color: Colors.redAccent.withOpacity(
-                                            0.25,
+                                          color: Colors.redAccent.withValues(
+                                            alpha: 0.25,
                                           ),
                                           blurRadius: 16,
                                           spreadRadius: 2,
@@ -304,7 +304,7 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withOpacity(0.08),
+                        color: AppColors.primaryLight.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
@@ -466,7 +466,7 @@ class _VoiceInputBottomSheetState extends ConsumerState<VoiceInputBottomSheet>
                       ),
                     );
                   },
-                  separatorBuilder: (_, __) => const SizedBox(height: 4),
+                  separatorBuilder: (_, _) => const SizedBox(height: 4),
                   itemCount: state.resolved.length,
                 ),
                 const SizedBox(height: 14),

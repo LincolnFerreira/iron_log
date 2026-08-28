@@ -3,9 +3,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 
-import '../database/app_database.dart';
-import '../network/connectivity_utils.dart';
-import 'workout_outbox_sync.dart';
+import 'package:iron_log/core/database/app_database.dart';
+import 'package:iron_log/core/network/connectivity_utils.dart';
+import 'package:iron_log/core/sync/workout_outbox_sync.dart';
 
 /// Main sync manager: orchestrates offline-first sync operations
 class SyncManager {

@@ -79,7 +79,7 @@ class QuickFillChips extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w400,
-                color: chip.textColor.withOpacity(0.8),
+                color: chip.textColor.withValues(alpha: 0.8),
               ),
             ),
           ],

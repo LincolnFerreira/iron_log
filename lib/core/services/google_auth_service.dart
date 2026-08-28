@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, TargetPlatform, kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'firebase_auth_token.dart';
+import 'package:iron_log/core/services/firebase_auth_token.dart';
 
 class GoogleAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;

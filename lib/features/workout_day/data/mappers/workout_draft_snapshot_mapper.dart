@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import '../../domain/entities/exercise_tag.dart';
-import '../../domain/entities/series_entry.dart';
-import '../../domain/entities/technique_block.dart';
-import '../../domain/entities/technique_type.dart';
-import '../../domain/entities/weight_unit.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../../domain/entities/workout_draft.dart';
-import '../../domain/enums/workout_screen_mode.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
+import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
 
 class DraftSnapshotV1 {
   const DraftSnapshotV1({

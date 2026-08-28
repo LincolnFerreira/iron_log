@@ -96,7 +96,7 @@ class E2eFixtureResolver {
     return true;
   }
 
-  static List<dynamic> _asList(dynamic data) {
+  static List<dynamic> _asList(data) {
     if (data is List) return data;
     return [];
   }

@@ -2,21 +2,21 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:iron_log/app_widget.dart';
+import 'package:iron_log/core/observability/crash_reporting_service.dart';
+import 'package:iron_log/core/providers/app_provider_observer.dart';
+import 'package:iron_log/core/services/auth_service.dart';
+import 'package:iron_log/core/widgets/app_error_fallback.dart';
+import 'package:iron_log/features/home/home_providers.dart';
+import 'package:iron_log/features/routines/routine_providers.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
+import 'package:iron_log/features/workout_history/workout_history_providers.dart';
 import 'package:iron_log/firebase_options.dart';
-import 'app_widget.dart';
-import 'core/observability/crash_reporting_service.dart';
-import 'core/providers/app_provider_observer.dart';
-import 'core/services/auth_service.dart';
-import 'core/widgets/app_error_fallback.dart';
-import 'features/home/home_providers.dart';
-import 'features/routines/routine_providers.dart';
-import 'features/workout_day/presentation/providers/workout_draft_providers.dart';
-import 'features/workout_history/workout_history_providers.dart';
 
 late final CrashReportingService _crashReportingService;
 

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
 import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
-import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
 
 WorkoutExercise _sampleExercise({

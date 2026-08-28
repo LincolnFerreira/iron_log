@@ -1,5 +1,5 @@
-import '../../domain/entities/routine.dart';
 import 'package:flutter/material.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 
 class SelectedExerciseCard extends StatefulWidget {
   final SessionExercise exercise;
@@ -35,7 +35,7 @@ class _SelectedExerciseCardState extends State<SelectedExerciseCard> {
               index: widget.index,
               child: Icon(
                 Icons.drag_indicator,
-                color: theme.colorScheme.onSurface.withOpacity(0.4),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                 size: 18,
               ),
             ),

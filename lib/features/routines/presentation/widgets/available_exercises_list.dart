@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
-import '../../domain/entities/search_exercise.dart';
-import '../providers/session_selection_provider.dart';
-import 'empty_exercise_state.dart';
-import 'exercise_browse_list.dart';
-import 'session_exercise_card.dart';
-import 'session_exercise_loading.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_selection_provider.dart';
+import 'package:iron_log/features/routines/presentation/widgets/empty_exercise_state.dart';
+import 'package:iron_log/features/routines/presentation/widgets/exercise_browse_list.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_exercise_card.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_exercise_loading.dart';
 
 /// Widget que exibe os exercícios disponíveis baseado na busca
 class AvailableExercisesList extends ConsumerWidget {

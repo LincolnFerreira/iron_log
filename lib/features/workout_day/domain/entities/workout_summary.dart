@@ -1,4 +1,4 @@
-import 'exercise_summary.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_summary.dart';
 
 /// Resumo completo de um treino concluído
 class WorkoutSummary {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../atoms/metric_card.dart';
+import 'package:iron_log/features/home/presentation/components/atoms/metric_card.dart';
 
 class MetricsRow extends StatelessWidget {
   final int monthlyWorkouts;

@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
 import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/series_table.dart';
 import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
-
-import '../../components/molecules/series_table.dart';
-import '../../series_visual_style.dart';
-import 'cluster_set_footer.dart';
-import 'cluster_set_header.dart';
-import 'technique_header.dart';
+import 'package:iron_log/features/workout_day/presentation/series_visual_style.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/technique/cluster_set_footer.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/technique/cluster_set_header.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/technique/technique_header.dart';
 
 class TechniqueBlockCard extends StatelessWidget {
   final TechniqueBlock block;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../atoms/dashed_container.dart';
-import '../atoms/add_icon.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/atoms/add_icon.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/atoms/dashed_container.dart';
 
 /// Molecule: Add workout card that combines dashed container with add icon and text
 class AddWorkoutCard extends StatelessWidget {
@@ -51,7 +51,7 @@ class AddWorkoutCard extends StatelessWidget {
                     Text(
                       subtitle!,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.primary.withOpacity(0.7),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -62,7 +62,7 @@ class AddWorkoutCard extends StatelessWidget {
             // Arrow icon
             Icon(
               Icons.chevron_right,
-              color: theme.colorScheme.primary.withOpacity(0.7),
+              color: theme.colorScheme.primary.withValues(alpha: 0.7),
               size: 20,
             ),
           ],

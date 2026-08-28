@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/workout_draft.dart';
-import '../providers/workout_draft_providers.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
 
 class PendingWorkoutDraftsSheet extends ConsumerWidget {
   const PendingWorkoutDraftsSheet({super.key});
@@ -44,7 +44,7 @@ class PendingWorkoutDraftsSheet extends ConsumerWidget {
                 return ListView.separated(
                   shrinkWrap: true,
                   itemCount: drafts.length,
-                  separatorBuilder: (_, __) => const Divider(),
+                  separatorBuilder: (_, _) => const Divider(),
                   itemBuilder: (context, index) {
                     final draft = drafts[index];
                     return ListTile(

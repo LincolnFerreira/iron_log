@@ -1,5 +1,5 @@
+import 'package:iron_log/features/workout_creation/domain/entities/workout_split.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../domain/entities/workout_split.dart';
 
 part 'workout_creation_provider.g.dart';
 

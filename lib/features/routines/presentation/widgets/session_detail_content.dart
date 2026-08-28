@@ -1,44 +1,24 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:go_router/go_router.dart';
-
-import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
-
-import 'package:iron_log/core/components/exercise_search/unified_exercise_search.dart';
-
 import 'package:iron_log/core/app_colors.dart';
-
 import 'package:iron_log/core/components/app_snackbar.dart';
-
-import '../../domain/entities/routine.dart';
-
-import '../../domain/entities/search_exercise.dart';
-
-import '../../data/models/session_exercise_update_dto.dart';
-
-import 'available_exercises_list.dart';
-
-import 'selected_exercises_section.dart';
-
-import '../providers/session_selection_provider.dart';
-
-import '../providers/exercise_browse_provider.dart';
-
-import '../providers/session_provider.dart';
-
-import '../providers/session_editor_state.dart';
-
-import '../providers/routine_ui_feedback_provider.dart';
-
-import 'session_exercise_loading.dart';
-
-import 'session_muscle_chip.dart';
-
-import 'session_screen_styles.dart';
-
-import 'session_section_title.dart';
+import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
+import 'package:iron_log/core/components/exercise_search/unified_exercise_search.dart';
+import 'package:iron_log/features/routines/data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/presentation/providers/exercise_browse_provider.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_ui_feedback_provider.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_editor_state.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_provider.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_selection_provider.dart';
+import 'package:iron_log/features/routines/presentation/widgets/available_exercises_list.dart';
+import 'package:iron_log/features/routines/presentation/widgets/selected_exercises_section.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_exercise_loading.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_muscle_chip.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_screen_styles.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_section_title.dart';
 
 
 
@@ -525,7 +505,7 @@ class _SessionDetailContentState extends ConsumerState<SessionDetailContent> {
 
           loading: () => const ExerciseFilterChipsSkeleton(),
 
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
 
         ),
 

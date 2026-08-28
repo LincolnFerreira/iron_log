@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/workout_day/domain/entities/serie_log.dart';
-import '../atoms/type_badge.dart';
-import '../atoms/status_icon.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/status_icon.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/type_badge.dart';
 
 /// A summary row displaying a completed series in workout history/summary screens.
 /// Read-only display of series data with animated transitions and visual status indicators.

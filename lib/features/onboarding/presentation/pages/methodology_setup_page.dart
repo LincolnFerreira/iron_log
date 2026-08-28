@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/features/onboarding/presentation/controllers/division_setup_controller.dart';
-import '../templates/setup_page_template.dart';
-import '../organisms/methodology_setup_content.dart';
+import 'package:iron_log/features/onboarding/presentation/organisms/methodology_setup_content.dart';
+import 'package:iron_log/features/onboarding/presentation/templates/setup_page_template.dart';
 
 class MethodologySetupPage extends ConsumerWidget {
   const MethodologySetupPage({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/features/onboarding/presentation/controllers/division_setup_controller.dart';
 import 'package:iron_log/features/onboarding/domain/entities/division_type.dart';
 import 'package:iron_log/features/onboarding/presentation/atoms/primary_text.dart';
+import 'package:iron_log/features/onboarding/presentation/controllers/division_setup_controller.dart';
 import 'package:iron_log/features/onboarding/presentation/molecules/division_card.dart';
 
 class DivisionOrganism extends ConsumerWidget {
@@ -34,7 +34,7 @@ class DivisionOrganism extends ConsumerWidget {
           const PrimaryText('Frequência Semanal', isTitle: true),
           Slider(
             overlayColor: WidgetStateProperty.all<Color>(
-              Colors.grey.withOpacity(0.2),
+              Colors.grey.withValues(alpha: 0.2),
             ),
             thumbColor: Colors.blue,
             secondaryActiveColor: Colors.blue,

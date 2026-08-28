@@ -55,7 +55,7 @@ class WorkoutDetailSheet extends StatelessWidget {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: colorScheme.outline.withOpacity(0.4),
+                            color: colorScheme.outline.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -71,10 +71,10 @@ class WorkoutDetailSheet extends StatelessWidget {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary.withOpacity(0.15),
+                              color: colorScheme.primary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(100),
                               border: Border.all(
-                                color: colorScheme.primary.withOpacity(0.4),
+                                color: colorScheme.primary.withValues(alpha: 0.4),
                               ),
                             ),
                             child: Text(
@@ -104,7 +104,7 @@ class WorkoutDetailSheet extends StatelessWidget {
                               Text(
                                 workout.sessionName!,
                                 style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurface.withOpacity(0.6),
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                               ),
                             ],
@@ -112,7 +112,7 @@ class WorkoutDetailSheet extends StatelessWidget {
                             Text(
                               workout.dateLong,
                               style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurface.withOpacity(0.5),
+                                color: colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
                             ),
                           ],
@@ -174,7 +174,7 @@ class WorkoutDetailSheet extends StatelessWidget {
                               style: textTheme.labelSmall?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 2,
-                                color: colorScheme.onSurface.withOpacity(0.5),
+                                color: colorScheme.onSurface.withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -265,7 +265,7 @@ class _StatCard extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.55),
+                color: colorScheme.onSurface.withValues(alpha: 0.55),
               ),
             ),
           ],
@@ -291,7 +291,7 @@ class _ExerciseBlock extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.1)),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -309,7 +309,7 @@ class _ExerciseBlock extends StatelessWidget {
             '${exercise.seriesCount > 0 ? ' / ${exercise.seriesCount}' : ''}'
             ' séries',
             style: textTheme.labelSmall?.copyWith(
-              color: colorScheme.onSurface.withOpacity(0.55),
+              color: colorScheme.onSurface.withValues(alpha: 0.55),
               fontWeight: FontWeight.w600,
             ),
           ),

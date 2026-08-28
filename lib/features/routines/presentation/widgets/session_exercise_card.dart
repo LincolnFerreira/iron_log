@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
-import 'muscle_type_icon.dart';
-import 'session_screen_styles.dart';
+import 'package:iron_log/features/routines/presentation/widgets/muscle_type_icon.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_screen_styles.dart';
 
 class SessionExerciseCard extends StatefulWidget {
   final SearchExercise exercise;

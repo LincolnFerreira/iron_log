@@ -1,9 +1,8 @@
+import 'package:iron_log/features/workout_day/data/models/api_field_names.dart';
+import 'package:iron_log/features/workout_day/data/models/session_exercise_dto.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
-
-import 'api_field_names.dart';
-import 'session_exercise_dto.dart';
 
 /// Represents a SerieLog from /workout/:id response
 class SerieLogDto {
@@ -46,7 +45,7 @@ class SerieLogDto {
         json[ApiFieldNames.sessionExercise] as Map<String, dynamic>?;
 
     // Helper function para converter valores numéricos com debug
-    int? parseToInt(dynamic value, String fieldName) {
+    int? parseToInt(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is int) return value;
@@ -62,7 +61,7 @@ class SerieLogDto {
       }
     }
 
-    double? parseToDouble(dynamic value, String fieldName) {
+    double? parseToDouble(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is double) return value;

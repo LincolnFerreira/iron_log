@@ -1,10 +1,9 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-
-import '../../domain/entities/workout_draft.dart';
-import '../../domain/repositories/workout_draft_repository.dart';
-import 'workout_log_service.dart';
+import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/repositories/workout_draft_repository.dart';
 
 class WorkoutDraftSyncService {
   WorkoutDraftSyncService({

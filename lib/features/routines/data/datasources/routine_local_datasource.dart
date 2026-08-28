@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart' as drift;
 
-import '../../../../core/database/app_database.dart';
-import '../models/routine_model.dart';
+import 'package:iron_log/core/database/app_database.dart';
+import 'package:iron_log/features/routines/data/models/routine_model.dart';
 
 abstract class RoutineLocalDataSource {
   /// Get all routines for user from local database

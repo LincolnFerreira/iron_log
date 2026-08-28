@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/exercise_set_history.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_set_history.dart';
 
 class ExerciseHistoryModal extends StatelessWidget {
   final ExerciseSetHistory history;

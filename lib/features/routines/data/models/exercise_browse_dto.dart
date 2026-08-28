@@ -1,5 +1,5 @@
-import '../../domain/entities/exercise_browse_result.dart';
-import '../../domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/domain/entities/exercise_browse_result.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 
 class ExerciseBrowseDto {
   final List<Map<String, dynamic>> exercises;

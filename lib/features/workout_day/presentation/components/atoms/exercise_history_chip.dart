@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/exercise_set_history.dart';
-import '../../exercise_card_styles.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_set_history.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
 
 class ExerciseHistoryChip extends StatelessWidget {
   final AsyncValue<ExerciseSetHistory> historyAsync;

@@ -1,9 +1,9 @@
-import '../../domain/entities/exercise_summary.dart';
-import '../../domain/entities/serie_log.dart';
-import '../../domain/entities/series_entry.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../../domain/entities/workout_summary.dart';
-import '../../domain/mappers/technique_block_mapper.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_summary.dart';
+import 'package:iron_log/features/workout_day/domain/entities/serie_log.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
+import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
 
 class WorkoutMapper {
   static WorkoutSummary toSummary({

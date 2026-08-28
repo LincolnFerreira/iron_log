@@ -13,7 +13,7 @@ final homeGreetingNameProvider = Provider<String>((ref) {
     data: (profile) =>
         profile?.name ?? _firstName(displayName) ?? 'Usuário',
     loading: () => _firstName(displayName) ?? 'Carregando...',
-    error: (_, __) => _firstName(displayName) ?? 'Usuário',
+    error: (_, _) => _firstName(displayName) ?? 'Usuário',
   );
 });
 

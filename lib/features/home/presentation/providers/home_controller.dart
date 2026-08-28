@@ -3,12 +3,11 @@ import 'package:iron_log/core/network/connectivity_utils.dart';
 import 'package:iron_log/core/providers/sync_providers.dart';
 import 'package:iron_log/features/home/domain/entities/home_metrics.dart';
 import 'package:iron_log/features/home/home_providers.dart';
+import 'package:iron_log/features/home/presentation/providers/home_state.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/routines/domain/usecases/routine_usecases.dart';
 import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'home_state.dart';
 
 part 'home_controller.g.dart';
 

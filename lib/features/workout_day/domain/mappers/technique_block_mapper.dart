@@ -66,6 +66,29 @@ class TechniqueBlockMapper {
     return withBlocks(exercise, blocks);
   }
 
+  /// Atualiza a entrada no índice flat [flatIndex] sem alterar as demais séries.
+  /// Retorna `null` se o índice estiver fora do intervalo.
+  static List<TechniqueBlock>? mapFlatEntry(
+    List<TechniqueBlock> blocks,
+    int flatIndex,
+    SeriesEntry Function(SeriesEntry current) map,
+  ) {
+    if (flatIndex < 0) return null;
+    final sorted = [...blocks]..sort((a, b) => a.order.compareTo(b.order));
+    var remaining = flatIndex;
+    for (var bi = 0; bi < sorted.length; bi++) {
+      final block = sorted[bi];
+      if (remaining < block.entries.length) {
+        final newEntries = [...block.entries];
+        newEntries[remaining] = map(newEntries[remaining]);
+        sorted[bi] = block.copyWith(entries: newEntries);
+        return _reindexBlockOrders(sorted);
+      }
+      remaining -= block.entries.length;
+    }
+    return null;
+  }
+
   static List<Map<String, dynamic>> blocksToDto(
     List<TechniqueBlock> blocks, {
     required int exerciseRir,

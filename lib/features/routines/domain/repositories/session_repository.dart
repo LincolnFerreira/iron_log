@@ -1,5 +1,5 @@
-import '../entities/routine.dart';
-import '../../data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 
 abstract class SessionRepository {
   Future<Session> createSession({

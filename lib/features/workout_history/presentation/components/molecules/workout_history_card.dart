@@ -22,7 +22,7 @@ class WorkoutHistoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outline.withOpacity(0.12)),
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.12)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,10 +35,10 @@ class WorkoutHistoryCard extends StatelessWidget {
                   vertical: 3,
                 ),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.15),
+                  color: colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(100),
                   border: Border.all(
-                    color: colorScheme.primary.withOpacity(0.4),
+                    color: colorScheme.primary.withValues(alpha: 0.4),
                   ),
                 ),
                 child: Text(
@@ -60,7 +60,7 @@ class WorkoutHistoryCard extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.12),
+                    color: colorScheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -88,7 +88,7 @@ class WorkoutHistoryCard extends StatelessWidget {
                       Text(
                         '${workout.dateFormatted} · ${workout.durationFormatted}',
                         style: textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onSurface.withOpacity(0.55),
+                          color: colorScheme.onSurface.withValues(alpha: 0.55),
                         ),
                       ),
                     ],
@@ -165,7 +165,7 @@ class _ExerciseChips extends StatelessWidget {
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+              border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
             ),
             child: Text(
               e.exerciseName,
@@ -183,7 +183,7 @@ class _ExerciseChips extends StatelessWidget {
               '+$overflow',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 fontSize: 11,
-                color: colorScheme.onSurface.withOpacity(0.5),
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -220,7 +220,7 @@ class _MiniStat extends StatelessWidget {
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               fontSize: 10,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ],

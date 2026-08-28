@@ -22,7 +22,7 @@ final userNameProvider = Provider<String?>((ref) {
   return userProfileAsync.when(
     data: (profile) => profile?.name,
     loading: () => null,
-    error: (_, __) => null,
+    error: (_, _) => null,
   );
 });
 

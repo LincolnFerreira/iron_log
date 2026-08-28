@@ -14,10 +14,10 @@ class ActiveSequenceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight.withOpacity(0.08),
+        color: AppColors.primaryLight.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppColors.primaryLight.withOpacity(0.3),
+          color: AppColors.primaryLight.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -46,7 +46,7 @@ class ActiveSequenceCard extends StatelessWidget {
                   Text(
                     'Não quebre agora',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.primaryLight.withOpacity(0.8),
+                      color: AppColors.primaryLight.withValues(alpha: 0.8),
                     ),
                   ),
                 ],

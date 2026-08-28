@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
-import '../molecules/exercise_detail_block.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/exercise_detail_block.dart';
 
 /// Seção de detalhamento de exercícios
 class ExerciseBreakdownSection extends StatelessWidget {

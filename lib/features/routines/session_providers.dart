@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/services/http_service.dart';
-import 'domain/repositories/session_repository.dart';
-import 'domain/usecases/session_usecases.dart';
-import 'data/repositories/session_repository_impl.dart';
+import 'package:iron_log/features/routines/data/repositories/session_repository_impl.dart';
+import 'package:iron_log/features/routines/domain/repositories/session_repository.dart';
+import 'package:iron_log/features/routines/domain/usecases/session_usecases.dart';
 
 final sessionRepositoryProviderImpl = Provider<SessionRepository>((ref) {
   final httpService = ref.read(httpServiceProvider);

@@ -1,6 +1,6 @@
-import '../entities/routine.dart';
-import '../entities/session_creation.dart';
-import '../entities/routine_update.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
+import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
 
 abstract class RoutineRepository {
   Future<List<Routine>> getRoutines();

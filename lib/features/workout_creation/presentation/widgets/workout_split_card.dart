@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/workout_split.dart';
+import 'package:iron_log/features/workout_creation/domain/entities/workout_split.dart';
 
 class WorkoutSplitCard extends StatelessWidget {
   final WorkoutSplit split;
@@ -24,7 +24,7 @@ class WorkoutSplitCard extends StatelessWidget {
         boxShadow: isDragging
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -35,7 +35,7 @@ class WorkoutSplitCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         elevation: isDragging ? 8 : 2,
         color: isDragging
-            ? theme.colorScheme.surface.withOpacity(0.9)
+            ? theme.colorScheme.surface.withValues(alpha: 0.9)
             : theme.colorScheme.surface,
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -46,7 +46,7 @@ class WorkoutSplitCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Icon(
                   Icons.drag_indicator,
-                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
                   size: 24,
                 ),
               ),
@@ -57,7 +57,7 @@ class WorkoutSplitCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _getSplitColor(split.type).withOpacity(0.1),
+                  color: _getSplitColor(split.type).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -96,12 +96,12 @@ class WorkoutSplitCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getSplitColor(split.type).withOpacity(0.1),
+                            color: _getSplitColor(split.type).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: _getSplitColor(
                                 split.type,
-                              ).withOpacity(0.3),
+                              ).withValues(alpha: 0.3),
                             ),
                           ),
                           child: Text(

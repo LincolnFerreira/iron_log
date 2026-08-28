@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
-import '../../domain/entities/routine.dart';
-import '../../domain/entities/search_exercise.dart';
-import 'selected_exercise_card.dart';
-import 'session_section_title.dart';
-import '../providers/session_selection_provider.dart';
-import '../providers/session_provider.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/presentation/widgets/selected_exercise_card.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_section_title.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_selection_provider.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_provider.dart';
 
 class SelectedExercisesSection extends ConsumerStatefulWidget {
   final Session session;

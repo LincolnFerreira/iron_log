@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../atoms/google_signin_button.dart';
+import 'package:iron_log/features/auth/presentation/components/atoms/google_signin_button.dart';
 
 class AuthButtonsSection extends StatelessWidget {
   final VoidCallback? onGoogleSignIn;

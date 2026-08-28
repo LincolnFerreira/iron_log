@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_summary.dart';
-import './series_summary_row.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/series_summary_row.dart';
 
 /// Bloco de detalhes de um exercício com todas suas séries
 class ExerciseDetailBlock extends StatelessWidget {
@@ -18,7 +18,7 @@ class ExerciseDetailBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final block = Container(
+    final block = DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         border: Border.all(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../atoms/circular_icon.dart';
-import '../atoms/primary_text.dart';
-import '../atoms/section_description_text.dart';
-import 'metodology_list.dart';
+import 'package:iron_log/features/onboarding/presentation/atoms/circular_icon.dart';
+import 'package:iron_log/features/onboarding/presentation/atoms/primary_text.dart';
+import 'package:iron_log/features/onboarding/presentation/atoms/section_description_text.dart';
+import 'package:iron_log/features/onboarding/presentation/organisms/metodology_list.dart';
 
 class MethodologySetupContent extends StatelessWidget {
   final int? selectedMethod;

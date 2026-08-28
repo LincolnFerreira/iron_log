@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../atoms/stat_value.dart';
-import '../atoms/stat_label.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/stat_label.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/stat_value.dart';
 
 /// Card de estatística - número grande + label em card compacto
 class StatCard extends StatelessWidget {
@@ -19,7 +19,7 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),

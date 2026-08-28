@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../providers/workout_creation_provider.dart';
-import '../widgets/reorderable_workout_list.dart';
+import 'package:iron_log/features/workout_creation/presentation/providers/workout_creation_provider.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/reorderable_workout_list.dart';
 
 class QuickWorkoutCreationPage extends ConsumerWidget {
   const QuickWorkoutCreationPage({super.key});
@@ -70,7 +70,7 @@ class QuickWorkoutCreationPage extends ConsumerWidget {
         Text(
           'Arraste os treinos para reorganizar a ordem da sua rotação semanal',
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -119,7 +119,7 @@ class QuickWorkoutCreationPage extends ConsumerWidget {
         color: theme.scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -136,9 +136,9 @@ class QuickWorkoutCreationPage extends ConsumerWidget {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [

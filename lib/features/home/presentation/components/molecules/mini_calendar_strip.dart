@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
+import 'package:iron_log/features/home/presentation/components/molecules/activity_type_selection_sheet.dart';
 import 'package:iron_log/features/home/presentation/providers/rest_day_toggle_provider.dart';
 import 'package:iron_log/features/home/presentation/providers/workout_calendar_provider.dart';
-import 'package:iron_log/features/home/presentation/components/molecules/activity_type_selection_sheet.dart';
 
 /// Mini calendário horizontal dos últimos 14 dias com scroll.
 /// - Verde   → dia com treino registrado

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 
 class SessionCard extends StatelessWidget {
   final Session session;
@@ -25,7 +25,7 @@ class SessionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -43,7 +43,7 @@ class SessionCard extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Icon(
                   Icons.drag_indicator,
-                  color: theme.colorScheme.primary.withOpacity(0.7),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.7),
                   size: 24,
                 ),
               )
@@ -86,7 +86,7 @@ class SessionCard extends StatelessWidget {
                                   ),
                                   decoration: BoxDecoration(
                                     color: theme.colorScheme.primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(

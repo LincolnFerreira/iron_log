@@ -3,15 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/routes/app_router.dart';
+import 'package:iron_log/core/routes/workout_route_locations.dart';
 import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/auth/presentation/utils/logout_utils.dart';
-import 'package:iron_log/core/routes/workout_route_locations.dart';
-import 'package:iron_log/features/routines/domain/entities/routine.dart';
-import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
 import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
 import 'package:iron_log/features/home/presentation/components/templates/home_template.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import 'package:iron_log/features/home/presentation/providers/home_ui_feedback_provider.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -47,6 +47,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   @override
   void didPopNext() {
     ref.read(homeProvider.notifier).refresh();
+    ref.invalidate(activeWorkoutDraftProvider);
   }
 
   @override
@@ -107,7 +108,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       selectedItemColor: Theme.of(context).colorScheme.primary,
       unselectedItemColor: Theme.of(
         context,
-      ).colorScheme.onSurface.withOpacity(0.6),
+      ).colorScheme.onSurface.withValues(alpha: 0.6),
       onTap: (index) => _onBottomNavTap(context, index),
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -271,7 +272,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onSurface
-                                        .withOpacity(0.7),
+                                        .withValues(alpha: 0.7),
                                   ),
                             ),
                           ],

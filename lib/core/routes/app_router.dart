@@ -1,24 +1,24 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'app_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/debug/temp_api_error_log_test_page.dart';
+import 'package:iron_log/core/routes/app_page.dart';
+import 'package:iron_log/core/routes/workout_route_locations.dart';
 import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/auth/presentation/pages/login_screen.dart';
 import 'package:iron_log/features/auth/presentation/pages/splash_screen.dart';
 import 'package:iron_log/features/home/home_page.dart';
-import 'package:iron_log/features/onboarding/presentation/pages/methodology_setup_page.dart';
 import 'package:iron_log/features/onboarding/presentation/pages/frequency_setup_page.dart';
+import 'package:iron_log/features/onboarding/presentation/pages/methodology_setup_page.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
-import 'package:iron_log/features/routines/presentation/pages/routines_page.dart';
 import 'package:iron_log/features/routines/presentation/pages/routine_sessions_page.dart';
+import 'package:iron_log/features/routines/presentation/pages/routines_page.dart';
 import 'package:iron_log/features/routines/presentation/pages/session_editor_page.dart';
-import 'package:iron_log/features/workout_creation/presentation/pages/quick_workout_creation_page.dart';
 import 'package:iron_log/features/settings/presentation/pages/settings_page.dart';
-import 'package:iron_log/features/workout_history/presentation/pages/workout_history_page.dart';
+import 'package:iron_log/features/workout_creation/presentation/pages/quick_workout_creation_page.dart';
 import 'package:iron_log/features/workout_day/presentation/pages/cardio_creation_page.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:iron_log/core/debug/temp_api_error_log_test_page.dart';
-import 'workout_route_locations.dart';
+import 'package:iron_log/features/workout_history/presentation/pages/workout_history_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 

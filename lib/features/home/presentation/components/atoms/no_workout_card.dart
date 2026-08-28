@@ -26,7 +26,7 @@ class NoWorkoutCard extends StatelessWidget {
                   Icons.fitness_center_outlined,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.4),
+                  ).colorScheme.onSurface.withValues(alpha: 0.4),
                   size: 24,
                 ),
               ),
@@ -47,7 +47,7 @@ class NoWorkoutCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.6),
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -60,7 +60,7 @@ class NoWorkoutCard extends StatelessWidget {
                   size: 16,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurface.withOpacity(0.4),
+                  ).colorScheme.onSurface.withValues(alpha: 0.4),
                 ),
               ],
             ],

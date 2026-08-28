@@ -20,7 +20,7 @@ class DashedContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final effectiveColor = color ?? theme.colorScheme.primary.withOpacity(0.5);
+    final effectiveColor = color ?? theme.colorScheme.primary.withValues(alpha: 0.5);
 
     return GestureDetector(
       onTap: onTap,
@@ -33,7 +33,7 @@ class DashedContainer extends StatelessWidget {
           padding: padding ?? const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
-            color: effectiveColor.withOpacity(0.05),
+            color: effectiveColor.withValues(alpha: 0.05),
           ),
           child: child,
         ),

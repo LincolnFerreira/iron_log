@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/app_colors.dart';
-import '../../domain/entities/routine.dart';
-import '../widgets/session_detail_content.dart';
-import '../widgets/session_save_button.dart';
-import '../widgets/session_screen_styles.dart';
-import '../providers/session_editor_state.dart';
-import '../providers/session_selection_provider.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_editor_state.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_selection_provider.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_detail_content.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_save_button.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_screen_styles.dart';
 
 class SessionEditorPage extends ConsumerStatefulWidget {
   final Routine routine;

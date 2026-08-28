@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/providers/sync_providers.dart';
-import '../../../auth/auth.dart';
-import '../../data/datasources/workout_draft_local_datasource.dart';
-import '../../data/mappers/workout_draft_snapshot_mapper.dart';
-import '../../data/repositories/workout_draft_repository_impl.dart';
-import '../../data/services/workout_draft_sync_service.dart';
-import '../../data/services/workout_log_service.dart';
-import '../../domain/entities/workout_draft.dart';
-import '../../domain/repositories/workout_draft_repository.dart';
+import 'package:iron_log/core/providers/sync_providers.dart';
+import 'package:iron_log/features/auth/auth.dart';
+import 'package:iron_log/features/workout_day/data/datasources/workout_draft_local_datasource.dart';
+import 'package:iron_log/features/workout_day/data/mappers/workout_draft_snapshot_mapper.dart';
+import 'package:iron_log/features/workout_day/data/repositories/workout_draft_repository_impl.dart';
+import 'package:iron_log/features/workout_day/data/services/workout_draft_sync_service.dart';
+import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/repositories/workout_draft_repository.dart';
 
 final workoutDraftSnapshotMapperProvider = Provider<WorkoutDraftSnapshotMapper>(
   (ref) => WorkoutDraftSnapshotMapper(),

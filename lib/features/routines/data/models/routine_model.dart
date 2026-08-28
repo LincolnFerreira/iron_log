@@ -1,4 +1,4 @@
-import '../../domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 
 class RoutineModel extends Routine {
   const RoutineModel({

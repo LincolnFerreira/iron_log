@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_last_workout_provider.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
-import '../../providers/routine_last_workout_provider.dart';
 
 /// Seção exibida no rodapé do RoutineCard com os dados do último treino,
 /// reutilizando o WorkoutHistoryCard da tela de histórico.
@@ -20,7 +20,7 @@ class RoutineLastWorkoutSection extends ConsumerWidget {
         .when(
           skipLoadingOnRefresh: false,
           loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
           data: (workout) {
             if (workout == null) return const SizedBox.shrink();
             return Column(
@@ -28,7 +28,7 @@ class RoutineLastWorkoutSection extends ConsumerWidget {
               children: [
                 Divider(
                   height: 1,
-                  color: colorScheme.outline.withOpacity(0.12),
+                  color: colorScheme.outline.withValues(alpha: 0.12),
                 ),
                 const SizedBox(height: 6),
                 Padding(
@@ -36,7 +36,7 @@ class RoutineLastWorkoutSection extends ConsumerWidget {
                   child: Text(
                     'Último treino',
                     style: textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurface.withOpacity(0.4),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                       fontWeight: FontWeight.w600,
                     ),
                   ),

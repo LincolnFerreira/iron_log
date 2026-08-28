@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/session_creation.dart';
-import '../../domain/entities/routine_update.dart';
-import '../../domain/repositories/routine_repository.dart';
-import '../../domain/usecases/routine_usecases.dart';
+import 'package:iron_log/features/routines/domain/repositories/routine_repository.dart';
+import 'package:iron_log/features/routines/domain/usecases/routine_usecases.dart';
 
 export 'routine_controller.dart';
 export 'routine_state.dart';

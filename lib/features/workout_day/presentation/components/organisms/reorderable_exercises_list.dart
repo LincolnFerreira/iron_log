@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../organisms/exercise_card.dart';
-import '../../../domain/entities/workout_exercise.dart';
-import '../molecules/add_exercise_button.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/add_exercise_button.dart';
+import 'package:iron_log/features/workout_day/presentation/organisms/exercise_card.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
 
-class ReorderableExercisesList extends StatelessWidget {
+class ReorderableExercisesList extends ConsumerStatefulWidget {
   final List<WorkoutExercise> exercises;
   final Function(int oldIndex, int newIndex) onReorder;
-  final String? sessionId; // Adicionar sessionId para habilitar remoção
+  final String? sessionId;
   final VoidCallback? onAddExercise;
   final bool enableReorder;
   final bool showAddButton;
@@ -15,28 +17,68 @@ class ReorderableExercisesList extends StatelessWidget {
     super.key,
     required this.exercises,
     required this.onReorder,
-    this.sessionId, // Parâmetro opcional
+    this.sessionId,
     this.onAddExercise,
     this.enableReorder = true,
     this.showAddButton = true,
   });
 
   @override
+  ConsumerState<ReorderableExercisesList> createState() =>
+      _ReorderableExercisesListState();
+}
+
+class _ReorderableExercisesListState
+    extends ConsumerState<ReorderableExercisesList> {
+  final Map<String, GlobalKey> _itemKeys = {};
+
+  GlobalKey _keyFor(String exerciseId) =>
+      _itemKeys.putIfAbsent(exerciseId, GlobalKey.new);
+
+  void _scrollToExercise(String? exerciseId) {
+    if (exerciseId == null || exerciseId.isEmpty) return;
+    final ctx = _keyFor(exerciseId).currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+      alignment: 0.08,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (!enableReorder) {
+    ref.listen<WorkoutFooterFocus>(workoutFooterFocusProvider, (prev, next) {
+      if (next.exerciseId == null || next.exerciseId!.isEmpty) return;
+      if (prev?.exerciseId == next.exerciseId) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _scrollToExercise(next.exerciseId);
+      });
+    });
+
+    // Remove keys de exercícios que saíram da lista.
+    final ids = widget.exercises.map((e) => e.id).toSet();
+    _itemKeys.removeWhere((id, _) => !ids.contains(id));
+
+    if (!widget.enableReorder) {
       return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: exercises.length,
+        itemCount: widget.exercises.length,
         itemBuilder: (context, index) {
-          final exercise = exercises[index];
+          final exercise = widget.exercises[index];
           return Container(
             key: ValueKey(exercise.id),
             margin: const EdgeInsets.only(bottom: 16),
-            child: ExerciseCard(
-              exercise: exercise,
-              sessionId: sessionId,
+            child: KeyedSubtree(
+              key: _keyFor(exercise.id),
+              child: ExerciseCard(
+                exercise: exercise,
+                sessionId: widget.sessionId,
+              ),
             ),
           );
         },
@@ -47,36 +89,27 @@ class ReorderableExercisesList extends StatelessWidget {
       buildDefaultDragHandles: false,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       onReorder: (oldIndex, newIndex) {
-        // Guard: ignore reorder starting from the add-button slot
-        if (oldIndex >= exercises.length) return;
+        if (oldIndex >= widget.exercises.length) return;
 
-        // The ReorderableListView's newIndex is the index in the full
-        // list (including the add-button). Convert it to a target index
-        // for the underlying `exercises` list and clamp to valid bounds.
         var targetIndex = newIndex;
-
-        // Cap to the add-button index (safe upper bound)
-        if (targetIndex > exercises.length) targetIndex = exercises.length;
-
-        // If the item is moved forward in the list, the removal of the
-        // original element shifts indices down by one.
+        if (targetIndex > widget.exercises.length) {
+          targetIndex = widget.exercises.length;
+        }
         if (targetIndex > oldIndex) targetIndex -= 1;
-
-        // If there's no effective change, ignore.
         if (targetIndex == oldIndex) return;
 
-        onReorder(oldIndex, targetIndex);
+        widget.onReorder(oldIndex, targetIndex);
       },
-      itemCount: exercises.length + (showAddButton ? 1 : 0), // +1 para o botão
+      itemCount:
+          widget.exercises.length + (widget.showAddButton ? 1 : 0),
       itemBuilder: (context, index) {
-        // Último item é o botão de adicionar
-        if (showAddButton && index == exercises.length) {
+        if (widget.showAddButton && index == widget.exercises.length) {
           return Padding(
             key: const ValueKey('add_exercise_button'),
             padding: const EdgeInsets.only(bottom: 16),
             child: AddExerciseButton(
               onPressed:
-                  onAddExercise ??
+                  widget.onAddExercise ??
                   () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -91,14 +124,17 @@ class ReorderableExercisesList extends StatelessWidget {
           );
         }
 
-        final exercise = exercises[index];
+        final exercise = widget.exercises[index];
         return Container(
           key: ValueKey(exercise.id),
           margin: const EdgeInsets.only(bottom: 16),
-          child: ExerciseCard(
-            exercise: exercise,
-            index: index,
-            sessionId: sessionId, // Passa o sessionId para habilitar remoção
+          child: KeyedSubtree(
+            key: _keyFor(exercise.id),
+            child: ExerciseCard(
+              exercise: exercise,
+              index: index,
+              sessionId: widget.sessionId,
+            ),
           ),
         );
       },

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'workout_timer.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/workout_timer.dart';
 
 class WorkoutDayHeader extends ConsumerWidget {
   final VoidCallback? onBackPressed;
@@ -41,7 +41,7 @@ class WorkoutDayHeader extends ConsumerWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: Theme.of(context).dividerColor.withOpacity(0.1),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
             width: 1,
           ),
         ),

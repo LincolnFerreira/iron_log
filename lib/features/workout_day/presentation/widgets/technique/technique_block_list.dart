@@ -10,9 +10,9 @@ import 'package:iron_log/features/workout_day/domain/mappers/technique_block_map
 
 
 
-import 'cluster_config_sheet.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/technique/cluster_config_sheet.dart';
 
-import 'technique_block_card.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/technique/technique_block_card.dart';
 
 
 

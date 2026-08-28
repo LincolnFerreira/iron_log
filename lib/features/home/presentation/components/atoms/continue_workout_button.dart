@@ -28,7 +28,7 @@ class ContinueWorkoutButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.primaryLight,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.35)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
           ),
           child: Row(
             children: [
@@ -36,7 +36,7 @@ class ContinueWorkoutButton extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: isLoading
@@ -45,7 +45,7 @@ class ContinueWorkoutButton extends StatelessWidget {
                         height: 24,
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white.withOpacity(0.7),
+                            Colors.white.withValues(alpha: 0.7),
                           ),
                         ),
                       )
@@ -67,7 +67,7 @@ class ContinueWorkoutButton extends StatelessWidget {
                     Text(
                       '$exerciseCount exercício${exerciseCount != 1 ? 's' : ''} • em andamento',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                   ],

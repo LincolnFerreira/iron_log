@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import '../../domain/entities/routine.dart';
-import '../../domain/repositories/session_repository.dart';
-import '../../data/models/session_exercise_update_dto.dart';
-import '../models/routine_model.dart';
+import 'package:iron_log/features/routines/data/models/routine_model.dart';
+import 'package:iron_log/features/routines/data/models/session_exercise_update_dto.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/repositories/session_repository.dart';
 
 class SessionRepositoryImpl implements SessionRepository {
   final Dio _dio;

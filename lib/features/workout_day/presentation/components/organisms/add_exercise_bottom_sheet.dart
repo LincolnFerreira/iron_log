@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/components/exercise_search/exercise_search.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
-import '../molecules/add_exercise_search_results.dart';
-import '../molecules/add_exercise_added_list.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/add_exercise_added_list.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/add_exercise_search_results.dart';
 
 class AddExerciseBottomSheet extends ConsumerStatefulWidget {
   final Function(SearchExercise) onExerciseSelected;
@@ -78,7 +78,7 @@ class _AddExerciseBottomSheetState
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
-        return Container(
+        return DecoratedBox(
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(

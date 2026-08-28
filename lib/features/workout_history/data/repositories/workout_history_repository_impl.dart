@@ -1,8 +1,7 @@
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
-
-import '../../domain/repositories/workout_history_repository.dart';
-import '../datasources/workout_history_remote_datasource.dart';
-import '../mappers/workout_history_mapper.dart';
+import 'package:iron_log/features/workout_history/data/datasources/workout_history_remote_datasource.dart';
+import 'package:iron_log/features/workout_history/data/mappers/workout_history_mapper.dart';
+import 'package:iron_log/features/workout_history/domain/repositories/workout_history_repository.dart';
 
 class WorkoutHistoryRepositoryImpl implements WorkoutHistoryRepository {
   WorkoutHistoryRepositoryImpl({required WorkoutHistoryRemoteDataSource remote})

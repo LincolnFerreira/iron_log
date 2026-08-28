@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
-import '../molecules/history_item_card.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/history_item_card.dart';
 
 /// Seção de histórico - treinos anteriores
 class HistorySection extends StatelessWidget {
@@ -32,7 +32,7 @@ class HistorySection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           // Card contendo todos os itens
-          Container(
+          DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(
                 color: Theme.of(

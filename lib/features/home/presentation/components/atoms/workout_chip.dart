@@ -14,7 +14,7 @@ class WorkoutChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Chip(
       label: Text(label),
-      backgroundColor: backgroundColor.withOpacity(0.2),
+      backgroundColor: backgroundColor.withValues(alpha: 0.2),
       labelStyle: TextStyle(
         color: backgroundColor,
         fontWeight: FontWeight.bold,

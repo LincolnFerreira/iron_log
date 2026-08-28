@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
-import '../../../domain/entities/workout_exercise.dart';
-import '../../../domain/entities/suggestion_result.dart';
-import '../../exercise_tag_styles.dart';
-import '../../organisms/exercise_card.dart';
-import '../../providers/exercise_suggestion_provider.dart';
-import '../../providers/exercise_last_sets_provider.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/entities/suggestion_result.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_tag_styles.dart';
+import 'package:iron_log/features/workout_day/presentation/organisms/exercise_card.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/exercise_suggestion_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/exercise_last_sets_provider.dart';
 
 class SessionExercisesSheet extends ConsumerStatefulWidget {
   final List<WorkoutExercise> exercises;
@@ -155,7 +155,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.5 : 0.08),
+                color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.08),
                 blurRadius: 32,
                 offset: const Offset(0, -8),
               ),
@@ -350,11 +350,11 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
         decoration: BoxDecoration(
           color: isDark
-              ? color.withOpacity(0.08)
-              : color.withOpacity(0.06),
+              ? color.withValues(alpha: 0.08)
+              : color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: color.withOpacity(isDark ? 0.15 : 0.12),
+            color: color.withValues(alpha: isDark ? 0.15 : 0.12),
           ),
         ),
         child: Row(
@@ -404,7 +404,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isDark
-                ? AppColors.dark50.withOpacity(0.5)
+                ? AppColors.dark50.withValues(alpha: 0.5)
                 : Colors.grey.shade200,
           ),
         ),
@@ -419,7 +419,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -439,7 +439,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: exerciseTagColor(exercise.tag).withOpacity(0.1),
+                    color: exerciseTagColor(exercise.tag).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -476,7 +476,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
                 ),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? AppColors.dark30.withOpacity(0.6)
+                      ? AppColors.dark30.withValues(alpha: 0.6)
                       : Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
@@ -552,12 +552,12 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
               gradient: LinearGradient(
                 colors: isDark
                     ? [
-                        AppColors.primaryDark.withOpacity(0.06),
-                        AppColors.primaryDark.withOpacity(0.02),
+                        AppColors.primaryDark.withValues(alpha: 0.06),
+                        AppColors.primaryDark.withValues(alpha: 0.02),
                       ]
                     : [
-                        AppColors.blue10.withOpacity(0.5),
-                        AppColors.blue10.withOpacity(0.2),
+                        AppColors.blue10.withValues(alpha: 0.5),
+                        AppColors.blue10.withValues(alpha: 0.2),
                       ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -565,7 +565,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: isDark
-                    ? AppColors.primaryDark.withOpacity(0.12)
+                    ? AppColors.primaryDark.withValues(alpha: 0.12)
                     : AppColors.blue20,
               ),
             ),
@@ -577,7 +577,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -721,7 +721,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
           ),
         ),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -747,7 +747,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(isDark ? 0.15 : 0.1),
+        color: color.withValues(alpha: isDark ? 0.15 : 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -812,14 +812,14 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? color.withOpacity(isDark ? 0.2 : 0.12)
+                ? color.withValues(alpha: isDark ? 0.2 : 0.12)
                 : isDark
-                    ? AppColors.dark50.withOpacity(0.5)
+                    ? AppColors.dark50.withValues(alpha: 0.5)
                     : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
-                  ? color.withOpacity(0.5)
+                  ? color.withValues(alpha: 0.5)
                   : isDark
                       ? AppColors.dark50
                       : Colors.grey.shade300,
@@ -846,7 +846,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
                   fontSize: 9,
                   fontWeight: FontWeight.w500,
                   color: isSelected
-                      ? color.withOpacity(0.8)
+                      ? color.withValues(alpha: 0.8)
                       : isDark
                           ? AppColors.gray50
                           : AppColors.gray60,
@@ -989,7 +989,7 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
         border: Border(
           top: BorderSide(
             color: isDark
-                ? AppColors.dark40.withOpacity(0.5)
+                ? AppColors.dark40.withValues(alpha: 0.5)
                 : Colors.grey.shade100,
           ),
         ),

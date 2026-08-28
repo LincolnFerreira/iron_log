@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
-import 'package:iron_log/features/workout_day/presentation/pages/workout_day_screen.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
+import 'package:iron_log/features/workout_day/presentation/pages/workout_day_screen.dart';
 import 'package:iron_log/features/workout_day/presentation/pages/workout_summary_screen.dart';
 
 /// Canonical GoRouter paths for workout execution flows.

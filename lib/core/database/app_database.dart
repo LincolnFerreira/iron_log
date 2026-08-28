@@ -1,17 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:iron_log/core/database/exercises_table.dart';
+import 'package:iron_log/core/database/rest_days_table.dart';
+import 'package:iron_log/core/database/routines_table.dart';
+import 'package:iron_log/core/database/serie_logs_table.dart';
+import 'package:iron_log/core/database/session_exercises_table.dart';
+import 'package:iron_log/core/database/sessions_table.dart';
+import 'package:iron_log/core/database/technique_blocks_table.dart';
+import 'package:iron_log/core/database/workout_drafts_table.dart';
+import 'package:iron_log/core/database/workout_outbox_table.dart';
+import 'package:iron_log/core/database/workout_sessions_table.dart';
 import 'package:path_provider/path_provider.dart';
-
-import 'routines_table.dart';
-import 'sessions_table.dart';
-import 'session_exercises_table.dart';
-import 'exercises_table.dart';
-import 'workout_sessions_table.dart';
-import 'serie_logs_table.dart';
-import 'technique_blocks_table.dart';
-import 'rest_days_table.dart';
-import 'workout_outbox_table.dart';
-import 'workout_drafts_table.dart';
 
 part 'app_database.g.dart';
 

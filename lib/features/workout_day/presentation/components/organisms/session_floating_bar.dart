@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
-import '../../../domain/entities/workout_exercise.dart';
-import '../../exercise_tag_styles.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_tag_styles.dart';
 
 class SessionFloatingBar extends StatelessWidget {
   final List<WorkoutExercise> exercises;
@@ -34,12 +34,12 @@ class SessionFloatingBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.5 : 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.1),
             blurRadius: 28,
             offset: const Offset(0, -6),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 8,
             offset: const Offset(0, -1),
           ),
@@ -168,10 +168,10 @@ class SessionFloatingBar extends StatelessWidget {
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: tagColor.withOpacity(isDark ? 0.15 : 0.08),
+        color: tagColor.withValues(alpha: isDark ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: tagColor.withOpacity(0.2),
+          color: tagColor.withValues(alpha: 0.2),
         ),
       ),
       child: Center(
@@ -203,7 +203,7 @@ class SessionFloatingBar extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: exerciseTagColor(preview[i].tag).withOpacity(0.15),
+                color: exerciseTagColor(preview[i].tag).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isDark ? AppColors.dark30 : Colors.white,

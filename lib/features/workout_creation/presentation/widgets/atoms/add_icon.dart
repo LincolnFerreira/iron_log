@@ -24,7 +24,7 @@ class AddIcon extends StatelessWidget {
 
     if (withBackground) {
       final effectiveBackgroundColor =
-          backgroundColor ?? effectiveColor.withOpacity(0.1);
+          backgroundColor ?? effectiveColor.withValues(alpha: 0.1);
 
       iconWidget = Container(
         width: size + 16,

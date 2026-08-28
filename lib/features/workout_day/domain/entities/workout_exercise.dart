@@ -1,7 +1,7 @@
-import 'exercise_tag.dart';
-import 'series_entry.dart';
-import 'technique_block.dart';
-import 'weight_unit.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
+import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
 
 // Sentinel used in copyWith to distinguish "not provided" from explicit null.
 const _notSet = Object();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'google_icon.dart';
-import '../../auth_test_keys.dart';
+import 'package:iron_log/features/auth/presentation/auth_test_keys.dart';
+import 'package:iron_log/features/auth/presentation/components/atoms/google_icon.dart';
 
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -24,7 +24,7 @@ class GoogleSignInButton extends StatelessWidget {
           backgroundColor: Colors.white,
           foregroundColor: Colors.grey[700],
           elevation: 2,
-          shadowColor: Colors.black.withOpacity(0.08),
+          shadowColor: Colors.black.withValues(alpha: 0.08),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(color: Colors.grey[300]!),

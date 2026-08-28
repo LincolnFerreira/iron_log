@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
-import '../molecules/stat_card.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/stat_card.dart';
 
 /// Grid de estatísticas (2x2) - Duração, Séries Feitas, Volume, Conclusão
 class StatsGrid extends StatelessWidget {

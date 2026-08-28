@@ -1,4 +1,4 @@
-import 'serie_log.dart';
+import 'package:iron_log/features/workout_day/domain/entities/serie_log.dart';
 
 /// Resumo de um exercício com todas as suas séries
 class ExerciseSummary {

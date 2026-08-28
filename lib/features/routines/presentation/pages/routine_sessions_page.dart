@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/core/widgets/page_header_title.dart';
-import '../../domain/entities/routine.dart';
-import '../providers/routine_provider.dart';
-import '../widgets/reorderable_session_list.dart';
-import '../widgets/routine_loading_skeletons.dart';
-import '../widgets/session_section_title.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_last_workout_provider.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
+import 'package:iron_log/features/routines/presentation/widgets/reorderable_session_list.dart';
+import 'package:iron_log/features/routines/presentation/widgets/routine_loading_skeletons.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_section_title.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_skeleton.dart';
-import '../providers/routine_last_workout_provider.dart';
 
 class RoutineSessionsPage extends ConsumerStatefulWidget {
   final Routine routine;
@@ -107,7 +107,7 @@ class _SessionEditPageState extends ConsumerState<RoutineSessionsPage>
                 lastWorkoutAsync.when(
                   skipLoadingOnRefresh: false,
                   loading: () => const WorkoutHistorySkeleton(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
                   data: (workout) {
                     if (workout == null) {
                       return const Center(

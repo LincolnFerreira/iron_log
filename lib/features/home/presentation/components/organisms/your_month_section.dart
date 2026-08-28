@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../atoms/metric_card.dart';
+import 'package:iron_log/features/home/presentation/components/atoms/metric_card.dart';
 
 /// Your Month section displaying monthly metrics and progress towards monthly goal
 class YourMonthSection extends StatelessWidget {

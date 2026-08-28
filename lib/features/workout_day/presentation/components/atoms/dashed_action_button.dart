@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../exercise_card_styles.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
 
 /// Botão de ação secundária com borda tracejada (ex.: Adicionar série).
 class DashedActionButton extends StatelessWidget {

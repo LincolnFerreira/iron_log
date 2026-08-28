@@ -76,6 +76,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
 
+  test_api: any
 patrol:
   app_name: Iron Log
   test_directory: integration_test

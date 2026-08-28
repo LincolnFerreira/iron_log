@@ -4,23 +4,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
-import '../../../routines/domain/entities/search_exercise.dart';
-import '../../data/services/workout_log_service.dart';
-import '../../domain/entities/exercise_tag.dart';
-import '../../domain/entities/workout_draft.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../components/molecules/workout_day_header.dart';
-import '../components/organisms/add_exercise_bottom_sheet.dart';
-import '../components/organisms/reorderable_exercises_list.dart';
-import '../components/organisms/exercise_reorder_sheet.dart';
-import '../organisms/footer_actions.dart';
-import '../organisms/exercise_skeleton_card.dart';
-import '../providers/workout_day_provider.dart';
-import '../providers/workout_timer_provider.dart';
-import '../providers/workout_ui_feedback_provider.dart';
-import '../controllers/workout_controller.dart';
-import '../controllers/workout_finish_flow.dart';
-import '../../domain/enums/workout_screen_mode.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
+import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/workout_day_header.dart';
+import 'package:iron_log/features/workout_day/presentation/components/organisms/add_exercise_bottom_sheet.dart';
+import 'package:iron_log/features/workout_day/presentation/components/organisms/exercise_reorder_sheet.dart';
+import 'package:iron_log/features/workout_day/presentation/components/organisms/reorderable_exercises_list.dart';
+import 'package:iron_log/features/workout_day/presentation/controllers/workout_controller.dart';
+import 'package:iron_log/features/workout_day/presentation/controllers/workout_finish_flow.dart';
+import 'package:iron_log/features/workout_day/presentation/organisms/exercise_skeleton_card.dart';
+import 'package:iron_log/features/workout_day/presentation/organisms/footer_actions.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_timer_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_ui_feedback_provider.dart';
 import 'package:iron_log/features/workout_day/presentation/widgets/voice_input_bottom_sheet.dart';
 
 class WorkoutDayScreen extends ConsumerStatefulWidget {
@@ -114,16 +114,27 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   /// alterada pelo usuário via date picker no header.
   DateTime? _selectedDate;
 
+  /// Registro/edição de histórico: rodapé de cargas ativo sem "Iniciar" nem timer.
+  bool get _isRetroactiveLog =>
+      widget.manualDate != null ||
+      (widget.workoutId != null && widget.workoutId!.isNotEmpty);
+
   @override
   void initState() {
     super.initState();
     _selectedDate = widget.manualDate;
+    // Ativa o assistente de cargas imediatamente no fluxo retroativo.
+    _workoutStarted = _isRetroactiveLog;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
       // Determina e define o modo de operação baseado nos parâmetros do widget
       final mode = _determineMode();
       ref.read(workoutScreenModeProvider.notifier).state = mode;
+
+      if (_isRetroactiveLog) {
+        _syncDraftContext();
+      }
 
       if (widget.resumeDraftId != null) {
         _loadDraft(widget.resumeDraftId!);
@@ -181,9 +192,57 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
   Future<void> _flushDraftOnExit() async {
     if (!_workoutStarted) return;
     _syncDraftContext();
-    await ref
-        .read(workoutDayExercisesProvider.notifier)
-        .flushPersistInProgressDraft();
+    try {
+      await ref
+          .read(workoutDayExercisesProvider.notifier)
+          .flushPersistInProgressDraft();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Aviso: falha ao persistir rascunho ao sair: $e');
+      }
+    }
+  }
+
+  bool get _shouldGuardBackNavigation =>
+      _isRetroactiveLog && _workoutStarted;
+
+  /// Impede sair sem aviso no registro/edição de histórico.
+  Future<bool> _confirmLeaveRetroactive() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sair do treino?'),
+        content: const Text(
+          'Seu progresso será salvo como rascunho. '
+          'Na Home você pode continuar de onde parou.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Continuar editando'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  /// Header e system back passam por aqui (maybePop) — nunca Navigator.pop cru.
+  Future<void> _handleBackPressed() async {
+    final navigator = Navigator.of(context);
+    if (!_shouldGuardBackNavigation) {
+      await _flushDraftOnExit();
+      if (mounted) navigator.pop();
+      return;
+    }
+    final leave = await _confirmLeaveRetroactive();
+    if (!leave || !mounted) return;
+    await _flushDraftOnExit();
+    if (mounted) navigator.pop();
   }
 
   @override
@@ -232,6 +291,14 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       await ref
           .read(workoutDayExercisesProvider.notifier)
           .loadSession(widget.sessionId!, routineId: widget.routineId);
+      // Retroativo: grava rascunho local assim que a sessão carrega
+      // (não depende de upload; aparece em Continuar treino na Home).
+      if (_isRetroactiveLog && mounted) {
+        _syncDraftContext();
+        await ref
+            .read(workoutDayExercisesProvider.notifier)
+            .flushPersistInProgressDraft();
+      }
     } catch (e) {
       // O erro já é tratado pelo AsyncValue no provider
       if (kDebugMode) {
@@ -247,6 +314,12 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
       await ref
           .read(workoutDayExercisesProvider.notifier)
           .loadExistingWorkout(widget.workoutId!);
+      if (_isRetroactiveLog && mounted) {
+        _syncDraftContext();
+        await ref
+            .read(workoutDayExercisesProvider.notifier)
+            .flushPersistInProgressDraft();
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Erro ao carregar treino para edição: $e');
@@ -375,11 +448,16 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
     }
 
     return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, _) {
+      // canPop false só no retroativo: system back cai em onPopInvoked.
+      // O botão do header usa _handleBackPressed (não Navigator.pop cru).
+      canPop: !_shouldGuardBackNavigation,
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop) {
+          // Rota já saiu (treino ao vivo / sem guarda): best-effort.
           unawaited(_flushDraftOnExit());
+          return;
         }
+        await _handleBackPressed();
       },
       child: Scaffold(
       body: SafeArea(
@@ -395,6 +473,9 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     : '${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                onBackPressed: () {
+                  unawaited(_handleBackPressed());
+                },
                 onMorePressed: openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
@@ -403,14 +484,20 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                 subtitle: 'Carregando...',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                onBackPressed: () {
+                  unawaited(_handleBackPressed());
+                },
                 onMorePressed: openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
-              error: (_, __) => WorkoutDayHeader(
+              error: (_, _) => WorkoutDayHeader(
                 title: widget.subtitle ?? 'Exercícios do Dia',
                 subtitle: 'Erro ao carregar',
                 manualDate: _selectedDate,
                 onDateTap: _selectedDate != null ? _changeDate : null,
+                onBackPressed: () {
+                  unawaited(_handleBackPressed());
+                },
                 onMorePressed: openReorderSheet,
                 existingDuration: ref.watch(workoutOriginalDurationProvider),
               ),
@@ -538,7 +625,11 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                     selectedDate: _selectedDate,
                     isMounted: () => mounted,
                     onWorkoutNotStarted: () {
-                      if (mounted) setState(() => _workoutStarted = false);
+                      // Em retroativo o rodapé já nasce "iniciado"; não desativa
+                      // o assistente de cargas se o usuário cancelar a duração.
+                      if (mounted && !_isRetroactiveLog) {
+                        setState(() => _workoutStarted = false);
+                      }
                     },
                   );
                 },
@@ -579,7 +670,7 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
               )
             : null,
         loading: () => null,
-        error: (_, __) => null,
+        error: (_, _) => null,
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: _workoutStarted

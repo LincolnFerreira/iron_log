@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iron_log/core/app_colors.dart';
-import 'session_screen_styles.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_screen_styles.dart';
 
 class SessionMuscleChip extends StatelessWidget {
   final String label;

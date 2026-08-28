@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'firebase_auth_token.dart';
-import 'http_logging_service.dart';
-import 'http_error_handler.dart';
+import 'package:iron_log/core/services/firebase_auth_token.dart';
+import 'package:iron_log/core/services/http_error_handler.dart';
+import 'package:iron_log/core/services/http_logging_service.dart';
 
 /// Interceptor responsável por adicionar token de autenticação e logging
 /// Segue o Single Responsibility Principle - foca apenas em interceptação

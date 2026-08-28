@@ -1,6 +1,6 @@
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
 
-import '../models/workout_history_dto.dart';
+import 'package:iron_log/features/workout_history/data/models/workout_history_dto.dart';
 
 class WorkoutHistoryMapper {
   const WorkoutHistoryMapper._();

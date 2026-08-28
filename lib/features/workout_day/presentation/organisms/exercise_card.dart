@@ -2,27 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/domain/entities/suggestion_result.dart';
 import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
-import 'package:iron_log/features/workout_day/domain/entities/technique_type.dart';
+import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
 import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
-import '../components/atoms/custom_badge.dart';
-import '../components/atoms/exercise_history_chip.dart';
-import '../components/atoms/ai_suggestion_chip.dart';
-import '../components/atoms/dashed_action_button.dart';
-import '../exercise_card_styles.dart';
-import '../exercise_tag_styles.dart';
-import '../workout_test_keys.dart';
-import '../widgets/technique/technique_block_list.dart';
-import '../components/molecules/exercise_history_modal.dart';
-import '../components/molecules/quick_fill_chips.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../../domain/entities/weight_unit.dart';
-import '../../domain/entities/suggestion_result.dart';
-import '../../domain/enums/workout_screen_mode.dart';
-import '../providers/workout_day_provider.dart';
-import '../providers/exercise_last_sets_provider.dart';
-import '../providers/exercise_suggestion_provider.dart';
-import '../providers/workout_ui_feedback_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/ai_suggestion_chip.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/custom_badge.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/dashed_action_button.dart';
+import 'package:iron_log/features/workout_day/presentation/components/atoms/exercise_history_chip.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/exercise_history_modal.dart';
+import 'package:iron_log/features/workout_day/presentation/components/molecules/quick_fill_chips.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_tag_styles.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/exercise_last_sets_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/exercise_suggestion_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_ui_feedback_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/technique/technique_block_list.dart';
+import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 
 class ExerciseCard extends ConsumerStatefulWidget {
   final WorkoutExercise exercise;
@@ -135,11 +134,33 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         _weightUnit = newEx.weightUnit;
         _notes = newEx.notes ?? '';
         final incomingBlocks = TechniqueBlockMapper.ensureBlocks(newEx);
-        final userHasEdited = _currentEntries.any(
-          (e) => e.weight != '' && e.weight != '0' && e.weight != _weight,
-        );
-        if (incomingBlocks.isNotEmpty && !userHasEdited) {
+        final incomingLen =
+            TechniqueBlockMapper.flattenBlocks(incomingBlocks).length;
+        final localLen = _currentEntries.length;
+
+        if (incomingLen >= localLen) {
+          // Provider tem o mesmo número ou mais séries — aceita.
           _blocks = incomingBlocks;
+          _syncSeriesCount();
+        } else if (incomingLen > 0) {
+          // Nunca encolher séries locais (ex.: footer com estado stale).
+          // Só aplica peso/reps/done nas séries sobrepostas.
+          var merged = List.of(_blocks);
+          final incomingFlat =
+              TechniqueBlockMapper.flattenBlocks(incomingBlocks);
+          for (var i = 0; i < incomingFlat.length; i++) {
+            final next = TechniqueBlockMapper.mapFlatEntry(
+              merged,
+              i,
+              (e) => e.copyWith(
+                weight: incomingFlat[i].weight,
+                reps: incomingFlat[i].reps,
+                done: incomingFlat[i].done,
+              ),
+            );
+            if (next != null) merged = next;
+          }
+          _blocks = merged;
           _syncSeriesCount();
         }
       });
@@ -157,7 +178,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -338,7 +359,7 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
                 seriesIndex: rowIndex,
               );
             },
-            onToggleDone: (_, __) {},
+            onToggleDone: (_, _) {},
           ),
           DashedActionButton(
             onPressed: () {

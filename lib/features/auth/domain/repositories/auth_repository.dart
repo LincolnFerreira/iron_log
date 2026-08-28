@@ -1,4 +1,4 @@
-import '../entities/user_profile.dart';
+import 'package:iron_log/features/auth/domain/entities/user_profile.dart';
 
 abstract class AuthRepository {
   Future<void> upsertUser({

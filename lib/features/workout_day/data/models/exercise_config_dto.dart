@@ -1,5 +1,5 @@
-import 'api_field_names.dart';
-import 'series_config_dto.dart';
+import 'package:iron_log/features/workout_day/data/models/api_field_names.dart';
+import 'package:iron_log/features/workout_day/data/models/series_config_dto.dart';
 
 /// Represents the 'config' JSON field from SessionExercise
 class ExerciseConfigDto {
@@ -39,7 +39,7 @@ class ExerciseConfigDto {
     }
 
     // Helper function para converter valores numéricos com debug
-    int? parseToInt(dynamic value, String fieldName) {
+    int? parseToInt(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is int) return value;
@@ -53,7 +53,7 @@ class ExerciseConfigDto {
       }
     }
 
-    double? parseToDouble(dynamic value, String fieldName) {
+    double? parseToDouble(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is double) return value;

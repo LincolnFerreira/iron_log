@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iron_log/features/routines/domain/repositories/routine_repository.dart';
-import 'package:iron_log/features/routines/domain/entities/routine.dart';
-import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
-import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
+import 'package:iron_log/core/services/http_service.dart';
 import 'package:iron_log/features/home/home_providers.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
+import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
+import 'package:iron_log/features/routines/domain/repositories/routine_repository.dart';
 import 'package:iron_log/features/routines/routine_providers.dart';
 import 'package:iron_log/features/workout_history/workout_history_providers.dart';
-import 'package:iron_log/core/services/http_service.dart';
 
 /// Mock RoutineRepository for testing with proper type signatures
 class MockRoutineRepository implements RoutineRepository {

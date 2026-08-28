@@ -4,8 +4,8 @@ import 'package:iron_log/features/workout_day/domain/entities/workout_summary.da
 import 'package:iron_log/features/workout_day/presentation/components/organisms/exercise_breakdown_section.dart';
 import 'package:iron_log/features/workout_day/presentation/components/organisms/hero_section.dart';
 import 'package:iron_log/features/workout_day/presentation/components/organisms/history_section.dart';
-import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 import 'package:iron_log/features/workout_day/presentation/components/organisms/stats_grid.dart';
+import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
 
 class WorkoutSummaryScreen extends ConsumerWidget {
   final WorkoutSummary workoutSummary;

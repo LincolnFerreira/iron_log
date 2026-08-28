@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-import '../../../../core/database/app_database.dart';
+import 'package:iron_log/core/database/app_database.dart';
 
 class WorkoutDraftLocalDataSource {
   WorkoutDraftLocalDataSource(this._db);

@@ -1,4 +1,4 @@
-import '../entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
 
 abstract class WorkoutDraftRepository {
   Future<WorkoutDraft?> getActiveInProgress(String userId);

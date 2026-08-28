@@ -1,4 +1,4 @@
-import 'api_field_names.dart';
+import 'package:iron_log/features/workout_day/data/models/api_field_names.dart';
 
 /// Represents a single series/set from config.series[] array
 class SeriesConfigDto {
@@ -20,7 +20,7 @@ class SeriesConfigDto {
 
   factory SeriesConfigDto.fromJson(Map<String, dynamic> json) {
     // Helper function para converter valores numéricos com debug
-    int? parseToInt(dynamic value, String fieldName) {
+    int? parseToInt(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is int) return value;
@@ -34,7 +34,7 @@ class SeriesConfigDto {
       }
     }
 
-    double? parseToDouble(dynamic value, String fieldName) {
+    double? parseToDouble(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is double) return value;

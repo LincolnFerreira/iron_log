@@ -5,11 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:iron_log/core/observability/crash_reporting_service.dart';
 import 'package:iron_log/core/services/firebase_auth_token.dart';
 import 'package:iron_log/core/services/google_auth_service.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'auth_state.dart';
-import 'user_profile_provider.dart';
 import 'package:iron_log/features/auth/auth_providers.dart';
+import 'package:iron_log/features/auth/presentation/providers/auth_state.dart';
+import 'package:iron_log/features/auth/presentation/providers/user_profile_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'auth_controller.g.dart';
 

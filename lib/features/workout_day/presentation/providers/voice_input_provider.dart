@@ -1,19 +1,17 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'package:iron_log/core/services/speech_to_text_service.dart';
-import 'package:iron_log/features/workout_day/data/parsers/voice_to_workout_parser.dart';
-import 'package:iron_log/features/workout_day/data/models/voice_parsed_result.dart';
 import 'package:iron_log/core/database/app_database.dart';
-import 'package:iron_log/features/workout_day/data/repositories/local_workout_repository.dart';
+import 'package:iron_log/core/services/speech_to_text_service.dart';
 import 'package:iron_log/features/auth/auth.dart';
-import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
-import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
-import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
+import 'package:iron_log/features/workout_day/data/models/voice_parsed_result.dart';
+import 'package:iron_log/features/workout_day/data/parsers/voice_to_workout_parser.dart';
+import 'package:iron_log/features/workout_day/data/repositories/local_workout_repository.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
+import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/weight_unit.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'voice_input_provider.g.dart';
 

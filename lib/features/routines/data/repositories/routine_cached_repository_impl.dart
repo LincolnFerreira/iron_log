@@ -1,13 +1,12 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-
-import '../../../../core/network/connectivity_utils.dart';
-import '../../domain/entities/routine.dart';
-import '../../domain/entities/routine_update.dart';
-import '../../domain/entities/session_creation.dart';
-import '../../domain/repositories/routine_repository.dart';
-import '../datasources/routine_local_datasource.dart';
-import '../datasources/routine_remote_datasource.dart';
-import '../models/routine_model.dart';
+import 'package:iron_log/core/network/connectivity_utils.dart';
+import 'package:iron_log/features/routines/data/datasources/routine_local_datasource.dart';
+import 'package:iron_log/features/routines/data/datasources/routine_remote_datasource.dart';
+import 'package:iron_log/features/routines/data/models/routine_model.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
+import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
+import 'package:iron_log/features/routines/domain/repositories/routine_repository.dart';
 
 /// [RoutineRepository] with local Drift cache and [RoutineRemoteDataSource] for network.
 ///

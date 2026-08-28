@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../atoms/workout_metric.dart';
+import 'package:iron_log/features/home/presentation/components/atoms/workout_metric.dart';
 
 class LastWorkoutCard extends StatelessWidget {
   final String workoutName;

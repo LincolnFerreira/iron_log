@@ -17,7 +17,7 @@ class HistoryFilterTabs extends ConsumerWidget {
     final current = ref.watch(historyFilterProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
+    return ColoredBox(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -49,7 +49,7 @@ class HistoryFilterTabs extends ConsumerWidget {
                       fontWeight: FontWeight.w600,
                       color: isSelected
                           ? colorScheme.onPrimary
-                          : colorScheme.onSurface.withOpacity(0.7),
+                          : colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ),

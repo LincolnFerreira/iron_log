@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_auth_token.dart';
-import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/core/services/firebase_auth_token.dart';
+import 'package:iron_log/core/services/http_service.dart';
 import 'package:iron_log/features/auth/domain/entities/user_profile.dart';
-import 'http_service.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
 
 /// Serviço responsável pela autenticação e requisições autenticadas
 /// Segue o Single Responsibility Principle - foca em autenticação
@@ -54,15 +54,15 @@ class AuthService {
     );
   }
 
-  Future<Response> post(String path, {dynamic data}) {
+  Future<Response> post(String path, {data}) {
     return authenticatedRequest(method: 'POST', path: path, data: data);
   }
 
-  Future<Response> put(String path, {dynamic data}) {
+  Future<Response> put(String path, {data}) {
     return authenticatedRequest(method: 'PUT', path: path, data: data);
   }
 
-  Future<Response> patch(String path, {dynamic data}) {
+  Future<Response> patch(String path, {data}) {
     return authenticatedRequest(method: 'PATCH', path: path, data: data);
   }
 

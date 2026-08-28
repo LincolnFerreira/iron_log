@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../exercise_card_styles.dart';
+import 'package:iron_log/features/workout_day/presentation/exercise_card_styles.dart';
 
 class AiSuggestionChip extends StatelessWidget {
   final bool isLoading;

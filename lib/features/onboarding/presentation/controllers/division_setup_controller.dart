@@ -1,7 +1,7 @@
 // features/onboarding/presentation/controllers/division_setup_controller.dart
+import 'package:iron_log/features/onboarding/domain/entities/division_type.dart';
 import 'package:iron_log/features/onboarding/presentation/controllers/division_setup_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:iron_log/features/onboarding/domain/entities/division_type.dart';
 
 part 'division_setup_controller.g.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:iron_log/core/app_colors.dart';
 
 class AppTheme {
   static ThemeData get light {
@@ -70,7 +70,7 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.dark40),
         ),
         labelStyle: const TextStyle(color: AppColors.gray50),
-        hintStyle: TextStyle(color: AppColors.gray50.withOpacity(0.6)),
+        hintStyle: TextStyle(color: AppColors.gray50.withValues(alpha: 0.6)),
       ),
       // PopupMenu herda surfaceDark
       popupMenuTheme: const PopupMenuThemeData(
@@ -188,17 +188,17 @@ class AppTheme {
   }
 
   static final _lightThemeExtensions = CustomThemeExtensions(
-    successContainer: AppColors.success.withOpacity(0.2),
-    warningContainer: AppColors.warning.withOpacity(0.2),
-    errorContainer: AppColors.error.withOpacity(0.2),
-    infoContainer: AppColors.info.withOpacity(0.2),
+    successContainer: AppColors.success.withValues(alpha: 0.2),
+    warningContainer: AppColors.warning.withValues(alpha: 0.2),
+    errorContainer: AppColors.error.withValues(alpha: 0.2),
+    infoContainer: AppColors.info.withValues(alpha: 0.2),
   );
 
   static final _darkThemeExtensions = CustomThemeExtensions(
-    successContainer: AppColors.success.withOpacity(0.3),
-    warningContainer: AppColors.warning.withOpacity(0.3),
-    errorContainer: AppColors.error.withOpacity(0.3),
-    infoContainer: AppColors.info.withOpacity(0.3),
+    successContainer: AppColors.success.withValues(alpha: 0.3),
+    warningContainer: AppColors.warning.withValues(alpha: 0.3),
+    errorContainer: AppColors.error.withValues(alpha: 0.3),
+    infoContainer: AppColors.info.withValues(alpha: 0.3),
   );
 }
 

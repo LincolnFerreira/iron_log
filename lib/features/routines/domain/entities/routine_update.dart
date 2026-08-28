@@ -1,4 +1,4 @@
-import 'session_creation.dart';
+import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
 
 /// Entidade para atualização de rotinas de treino
 class RoutineUpdate {

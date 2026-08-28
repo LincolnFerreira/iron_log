@@ -3,10 +3,8 @@ import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
 import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
 import 'package:iron_log/features/routines/domain/usecases/routine_usecases.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'routine_provider.dart';
-import 'routine_state.dart';
 
 part 'routine_controller.g.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/molecules/add_workout_card.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/molecules/add_workout_card.dart';
 
 class EmptyWorkoutState extends StatelessWidget {
   final VoidCallback onAddWorkout;

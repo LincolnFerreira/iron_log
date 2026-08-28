@@ -171,7 +171,7 @@ class _RestDayCreationSheetState extends ConsumerState<RestDayCreationSheet> {
           ),
           borderRadius: BorderRadius.circular(12),
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.1)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
               : Colors.transparent,
         ),
         child: Row(
@@ -205,7 +205,7 @@ class _RestDayCreationSheetState extends ConsumerState<RestDayCreationSheet> {
         final isSelected = _selectedActivityType == activity.id;
         return GestureDetector(
           onTap: () => setState(() => _selectedActivityType = activity.id),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(
                 color: isSelected
@@ -215,7 +215,7 @@ class _RestDayCreationSheetState extends ConsumerState<RestDayCreationSheet> {
               ),
               borderRadius: BorderRadius.circular(12),
               color: isSelected
-                  ? Theme.of(context).primaryColor.withOpacity(0.1)
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                   : Colors.transparent,
             ),
             child: Column(

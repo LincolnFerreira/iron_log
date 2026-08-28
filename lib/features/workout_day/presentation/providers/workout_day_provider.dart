@@ -3,29 +3,26 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iron_log/core/providers/sync_providers.dart';
+import 'package:iron_log/core/services/http_error_handler.dart';
+import 'package:iron_log/features/auth/auth.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
+import 'package:iron_log/features/workout_day/data/datasources/workout_outbox_local_datasource.dart';
+import 'package:iron_log/features/workout_day/data/mappers/plan_session_exercises_mapper.dart';
+import 'package:iron_log/features/workout_day/data/mappers/workout_draft_snapshot_mapper.dart';
+import 'package:iron_log/features/workout_day/data/models/session_exercise_dto.dart';
+import 'package:iron_log/features/workout_day/data/models/workout_edit_dto.dart';
+import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
+import 'package:iron_log/features/workout_day/data/workout_local_ids.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
+import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
+import 'package:iron_log/features/workout_day/domain/repositories/workout_day_repository.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_timer_provider.dart';
+import 'package:iron_log/features/workout_day/workout_day_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-
-import '../../../../core/providers/sync_providers.dart';
-import '../../../../core/services/http_error_handler.dart';
-import '../../../routines/presentation/providers/routine_provider.dart';
-import '../../../auth/auth.dart';
-import '../../data/datasources/workout_outbox_local_datasource.dart';
-import '../../data/mappers/workout_draft_snapshot_mapper.dart';
-import '../../data/workout_local_ids.dart';
-import '../../domain/entities/workout_draft.dart';
-import '../../data/mappers/plan_session_exercises_mapper.dart';
-import '../../data/models/session_exercise_dto.dart';
-import '../../data/models/workout_edit_dto.dart';
-import '../../data/services/workout_log_service.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../../domain/enums/workout_screen_mode.dart';
-import '../../domain/mappers/technique_block_mapper.dart';
-import '../../domain/repositories/workout_day_repository.dart';
-import '../../workout_day_providers.dart';
-
-import 'workout_draft_providers.dart';
-import 'workout_timer_provider.dart';
 
 part 'workout_day_provider.g.dart';
 
@@ -777,6 +774,8 @@ class WorkoutDayExercises extends _$WorkoutDayExercises {
     );
 
     await ref.read(workoutDraftRepositoryProvider).saveInProgress(draft);
+    // Home / Continuar treino precisam ver o rascunho na hora.
+    ref.invalidate(activeWorkoutDraftProvider);
   }
 
   Future<String> ensureActiveDraftId(Ref ref) async {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'session_screen_styles.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_screen_styles.dart';
 
 class SessionSectionTitle extends StatelessWidget {
   final String text;

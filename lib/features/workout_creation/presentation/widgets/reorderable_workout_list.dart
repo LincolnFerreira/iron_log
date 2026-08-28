@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/workout_split.dart';
-import '../providers/workout_creation_provider.dart';
-import 'workout_split_card.dart';
-import 'molecules/add_workout_card.dart';
-import 'organisms/add_workout_bottom_sheet.dart';
+import 'package:iron_log/features/workout_creation/domain/entities/workout_split.dart';
+import 'package:iron_log/features/workout_creation/presentation/providers/workout_creation_provider.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/workout_split_card.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/molecules/add_workout_card.dart';
+import 'package:iron_log/features/workout_creation/presentation/widgets/organisms/add_workout_bottom_sheet.dart';
 
 class ReorderableWorkoutList extends ConsumerWidget {
   const ReorderableWorkoutList({super.key});

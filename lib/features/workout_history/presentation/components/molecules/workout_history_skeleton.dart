@@ -7,7 +7,7 @@ class WorkoutHistorySkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.08);
+    final baseColor = Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.08);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
@@ -16,7 +16,7 @@ class WorkoutHistorySkeletonCard extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.08),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.08),
         ),
       ),
       child: Column(

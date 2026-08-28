@@ -270,7 +270,7 @@ class WorkoutEditSerieLogDto {
     }
 
     // Helper function para converter valores numéricos com debug
-    int? parseToInt(dynamic value, String fieldName) {
+    int? parseToInt(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is int) return value;
@@ -286,7 +286,7 @@ class WorkoutEditSerieLogDto {
       }
     }
 
-    double? parseToDouble(dynamic value, String fieldName) {
+    double? parseToDouble(value, String fieldName) {
       try {
         if (value == null) return null;
         if (value is double) return value;

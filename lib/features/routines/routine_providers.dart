@@ -3,12 +3,12 @@ import 'package:iron_log/core/providers/sync_providers.dart';
 import 'package:iron_log/core/services/http_service.dart';
 
 import 'package:iron_log/features/auth/auth.dart';
-import 'data/datasources/exercise_remote_datasource.dart';
-import 'data/datasources/routine_local_datasource.dart';
-import 'data/datasources/routine_remote_datasource.dart';
-import 'data/repositories/routine_cached_repository_impl.dart';
-import 'domain/repositories/routine_repository.dart';
-import 'presentation/providers/routine_provider.dart';
+import 'package:iron_log/features/routines/data/datasources/exercise_remote_datasource.dart';
+import 'package:iron_log/features/routines/data/datasources/routine_local_datasource.dart';
+import 'package:iron_log/features/routines/data/datasources/routine_remote_datasource.dart';
+import 'package:iron_log/features/routines/data/repositories/routine_cached_repository_impl.dart';
+import 'package:iron_log/features/routines/domain/repositories/routine_repository.dart';
+import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
 
 /// HTTP-only routine API (sem cache). Consumido pelo repositório com cache local.
 final routineRemoteDataSourceProvider = Provider<RoutineRemoteDataSource>((ref) {

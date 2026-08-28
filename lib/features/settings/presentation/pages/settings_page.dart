@@ -6,10 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/app_version.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
 import 'package:iron_log/core/theme/iron_tokens.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:iron_log/features/auth/auth.dart';
-import '../../../auth/presentation/utils/logout_utils.dart';
-import '../../../workout_day/presentation/widgets/pending_workout_drafts_sheet.dart';
+import 'package:iron_log/features/auth/presentation/utils/logout_utils.dart';
+import 'package:iron_log/features/workout_day/presentation/widgets/pending_workout_drafts_sheet.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 // ─────────────────────────────────────────────
 //  SETTINGS PAGE
@@ -344,10 +344,10 @@ class _ProfileCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [accent.withOpacity(0.09), accent.withOpacity(0.03)],
+          colors: [accent.withValues(alpha: 0.09), accent.withValues(alpha: 0.03)],
         ),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: accent.withOpacity(0.22)),
+        border: Border.all(color: accent.withValues(alpha: 0.22)),
       ),
       child: Row(
         children: [
@@ -357,7 +357,7 @@ class _ProfileCard extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: accent.withOpacity(0.4), width: 2),
+              border: Border.all(color: accent.withValues(alpha: 0.4), width: 2),
               color: IronTokens.s2(dark),
             ),
             child: ClipOval(
@@ -468,7 +468,7 @@ class _SettingsGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: IronTokens.s1(dark),
           borderRadius: BorderRadius.circular(18),
@@ -674,9 +674,9 @@ class _LogoutButtonState extends State<_LogoutButton> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: _pressed ? red.withOpacity(0.18) : red.withOpacity(0.10),
+          color: _pressed ? red.withValues(alpha: 0.18) : red.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: red.withOpacity(0.25)),
+          border: Border.all(color: red.withValues(alpha: 0.25)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

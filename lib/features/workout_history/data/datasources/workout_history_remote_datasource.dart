@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:iron_log/core/api/api_endpoints.dart';
 
-import '../models/workout_history_dto.dart';
+import 'package:iron_log/features/workout_history/data/models/workout_history_dto.dart';
 
 abstract class WorkoutHistoryRemoteDataSource {
   Future<List<WorkoutHistoryDto>> fetchWorkoutHistory();

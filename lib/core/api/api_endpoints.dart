@@ -2,7 +2,7 @@
 /// Segue o Single Responsibility Principle - apenas URLs
 library;
 
-import '../env.dart';
+import 'package:iron_log/core/env.dart';
 
 class ApiEndpoints {
   // Base URL (switchable via FLAVOR)

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
-import '../../domain/entities/series_entry.dart';
-import '../../domain/entities/workout_exercise.dart';
-import '../providers/exercise_suggestion_provider.dart';
-import '../providers/exercise_last_sets_provider.dart';
+import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
+import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
+import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/exercise_last_sets_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/exercise_suggestion_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_day_provider.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_ui_feedback_provider.dart';
 import 'package:iron_log/features/workout_day/presentation/workout_test_keys.dart';
-import '../providers/workout_day_provider.dart';
-import '../providers/workout_ui_feedback_provider.dart';
-import '../../domain/enums/workout_screen_mode.dart';
 
 class FooterActions extends ConsumerStatefulWidget {
   final VoidCallback? onStartWorkout;
@@ -52,13 +52,20 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
   String? _lastFooterExerciseId;
 
   /// Quando true, a faixa de chips + texto de ajuda (e o aviso de bloqueio) ficam ocultos.
-  bool _suggestionsMinimized = true;
+  late bool _suggestionsMinimized;
 
   /// Última assinatura dos dados da célula focada (peso/reps/done) já aplicada ao estado local.
   String? _lastSyncedEntrySignature;
 
   /// Evita enfileirar vários syncs para a mesma assinatura antes do post-frame.
   String? _pendingSyncSignature;
+
+  @override
+  void initState() {
+    super.initState();
+    // Treino já "iniciado" (ao vivo após play, ou retroativo/edição): abre sugestões.
+    _suggestionsMinimized = !widget.workoutStarted;
+  }
 
   WorkoutExercise? _footerExercise(
     List<WorkoutExercise> list,
@@ -140,12 +147,39 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
         final rawEmpty =
             rawW.isEmpty || rawW == '0' || rawW == '-' || rawW == '0.0';
         final parsed = _weightFromEntry(ex2, idx2);
-        if (!(rawEmpty && parsed == 0 && _selectedWeight > 0)) {
+
+        if (rawEmpty && parsed == 0) {
+          // Célula vazia (próxima série): carrega da série anterior do
+          // mesmo exercício; senão mantém a seleção atual do assistente.
+          final fromPrev = _weightFromPreviousFilledSeries(ex2, idx2);
+          if (fromPrev > 0) {
+            _selectedWeight = fromPrev;
+            _selectedReps = _repsFromPreviousFilledSeries(ex2, idx2);
+          }
+          // se fromPrev == 0 e _selectedWeight > 0, mantém (já carregado)
+        } else {
           _selectedWeight = parsed;
           _selectedReps = _repsFromEntry(ex2, idx2);
         }
       });
     });
+  }
+
+  /// Peso da última série anterior (mesmo exercício) que já tem carga.
+  double _weightFromPreviousFilledSeries(WorkoutExercise ex, int idx) {
+    for (var i = idx - 1; i >= 0; i--) {
+      final w = _weightFromEntry(ex, i);
+      if (w > 0) return w;
+    }
+    return 0;
+  }
+
+  int _repsFromPreviousFilledSeries(WorkoutExercise ex, int idx) {
+    for (var i = idx - 1; i >= 0; i--) {
+      final r = _repsFromEntry(ex, i);
+      if (r > 0) return r;
+    }
+    return _selectedReps;
   }
 
   @override
@@ -178,13 +212,13 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
 
     _scheduleSyncFromEntries(ex, idx, sig);
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.4 : 0.06),
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.06),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -209,10 +243,11 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
                 ),
               ),
             ),
-            if (!widget.isManual && widget.exercises.isNotEmpty)
+            // Mesmo assistente de cargas no registro/edição retroativa
+            // (`isManual`); o CTA abaixo é que muda ("Salvar Treino").
+            if (widget.exercises.isNotEmpty)
               _buildSessionHeader(theme, isDark),
-            if (!widget.isManual && ex != null)
-              _buildWeightAssistant(theme, isDark, ex, idx),
+            if (ex != null) _buildWeightAssistant(theme, isDark, ex, idx),
             _buildActions(theme, isDark),
           ],
         ),
@@ -291,7 +326,19 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
       double initial = 0;
       int initialReps = 0;
 
-      if (hasAi) {
+      // Prioridade no 1º seed do exercício (não re-roda entre séries):
+      // 1) célula já preenchida  2) IA  3) histórico sessão anterior  4) default
+      final entryWeight = seriesIdx < exercise.entries.length
+          ? _weightFromEntry(exercise, seriesIdx)
+          : 0.0;
+      final entryReps = seriesIdx < exercise.entries.length
+          ? _repsFromEntry(exercise, seriesIdx)
+          : 0;
+
+      if (entryWeight > 0) {
+        initial = entryWeight;
+        initialReps = entryReps;
+      } else if (hasAi) {
         initial = sugg.suggestedWeight;
         initialReps = sugg.suggestedReps ?? 0;
       } else if (lastSets != null &&
@@ -299,16 +346,6 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
           lastSets.sets.isNotEmpty) {
         initial = lastSets.sets.first.weight ?? 0;
         initialReps = lastSets.sets.first.reps ?? 0;
-      } else if (seriesIdx < exercise.entries.length) {
-        final wStr = exercise.entries[seriesIdx].weight.replaceAll(
-          RegExp(r'[^0-9.]'),
-          '',
-        );
-        initial = double.tryParse(wStr) ?? 0;
-        initialReps = int.tryParse(
-              exercise.entries[seriesIdx].reps.replaceAll(RegExp(r'[^0-9]'), ''),
-            ) ??
-            0;
       } else {
         final wStr = exercise.weight.replaceAll(RegExp(r'[^0-9.]'), '');
         initial = double.tryParse(wStr) ?? 0;
@@ -320,8 +357,10 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() {
-              _selectedWeight = initial;
-              _selectedReps = initialReps;
+              if (initial > 0) {
+                _selectedWeight = initial;
+                _selectedReps = initialReps;
+              }
               _weightInitialized = true;
             });
           }
@@ -472,14 +511,11 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
                             isMain: false,
                             isDark: isDark,
                             primary: primary,
-                            onTap: () {
-                              setState(() => _selectedWeight = leftW);
-                              _applyWeightToCurrentSeries(
-                                exercise,
-                                seriesIdx,
-                                silent: true,
-                              );
-                            },
+                            onTap: () => _confirmWeightChip(
+                              leftW,
+                              exercise,
+                              seriesIdx,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -491,14 +527,11 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
                             isMain: true,
                             isDark: isDark,
                             primary: primary,
-                            onTap: () {
-                              setState(() => _selectedWeight = center);
-                              _applyWeightToCurrentSeries(
-                                exercise,
-                                seriesIdx,
-                                silent: true,
-                              );
-                            },
+                            onTap: () => _confirmWeightChip(
+                              center,
+                              exercise,
+                              seriesIdx,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -510,14 +543,11 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
                             isMain: false,
                             isDark: isDark,
                             primary: primary,
-                            onTap: () {
-                              setState(() => _selectedWeight = rightW);
-                              _applyWeightToCurrentSeries(
-                                exercise,
-                                seriesIdx,
-                                silent: true,
-                              );
-                            },
+                            onTap: () => _confirmWeightChip(
+                              rightW,
+                              exercise,
+                              seriesIdx,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -558,41 +588,90 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
     return '$nº';
   }
 
+  void _confirmWeightChip(
+    double weight,
+    WorkoutExercise exercise,
+    int seriesIdx,
+  ) {
+    setState(() => _selectedWeight = weight);
+    FocusManager.instance.primaryFocus?.unfocus();
+    _applyWeightToCurrentSeries(
+      exercise,
+      seriesIdx,
+      silent: true,
+      markDone: true,
+      advanceFocus: true,
+    );
+  }
+
   void _applyWeightToCurrentSeries(
     WorkoutExercise exercise,
     int seriesIndex, {
     bool silent = false,
+    bool markDone = false,
+    bool advanceFocus = false,
   }) {
     if (!widget.workoutStarted) return;
-    if (_allSeriesDoneFor(exercise)) return;
+
+    final notifier = ref.read(workoutDayExercisesProvider.notifier);
+    // Garante que séries adicionadas no card (ainda em debounce) entrem no estado.
+    notifier.flushPendingExerciseMemoryUpdates();
+
+    final latestList =
+        ref.read(workoutDayExercisesProvider).value ?? widget.exercises;
+    var latest = exercise;
+    for (final e in latestList) {
+      if (e.id == exercise.id) {
+        latest = e;
+        break;
+      }
+    }
+
+    if (seriesIndex < latest.entries.length &&
+        latest.entries[seriesIndex].done &&
+        advanceFocus) {
+      // Re-tap no chip da série já confirmada → só avança.
+      _advanceFooterFocus(latest, seriesIndex);
+      return;
+    }
+
     final weightStr = _selectedWeight % 1 == 0
         ? _selectedWeight.toInt().toString()
         : _selectedWeight.toStringAsFixed(1);
     final repsStr = _selectedReps > 0
         ? _selectedReps.toString()
-        : exercise.reps;
+        : (seriesIndex < latest.entries.length &&
+                latest.entries[seriesIndex].reps.isNotEmpty
+            ? latest.entries[seriesIndex].reps
+            : latest.reps);
 
-    final currentEntries = List<SeriesEntry>.from(exercise.entries);
-    while (currentEntries.length <= seriesIndex) {
-      currentEntries.add(
-        SeriesEntry(index: currentEntries.length, weight: '', reps: ''),
+    var blocks = List.of(TechniqueBlockMapper.ensureBlocks(latest));
+    var flatLen = TechniqueBlockMapper.flattenBlocks(blocks).length;
+    while (flatLen <= seriesIndex) {
+      blocks = TechniqueBlockMapper.appendExerciseSeries(
+        blocks,
+        weight: '',
+        reps: latest.reps,
       );
+      flatLen = TechniqueBlockMapper.flattenBlocks(blocks).length;
     }
 
-    currentEntries[seriesIndex] = currentEntries[seriesIndex].copyWith(
-      weight: weightStr,
-      reps: repsStr,
+    final mapped = TechniqueBlockMapper.mapFlatEntry(
+      blocks,
+      seriesIndex,
+      (entry) => entry.copyWith(
+        weight: weightStr,
+        reps: repsStr.isNotEmpty ? repsStr : entry.reps,
+        done: markDone ? true : entry.done,
+      ),
+    );
+    if (mapped == null) return;
+
+    final updated = TechniqueBlockMapper.withBlocks(
+      latest.copyWith(weight: weightStr),
+      mapped,
     );
 
-    final updated = exercise.copyWith(
-      entries: currentEntries,
-      weight: weightStr,
-      series: currentEntries.length > exercise.series
-          ? currentEntries.length
-          : exercise.series,
-    );
-
-    final notifier = ref.read(workoutDayExercisesProvider.notifier);
     final mode = ref.read(workoutScreenModeProvider);
     switch (mode) {
       case WorkoutScreenMode.execution:
@@ -609,6 +688,13 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
         notifier.updateExercise(exercise.id, updated);
     }
 
+    // Aplica na hora para o próximo foco ler a série já marcada.
+    notifier.flushPendingExerciseMemoryUpdates();
+
+    if (advanceFocus) {
+      _advanceFooterFocus(updated, seriesIndex);
+    }
+
     if (!silent && mounted) {
       showWorkoutUiFeedback(
         ref,
@@ -620,6 +706,56 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
     }
   }
 
+  /// Vai para a próxima série pendente do exercício; se acabou, próximo exercício.
+  void _advanceFooterFocus(WorkoutExercise current, int fromSeriesIndex) {
+    final list =
+        ref.read(workoutDayExercisesProvider).value ?? widget.exercises;
+    var fresh = current;
+    for (final e in list) {
+      if (e.id == current.id) {
+        fresh = e;
+        break;
+      }
+    }
+
+    final planned = fresh.series > 0
+        ? fresh.series
+        : (fresh.entries.isNotEmpty ? fresh.entries.length : 1);
+
+    for (var i = fromSeriesIndex + 1; i < planned; i++) {
+      final done = i < fresh.entries.length && fresh.entries[i].done;
+      if (!done) {
+        ref.read(workoutFooterFocusProvider.notifier).state =
+            WorkoutFooterFocus(exerciseId: fresh.id, seriesIndex: i);
+        // Mesmo exercício: mantém _selectedWeight / _weightInitialized
+        // (carga da série anterior). Só invalida o sync da célula.
+        _lastSyncedEntrySignature = null;
+        return;
+      }
+    }
+
+    final exIndex = list.indexWhere((e) => e.id == fresh.id);
+    if (exIndex < 0) return;
+
+    for (var j = exIndex + 1; j < list.length; j++) {
+      final next = list[j];
+      final nextPlanned = next.series > 0
+          ? next.series
+          : (next.entries.isNotEmpty ? next.entries.length : 1);
+      for (var i = 0; i < nextPlanned; i++) {
+        final done = i < next.entries.length && next.entries[i].done;
+        if (!done) {
+          ref.read(workoutFooterFocusProvider.notifier).state =
+              WorkoutFooterFocus(exerciseId: next.id, seriesIndex: i);
+          // Troca de exercício: re-seed via AI / histórico da sessão anterior.
+          _lastSyncedEntrySignature = null;
+          _weightInitialized = false;
+          return;
+        }
+      }
+    }
+  }
+
   Widget _microBtn({
     required IconData icon,
     required VoidCallback onTap,
@@ -627,8 +763,8 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
     required bool decrement,
   }) {
     final accent = decrement ? AppColors.error : AppColors.success;
-    final bg = accent.withOpacity(isDark ? 0.32 : 0.16);
-    final border = accent.withOpacity(isDark ? 0.45 : 0.35);
+    final bg = accent.withValues(alpha: isDark ? 0.32 : 0.16);
+    final border = accent.withValues(alpha: isDark ? 0.45 : 0.35);
     final iconColor = isDark ? Colors.white : accent;
 
     return Material(
@@ -669,11 +805,11 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
         padding: EdgeInsets.symmetric(vertical: isMain ? 8 : 7, horizontal: 2),
         decoration: BoxDecoration(
           color: isSelected
-              ? primary.withOpacity(isDark ? 0.22 : 0.14)
+              ? primary.withValues(alpha: isDark ? 0.22 : 0.14)
               : fillUnselected,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? primary.withOpacity(0.55) : borderUnselected,
+            color: isSelected ? primary.withValues(alpha: 0.55) : borderUnselected,
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -698,7 +834,7 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: isSelected
-                    ? primary.withOpacity(0.85)
+                    ? primary.withValues(alpha: 0.85)
                     : (isDark ? AppColors.gray50 : AppColors.gray60),
               ),
             ),
@@ -807,8 +943,8 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
               padding: EdgeInsets.zero,
               side: BorderSide(
                 color: isDark
-                    ? AppColors.error.withOpacity(0.3)
-                    : AppColors.error.withOpacity(0.2),
+                    ? AppColors.error.withValues(alpha: 0.3)
+                    : AppColors.error.withValues(alpha: 0.2),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),

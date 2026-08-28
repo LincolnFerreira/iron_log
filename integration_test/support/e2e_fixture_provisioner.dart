@@ -155,7 +155,7 @@ class E2eFixtureProvisioner {
     return true;
   }
 
-  List<dynamic> _asList(dynamic data) {
+  List<dynamic> _asList(data) {
     if (data is List) return data;
     return [];
   }

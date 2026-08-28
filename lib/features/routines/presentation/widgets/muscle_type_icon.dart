@@ -233,7 +233,7 @@ class MuscleTypeIcon extends StatelessWidget {
                 assetPath,
                 fit: BoxFit.contain,
                 filterQuality: FilterQuality.medium,
-                errorBuilder: (_, __, ___) => _fallbackIcon(),
+                errorBuilder: (_, _, _) => _fallbackIcon(),
               ),
             )
           : _fallbackIcon(),

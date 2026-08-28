@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
-
-import '../../domain/entities/routine_update.dart';
-import '../../domain/entities/session_creation.dart';
-import '../models/routine_model.dart';
+import 'package:iron_log/features/routines/data/models/routine_model.dart';
+import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
+import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
 
 /// HTTP-only access to routine endpoints (no cache). Used by the cached repository.
 abstract class RoutineRemoteDataSource {

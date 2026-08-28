@@ -1,9 +1,8 @@
+import 'package:iron_log/features/workout_day/data/models/api_field_names.dart';
+import 'package:iron_log/features/workout_day/data/models/exercise_config_dto.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
-
-import 'api_field_names.dart';
-import 'exercise_config_dto.dart';
 
 /// Represents exercise metadata from the Exercise object
 class ExerciseDataDto {

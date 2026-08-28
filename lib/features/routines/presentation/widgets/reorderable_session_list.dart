@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../domain/entities/routine.dart';
-import '../providers/session_provider.dart';
-import 'session_card.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_provider.dart';
+import 'package:iron_log/features/routines/presentation/widgets/session_card.dart';
 
 class ReorderableSessionList extends ConsumerStatefulWidget {
   final Routine routine;
@@ -89,7 +89,7 @@ class _ReorderableSessionListState
                               ?.copyWith(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
+                                ).colorScheme.onSurface.withValues(alpha: 0.7),
                               ),
                         ),
                       ],

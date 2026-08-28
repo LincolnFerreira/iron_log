@@ -1,11 +1,10 @@
 import 'dart:convert';
 
-import 'package:drift/drift.dart';
 import 'package:dio/dio.dart';
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-
-import '../api/api_endpoints.dart';
-import '../database/app_database.dart';
+import 'package:iron_log/core/api/api_endpoints.dart';
+import 'package:iron_log/core/database/app_database.dart';
 
 /// Envia rascunhos `pendingUpload` e legado [WorkoutOutbox].
 Future<void> flushWorkoutOutbox({

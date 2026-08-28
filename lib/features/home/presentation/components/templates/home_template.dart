@@ -2,19 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/home/presentation/components/molecules/active_sequence_card.dart';
+import 'package:iron_log/features/home/presentation/components/molecules/api_debug_host_panel.dart';
+import 'package:iron_log/features/home/presentation/components/molecules/greeting_header.dart';
+import 'package:iron_log/features/home/presentation/components/molecules/mini_calendar_strip.dart';
+import 'package:iron_log/features/home/presentation/components/molecules/todays_workout_card.dart';
+import 'package:iron_log/features/home/presentation/components/organisms/workout_quick_actions_grid.dart';
+import 'package:iron_log/features/home/presentation/components/organisms/your_month_section.dart';
 import 'package:iron_log/features/home/presentation/providers/home_header_providers.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import 'package:iron_log/features/home/presentation/providers/workout_calendar_provider.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
-
-import '../molecules/api_debug_host_panel.dart';
-import '../molecules/greeting_header.dart';
-import '../molecules/active_sequence_card.dart';
-import '../molecules/mini_calendar_strip.dart';
-import '../molecules/todays_workout_card.dart';
-import '../organisms/workout_quick_actions_grid.dart';
-import '../organisms/your_month_section.dart';
 
 /// Template da Home: callbacks na page; estado via Consumers isolados (T073).
 class HomeTemplate extends StatelessWidget {

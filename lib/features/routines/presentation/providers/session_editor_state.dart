@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/routine.dart';
-import '../../domain/entities/search_exercise.dart';
-import 'session_selection_provider.dart';
+import 'package:iron_log/features/routines/domain/entities/routine.dart';
+import 'package:iron_log/features/routines/domain/entities/search_exercise.dart';
+import 'package:iron_log/features/routines/presentation/providers/session_selection_provider.dart';
 
 /// Snapshot do formulário de sessão para diff local vs servidor.
 class SessionEditorSnapshot {
