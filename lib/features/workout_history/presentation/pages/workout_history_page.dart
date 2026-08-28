@@ -7,7 +7,9 @@ import 'package:iron_log/features/home/presentation/components/organisms/session
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_summary.dart';
+import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
 import 'package:iron_log/features/workout_history/presentation/components/atoms/history_month_header.dart';
+import 'package:iron_log/features/workout_history/presentation/components/molecules/history_draft_card.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/history_filter_tabs.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_card.dart';
 import 'package:iron_log/features/workout_history/presentation/components/molecules/workout_history_skeleton.dart';
@@ -93,6 +95,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.invalidate(workoutHistoryProvider);
+      ref.invalidate(activeWorkoutDraftProvider);
     });
     WidgetsBinding.instance.addObserver(this);
   }
@@ -112,12 +115,16 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
   }
 
   @override
-  void didPopNext() => ref.invalidate(workoutHistoryProvider);
+  void didPopNext() {
+    ref.invalidate(workoutHistoryProvider);
+    ref.invalidate(activeWorkoutDraftProvider);
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.invalidate(workoutHistoryProvider);
+      ref.invalidate(activeWorkoutDraftProvider);
     }
   }
 
@@ -125,6 +132,7 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
   Widget build(BuildContext context) {
     final historyAsync = ref.watch(workoutHistoryProvider);
     final filter = ref.watch(historyFilterProvider);
+    final activeDraft = ref.watch(activeWorkoutDraftProvider).valueOrNull;
 
     return Scaffold(
       body: historyAsync.when(
@@ -184,10 +192,10 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
 
           return RefreshIndicator(
             onRefresh: () async {
-              // Await the refreshed future so the RefreshIndicator shows
-              // while the provider is reloading and the UI can enter
-              // the loading/skeleton state.
-              await ref.refresh(workoutHistoryProvider.future);
+              ref.invalidate(activeWorkoutDraftProvider);
+              ref.invalidate(workoutHistoryProvider);
+              await ref.read(activeWorkoutDraftProvider.future);
+              await ref.read(workoutHistoryProvider.future);
             },
             child: CustomScrollView(
               slivers: [
@@ -196,8 +204,22 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
                 // Filter tabs (non-sticky — avoids SliverPersistentHeader
                 // layout issues with floating SliverAppBar)
                 const SliverToBoxAdapter(child: HistoryFilterTabs()),
-                if (flatItems.isEmpty)
+                if (activeDraft != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: HistoryDraftCard(
+                        draft: activeDraft,
+                        onContinue: () => context.push(
+                          WorkoutRouteLocations.resume(activeDraft.id),
+                        ),
+                      ),
+                    ),
+                  ),
+                if (flatItems.isEmpty && activeDraft == null)
                   SliverFillRemaining(child: _EmptyState(filter: filter))
+                else if (flatItems.isEmpty)
+                  const SliverToBoxAdapter(child: SizedBox(height: 24))
                 else
                   SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
