@@ -31,6 +31,22 @@ class WorkoutExercise {
   /// Optional observation the user may add for this exercise.
   final String? notes;
 
+  /// Tipo de equipamento do catálogo (máquina, cabo, barra...).
+  final String? equipmentName;
+
+  /// Máquina física escolhida nesta execução. Nulo = sem estação.
+  final String? stationId;
+  final String? stationNickname;
+
+  /// Id do movimento no catálogo. Na edição, [id] continua sendo o
+  /// exercício da sessão; a estação e o histórico usam este id.
+  final String? catalogExerciseId;
+
+  String get movementId =>
+      (catalogExerciseId != null && catalogExerciseId!.isNotEmpty)
+          ? catalogExerciseId!
+          : id;
+
   const WorkoutExercise({
     required this.id,
     required this.name,
@@ -47,6 +63,10 @@ class WorkoutExercise {
     this.entries = const [],
     this.blocks = const [],
     this.notes,
+    this.equipmentName,
+    this.stationId,
+    this.stationNickname,
+    this.catalogExerciseId,
   });
 
   factory WorkoutExercise.fromJson(Map<String, dynamic> json) {
@@ -135,6 +155,10 @@ class WorkoutExercise {
     List<SeriesEntry>? entries,
     List<TechniqueBlock>? blocks,
     Object? notes = _notSet,
+    Object? equipmentName = _notSet,
+    Object? stationId = _notSet,
+    Object? stationNickname = _notSet,
+    String? catalogExerciseId,
   }) {
     return WorkoutExercise(
       id: id ?? this.id,
@@ -152,6 +176,14 @@ class WorkoutExercise {
       entries: entries ?? this.entries,
       blocks: blocks ?? this.blocks,
       notes: notes == _notSet ? this.notes : notes as String?,
+      equipmentName: equipmentName == _notSet
+          ? this.equipmentName
+          : equipmentName as String?,
+      stationId: stationId == _notSet ? this.stationId : stationId as String?,
+      stationNickname: stationNickname == _notSet
+          ? this.stationNickname
+          : stationNickname as String?,
+      catalogExerciseId: catalogExerciseId ?? this.catalogExerciseId,
     );
   }
 

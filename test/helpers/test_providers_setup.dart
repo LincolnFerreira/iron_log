@@ -6,6 +6,10 @@ import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
 import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
 import 'package:iron_log/features/routines/domain/repositories/routine_repository.dart';
 import 'package:iron_log/features/routines/routine_providers.dart';
+import 'package:iron_log/features/training_place/domain/entities/exercise_station.dart';
+import 'package:iron_log/features/training_place/domain/entities/gym.dart';
+import 'package:iron_log/features/training_place/domain/repositories/training_place_repository.dart';
+import 'package:iron_log/features/training_place/training_place_providers.dart';
 import 'package:iron_log/features/workout_history/workout_history_providers.dart';
 
 /// Mock RoutineRepository for testing with proper type signatures
@@ -70,6 +74,60 @@ class MockRoutineRepository implements RoutineRepository {
 ///   ),
 /// );
 /// ```
+class _EmptyTrainingPlaceRepository implements TrainingPlaceRepository {
+  @override
+  Future<void> archiveStation(String id) async {}
+
+  @override
+  Future<Gym> createGym(String name, {bool attachUnscopedStations = false}) async {
+    return Gym(id: 'gym-test', name: name, updatedAt: DateTime.now());
+  }
+
+  @override
+  Future<ExerciseStation> createStation({
+    required String exerciseId,
+    required String nickname,
+    String? gymId,
+    String? brand,
+  }) async {
+    return ExerciseStation(
+      id: 'station-test',
+      exerciseId: exerciseId,
+      nickname: nickname,
+      gymId: gymId,
+      brand: brand,
+    );
+  }
+
+  @override
+  Future<String?> gymIdForWorkout() async => null;
+
+  @override
+  Future<List<Gym>> listGyms() async => const [];
+
+  @override
+  Future<List<ExerciseStation>> listStations({
+    required String exerciseId,
+    String? gymId,
+    bool includeUnscoped = false,
+    int limit = 3,
+  }) async => const [];
+
+  @override
+  Future<void> renameGym(String id, String name) async {}
+
+  @override
+  Future<ExerciseStation> renameStation(String id, String nickname) async {
+    return ExerciseStation(id: id, exerciseId: '', nickname: nickname);
+  }
+
+  @override
+  Future<void> touchGym(String id) async {}
+
+  @override
+  Future<void> touchStation(String id) async {}
+}
+
 List<Override> getTestProviderOverrides() {
   // Create a test HttpService that's properly initialized
   final testHttpService = HttpService();
@@ -83,5 +141,8 @@ List<Override> getTestProviderOverrides() {
     ...homeProvidersOverrides,
     ...routineProvidersOverrides,
     ...workoutHistoryProvidersOverrides,
+    trainingPlaceRepositoryProvider.overrideWithValue(
+      _EmptyTrainingPlaceRepository(),
+    ),
   ];
 }

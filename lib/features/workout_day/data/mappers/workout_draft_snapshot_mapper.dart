@@ -19,6 +19,7 @@ class DraftSnapshotV1 {
     this.routineId,
     this.sessionId,
     this.manualDateIso,
+    this.gymId,
   });
 
   final String screenMode;
@@ -29,6 +30,7 @@ class DraftSnapshotV1 {
   final String? routineId;
   final String? sessionId;
   final String? manualDateIso;
+  final String? gymId;
 
   Map<String, dynamic> toJson() => {
     'schemaVersion': 1,
@@ -42,6 +44,7 @@ class DraftSnapshotV1 {
     if (routineId != null) 'routineId': routineId,
     if (sessionId != null) 'sessionId': sessionId,
     if (manualDateIso != null) 'manualDateIso': manualDateIso,
+    if (gymId != null) 'gymId': gymId,
   };
 
   factory DraftSnapshotV1.fromJson(Map<String, dynamic> json) {
@@ -59,6 +62,7 @@ class DraftSnapshotV1 {
       routineId: json['routineId'] as String?,
       sessionId: json['sessionId'] as String?,
       manualDateIso: json['manualDateIso'] as String?,
+      gymId: json['gymId']?.toString(),
     );
   }
 }
@@ -81,6 +85,7 @@ class WorkoutDraftSnapshotMapper {
     String? routineId,
     String? sessionId,
     DateTime? manualDate,
+    String? gymId,
   }) {
     return DraftSnapshotV1(
       screenMode: screenMode.name,
@@ -91,6 +96,7 @@ class WorkoutDraftSnapshotMapper {
       routineId: routineId,
       sessionId: sessionId,
       manualDateIso: manualDate?.toIso8601String(),
+      gymId: gymId,
     );
   }
 
@@ -120,6 +126,9 @@ class WorkoutDraftSnapshotMapper {
     'weightUnit': e.weightUnit.label,
     if (e.order != null) 'order': e.order,
     if (e.notes != null) 'notes': e.notes,
+    if (e.equipmentName != null) 'equipmentName': e.equipmentName,
+    if (e.stationId != null) 'stationId': e.stationId,
+    if (e.stationNickname != null) 'stationNickname': e.stationNickname,
     'entries': e.entries.map(_entryToJson).toList(),
     'blocks': e.blocks.map(_blockToJson).toList(),
   };
@@ -143,6 +152,9 @@ class WorkoutDraftSnapshotMapper {
       ),
       order: (json['order'] as num?)?.toInt(),
       notes: json['notes']?.toString(),
+      equipmentName: json['equipmentName']?.toString(),
+      stationId: json['stationId']?.toString(),
+      stationNickname: json['stationNickname']?.toString(),
       entries: entriesRaw
           .map((e) => _entryFromJson(e as Map<String, dynamic>))
           .toList(),

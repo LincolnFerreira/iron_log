@@ -63,16 +63,24 @@ class WorkoutDayRemoteDataSource {
     }
   }
 
-  Future<ExerciseSetHistory> fetchExerciseLastSets(String exerciseId) async {
-    final response = await _http.get(ApiEndpoints.exerciseLastSets(exerciseId));
+  Future<ExerciseSetHistory> fetchExerciseLastSets(
+    String exerciseId, {
+    String? stationId,
+  }) async {
+    final response = await _http.get(
+      ApiEndpoints.exerciseLastSets(exerciseId, stationId: stationId),
+    );
     return ExerciseSetHistory.fromJson(
       response.data as Map<String, dynamic>,
     );
   }
 
-  Future<SuggestionResult> fetchExerciseSuggestion(String exerciseId) async {
+  Future<SuggestionResult> fetchExerciseSuggestion(
+    String exerciseId, {
+    String? stationId,
+  }) async {
     final response = await _http.get(
-      ApiEndpoints.exerciseSuggestion(exerciseId),
+      ApiEndpoints.exerciseSuggestion(exerciseId, stationId: stationId),
     );
     return SuggestionResult.fromJson(response.data as Map<String, dynamic>);
   }

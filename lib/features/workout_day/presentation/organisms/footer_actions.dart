@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
+import 'package:iron_log/features/training_place/domain/entities/exercise_query_key.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
 import 'package:iron_log/features/workout_day/domain/mappers/technique_block_mapper.dart';
@@ -316,8 +317,9 @@ class _FooterActionsState extends ConsumerState<FooterActions> {
     final allDone = _allSeriesDoneFor(exercise);
     final primary = theme.colorScheme.primary;
 
-    final suggestionAsync = ref.watch(exerciseSuggestionProvider(exercise.id));
-    final historyAsync = ref.watch(exerciseLastSetsProvider(exercise.id));
+    final queryKey = ExerciseQueryKey(exercise.movementId, exercise.stationId);
+    final suggestionAsync = ref.watch(exerciseSuggestionProvider(queryKey));
+    final historyAsync = ref.watch(exerciseLastSetsProvider(queryKey));
     final lastSets = historyAsync.asData?.value;
     final sugg = suggestionAsync.asData?.value;
     final hasAi = sugg != null && sugg.hasData;

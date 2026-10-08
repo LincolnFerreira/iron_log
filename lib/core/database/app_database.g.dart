@@ -3344,6 +3344,15 @@ class $WorkoutSessionsTable extends WorkoutSessions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _gymIdMeta = const VerificationMeta('gymId');
+  @override
+  late final GeneratedColumn<String> gymId = GeneratedColumn<String>(
+    'gym_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _deviceIdMeta = const VerificationMeta(
     'deviceId',
   );
@@ -3457,6 +3466,7 @@ class $WorkoutSessionsTable extends WorkoutSessions
     endedAt,
     isManual,
     notes,
+    gymId,
     deviceId,
     totalVolume,
     topSetsCount,
@@ -3520,6 +3530,12 @@ class $WorkoutSessionsTable extends WorkoutSessions
       context.handle(
         _notesMeta,
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('gym_id')) {
+      context.handle(
+        _gymIdMeta,
+        gymId.isAcceptableOrUnknown(data['gym_id']!, _gymIdMeta),
       );
     }
     if (data.containsKey('device_id')) {
@@ -3622,6 +3638,10 @@ class $WorkoutSessionsTable extends WorkoutSessions
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      gymId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gym_id'],
+      ),
       deviceId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}device_id'],
@@ -3675,6 +3695,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
   final DateTime? endedAt;
   final bool isManual;
   final String? notes;
+  final String? gymId;
   final String? deviceId;
   final double? totalVolume;
   final int? topSetsCount;
@@ -3692,6 +3713,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     this.endedAt,
     required this.isManual,
     this.notes,
+    this.gymId,
     this.deviceId,
     this.totalVolume,
     this.topSetsCount,
@@ -3717,6 +3739,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     map['is_manual'] = Variable<bool>(isManual);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || gymId != null) {
+      map['gym_id'] = Variable<String>(gymId);
     }
     if (!nullToAbsent || deviceId != null) {
       map['device_id'] = Variable<String>(deviceId);
@@ -3755,6 +3780,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      gymId: gymId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gymId),
       deviceId: deviceId == null && nullToAbsent
           ? const Value.absent()
           : Value(deviceId),
@@ -3790,6 +3818,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
       isManual: serializer.fromJson<bool>(json['isManual']),
       notes: serializer.fromJson<String?>(json['notes']),
+      gymId: serializer.fromJson<String?>(json['gymId']),
       deviceId: serializer.fromJson<String?>(json['deviceId']),
       totalVolume: serializer.fromJson<double?>(json['totalVolume']),
       topSetsCount: serializer.fromJson<int?>(json['topSetsCount']),
@@ -3812,6 +3841,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       'endedAt': serializer.toJson<DateTime?>(endedAt),
       'isManual': serializer.toJson<bool>(isManual),
       'notes': serializer.toJson<String?>(notes),
+      'gymId': serializer.toJson<String?>(gymId),
       'deviceId': serializer.toJson<String?>(deviceId),
       'totalVolume': serializer.toJson<double?>(totalVolume),
       'topSetsCount': serializer.toJson<int?>(topSetsCount),
@@ -3832,6 +3862,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     Value<DateTime?> endedAt = const Value.absent(),
     bool? isManual,
     Value<String?> notes = const Value.absent(),
+    Value<String?> gymId = const Value.absent(),
     Value<String?> deviceId = const Value.absent(),
     Value<double?> totalVolume = const Value.absent(),
     Value<int?> topSetsCount = const Value.absent(),
@@ -3849,6 +3880,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     endedAt: endedAt.present ? endedAt.value : this.endedAt,
     isManual: isManual ?? this.isManual,
     notes: notes.present ? notes.value : this.notes,
+    gymId: gymId.present ? gymId.value : this.gymId,
     deviceId: deviceId.present ? deviceId.value : this.deviceId,
     totalVolume: totalVolume.present ? totalVolume.value : this.totalVolume,
     topSetsCount: topSetsCount.present ? topSetsCount.value : this.topSetsCount,
@@ -3868,6 +3900,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
       isManual: data.isManual.present ? data.isManual.value : this.isManual,
       notes: data.notes.present ? data.notes.value : this.notes,
+      gymId: data.gymId.present ? data.gymId.value : this.gymId,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
       totalVolume: data.totalVolume.present
           ? data.totalVolume.value
@@ -3896,6 +3929,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
           ..write('endedAt: $endedAt, ')
           ..write('isManual: $isManual, ')
           ..write('notes: $notes, ')
+          ..write('gymId: $gymId, ')
           ..write('deviceId: $deviceId, ')
           ..write('totalVolume: $totalVolume, ')
           ..write('topSetsCount: $topSetsCount, ')
@@ -3918,6 +3952,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     endedAt,
     isManual,
     notes,
+    gymId,
     deviceId,
     totalVolume,
     topSetsCount,
@@ -3939,6 +3974,7 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
           other.endedAt == this.endedAt &&
           other.isManual == this.isManual &&
           other.notes == this.notes &&
+          other.gymId == this.gymId &&
           other.deviceId == this.deviceId &&
           other.totalVolume == this.totalVolume &&
           other.topSetsCount == this.topSetsCount &&
@@ -3958,6 +3994,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
   final Value<DateTime?> endedAt;
   final Value<bool> isManual;
   final Value<String?> notes;
+  final Value<String?> gymId;
   final Value<String?> deviceId;
   final Value<double?> totalVolume;
   final Value<int?> topSetsCount;
@@ -3976,6 +4013,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     this.endedAt = const Value.absent(),
     this.isManual = const Value.absent(),
     this.notes = const Value.absent(),
+    this.gymId = const Value.absent(),
     this.deviceId = const Value.absent(),
     this.totalVolume = const Value.absent(),
     this.topSetsCount = const Value.absent(),
@@ -3995,6 +4033,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     this.endedAt = const Value.absent(),
     this.isManual = const Value.absent(),
     this.notes = const Value.absent(),
+    this.gymId = const Value.absent(),
     this.deviceId = const Value.absent(),
     this.totalVolume = const Value.absent(),
     this.topSetsCount = const Value.absent(),
@@ -4015,6 +4054,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     Expression<DateTime>? endedAt,
     Expression<bool>? isManual,
     Expression<String>? notes,
+    Expression<String>? gymId,
     Expression<String>? deviceId,
     Expression<double>? totalVolume,
     Expression<int>? topSetsCount,
@@ -4034,6 +4074,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
       if (endedAt != null) 'ended_at': endedAt,
       if (isManual != null) 'is_manual': isManual,
       if (notes != null) 'notes': notes,
+      if (gymId != null) 'gym_id': gymId,
       if (deviceId != null) 'device_id': deviceId,
       if (totalVolume != null) 'total_volume': totalVolume,
       if (topSetsCount != null) 'top_sets_count': topSetsCount,
@@ -4055,6 +4096,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     Value<DateTime?>? endedAt,
     Value<bool>? isManual,
     Value<String?>? notes,
+    Value<String?>? gymId,
     Value<String?>? deviceId,
     Value<double?>? totalVolume,
     Value<int?>? topSetsCount,
@@ -4074,6 +4116,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
       endedAt: endedAt ?? this.endedAt,
       isManual: isManual ?? this.isManual,
       notes: notes ?? this.notes,
+      gymId: gymId ?? this.gymId,
       deviceId: deviceId ?? this.deviceId,
       totalVolume: totalVolume ?? this.totalVolume,
       topSetsCount: topSetsCount ?? this.topSetsCount,
@@ -4110,6 +4153,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
+    }
+    if (gymId.present) {
+      map['gym_id'] = Variable<String>(gymId.value);
     }
     if (deviceId.present) {
       map['device_id'] = Variable<String>(deviceId.value);
@@ -4154,6 +4200,7 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
           ..write('endedAt: $endedAt, ')
           ..write('isManual: $isManual, ')
           ..write('notes: $notes, ')
+          ..write('gymId: $gymId, ')
           ..write('deviceId: $deviceId, ')
           ..write('totalVolume: $totalVolume, ')
           ..write('topSetsCount: $topSetsCount, ')
@@ -4383,6 +4430,17 @@ class $SerieLogsTable extends SerieLogs
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _stationIdMeta = const VerificationMeta(
+    'stationId',
+  );
+  @override
+  late final GeneratedColumn<String> stationId = GeneratedColumn<String>(
+    'station_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -4466,6 +4524,7 @@ class $SerieLogsTable extends SerieLogs
     miniSetIndex,
     setType,
     isDerived,
+    stationId,
     createdAt,
     updatedAt,
     version,
@@ -4613,6 +4672,12 @@ class $SerieLogsTable extends SerieLogs
         isDerived.isAcceptableOrUnknown(data['is_derived']!, _isDerivedMeta),
       );
     }
+    if (data.containsKey('station_id')) {
+      context.handle(
+        _stationIdMeta,
+        stationId.isAcceptableOrUnknown(data['station_id']!, _stationIdMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -4731,6 +4796,10 @@ class $SerieLogsTable extends SerieLogs
         DriftSqlType.bool,
         data['${effectivePrefix}is_derived'],
       )!,
+      stationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}station_id'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -4780,6 +4849,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
   final int? miniSetIndex;
   final String? setType;
   final bool isDerived;
+  final String? stationId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int version;
@@ -4805,6 +4875,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     this.miniSetIndex,
     this.setType,
     required this.isDerived,
+    this.stationId,
     required this.createdAt,
     required this.updatedAt,
     required this.version,
@@ -4863,6 +4934,9 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       map['set_type'] = Variable<String>(setType);
     }
     map['is_derived'] = Variable<bool>(isDerived);
+    if (!nullToAbsent || stationId != null) {
+      map['station_id'] = Variable<String>(stationId);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['version'] = Variable<int>(version);
@@ -4917,6 +4991,9 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           ? const Value.absent()
           : Value(setType),
       isDerived: Value(isDerived),
+      stationId: stationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(stationId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       version: Value(version),
@@ -4956,6 +5033,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       miniSetIndex: serializer.fromJson<int?>(json['miniSetIndex']),
       setType: serializer.fromJson<String?>(json['setType']),
       isDerived: serializer.fromJson<bool>(json['isDerived']),
+      stationId: serializer.fromJson<String?>(json['stationId']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       version: serializer.fromJson<int>(json['version']),
@@ -4990,6 +5068,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
       'miniSetIndex': serializer.toJson<int?>(miniSetIndex),
       'setType': serializer.toJson<String?>(setType),
       'isDerived': serializer.toJson<bool>(isDerived),
+      'stationId': serializer.toJson<String?>(stationId),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'version': serializer.toJson<int>(version),
@@ -5018,6 +5097,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     Value<int?> miniSetIndex = const Value.absent(),
     Value<String?> setType = const Value.absent(),
     bool? isDerived,
+    Value<String?> stationId = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     int? version,
@@ -5049,6 +5129,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     miniSetIndex: miniSetIndex.present ? miniSetIndex.value : this.miniSetIndex,
     setType: setType.present ? setType.value : this.setType,
     isDerived: isDerived ?? this.isDerived,
+    stationId: stationId.present ? stationId.value : this.stationId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     version: version ?? this.version,
@@ -5088,6 +5169,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           : this.miniSetIndex,
       setType: data.setType.present ? data.setType.value : this.setType,
       isDerived: data.isDerived.present ? data.isDerived.value : this.isDerived,
+      stationId: data.stationId.present ? data.stationId.value : this.stationId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       version: data.version.present ? data.version.value : this.version,
@@ -5120,6 +5202,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           ..write('miniSetIndex: $miniSetIndex, ')
           ..write('setType: $setType, ')
           ..write('isDerived: $isDerived, ')
+          ..write('stationId: $stationId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('version: $version, ')
@@ -5150,6 +5233,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
     miniSetIndex,
     setType,
     isDerived,
+    stationId,
     createdAt,
     updatedAt,
     version,
@@ -5179,6 +5263,7 @@ class SerieLog extends DataClass implements Insertable<SerieLog> {
           other.miniSetIndex == this.miniSetIndex &&
           other.setType == this.setType &&
           other.isDerived == this.isDerived &&
+          other.stationId == this.stationId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.version == this.version &&
@@ -5206,6 +5291,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
   final Value<int?> miniSetIndex;
   final Value<String?> setType;
   final Value<bool> isDerived;
+  final Value<String?> stationId;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> version;
@@ -5232,6 +5318,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     this.miniSetIndex = const Value.absent(),
     this.setType = const Value.absent(),
     this.isDerived = const Value.absent(),
+    this.stationId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.version = const Value.absent(),
@@ -5259,6 +5346,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     this.miniSetIndex = const Value.absent(),
     this.setType = const Value.absent(),
     this.isDerived = const Value.absent(),
+    this.stationId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.version = const Value.absent(),
@@ -5288,6 +5376,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     Expression<int>? miniSetIndex,
     Expression<String>? setType,
     Expression<bool>? isDerived,
+    Expression<String>? stationId,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? version,
@@ -5317,6 +5406,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       if (miniSetIndex != null) 'mini_set_index': miniSetIndex,
       if (setType != null) 'set_type': setType,
       if (isDerived != null) 'is_derived': isDerived,
+      if (stationId != null) 'station_id': stationId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (version != null) 'version': version,
@@ -5346,6 +5436,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     Value<int?>? miniSetIndex,
     Value<String?>? setType,
     Value<bool>? isDerived,
+    Value<String?>? stationId,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? version,
@@ -5375,6 +5466,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
       miniSetIndex: miniSetIndex ?? this.miniSetIndex,
       setType: setType ?? this.setType,
       isDerived: isDerived ?? this.isDerived,
+      stationId: stationId ?? this.stationId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       version: version ?? this.version,
@@ -5448,6 +5540,9 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
     if (isDerived.present) {
       map['is_derived'] = Variable<bool>(isDerived.value);
     }
+    if (stationId.present) {
+      map['station_id'] = Variable<String>(stationId.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -5491,6 +5586,7 @@ class SerieLogsCompanion extends UpdateCompanion<SerieLog> {
           ..write('miniSetIndex: $miniSetIndex, ')
           ..write('setType: $setType, ')
           ..write('isDerived: $isDerived, ')
+          ..write('stationId: $stationId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('version: $version, ')
@@ -8407,6 +8503,1318 @@ class WorkoutDraftsCompanion extends UpdateCompanion<WorkoutDraftRow> {
   }
 }
 
+class $GymsTable extends Gyms with TableInfo<$GymsTable, Gym> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GymsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _pendingSyncMeta = const VerificationMeta(
+    'pendingSync',
+  );
+  @override
+  late final GeneratedColumn<bool> pendingSync = GeneratedColumn<bool>(
+    'pending_sync',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pending_sync" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    name,
+    createdAt,
+    updatedAt,
+    version,
+    pendingSync,
+    syncedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'gyms';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Gym> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('pending_sync')) {
+      context.handle(
+        _pendingSyncMeta,
+        pendingSync.isAcceptableOrUnknown(
+          data['pending_sync']!,
+          _pendingSyncMeta,
+        ),
+      );
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Gym map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Gym(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      pendingSync: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pending_sync'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+    );
+  }
+
+  @override
+  $GymsTable createAlias(String alias) {
+    return $GymsTable(attachedDatabase, alias);
+  }
+}
+
+class Gym extends DataClass implements Insertable<Gym> {
+  final String id;
+  final String userId;
+  final String name;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final int version;
+  final bool pendingSync;
+  final DateTime? syncedAt;
+  const Gym({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.version,
+    required this.pendingSync,
+    this.syncedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['name'] = Variable<String>(name);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['version'] = Variable<int>(version);
+    map['pending_sync'] = Variable<bool>(pendingSync);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    return map;
+  }
+
+  GymsCompanion toCompanion(bool nullToAbsent) {
+    return GymsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      name: Value(name),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      version: Value(version),
+      pendingSync: Value(pendingSync),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+    );
+  }
+
+  factory Gym.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Gym(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      name: serializer.fromJson<String>(json['name']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      version: serializer.fromJson<int>(json['version']),
+      pendingSync: serializer.fromJson<bool>(json['pendingSync']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'name': serializer.toJson<String>(name),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'version': serializer.toJson<int>(version),
+      'pendingSync': serializer.toJson<bool>(pendingSync),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+    };
+  }
+
+  Gym copyWith({
+    String? id,
+    String? userId,
+    String? name,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? version,
+    bool? pendingSync,
+    Value<DateTime?> syncedAt = const Value.absent(),
+  }) => Gym(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    name: name ?? this.name,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    version: version ?? this.version,
+    pendingSync: pendingSync ?? this.pendingSync,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+  );
+  Gym copyWithCompanion(GymsCompanion data) {
+    return Gym(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      name: data.name.present ? data.name.value : this.name,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      version: data.version.present ? data.version.value : this.version,
+      pendingSync: data.pendingSync.present
+          ? data.pendingSync.value
+          : this.pendingSync,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Gym(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version, ')
+          ..write('pendingSync: $pendingSync, ')
+          ..write('syncedAt: $syncedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    name,
+    createdAt,
+    updatedAt,
+    version,
+    pendingSync,
+    syncedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Gym &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.name == this.name &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.version == this.version &&
+          other.pendingSync == this.pendingSync &&
+          other.syncedAt == this.syncedAt);
+}
+
+class GymsCompanion extends UpdateCompanion<Gym> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> name;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> version;
+  final Value<bool> pendingSync;
+  final Value<DateTime?> syncedAt;
+  final Value<int> rowid;
+  const GymsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.pendingSync = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GymsCompanion.insert({
+    required String id,
+    required String userId,
+    required String name,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.pendingSync = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       name = Value(name);
+  static Insertable<Gym> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? name,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? version,
+    Expression<bool>? pendingSync,
+    Expression<DateTime>? syncedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (name != null) 'name': name,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (version != null) 'version': version,
+      if (pendingSync != null) 'pending_sync': pendingSync,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GymsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? name,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? version,
+    Value<bool>? pendingSync,
+    Value<DateTime?>? syncedAt,
+    Value<int>? rowid,
+  }) {
+    return GymsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      version: version ?? this.version,
+      pendingSync: pendingSync ?? this.pendingSync,
+      syncedAt: syncedAt ?? this.syncedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (pendingSync.present) {
+      map['pending_sync'] = Variable<bool>(pendingSync.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GymsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version, ')
+          ..write('pendingSync: $pendingSync, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExerciseStationsTable extends ExerciseStations
+    with TableInfo<$ExerciseStationsTable, ExerciseStation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExerciseStationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _exerciseIdMeta = const VerificationMeta(
+    'exerciseId',
+  );
+  @override
+  late final GeneratedColumn<String> exerciseId = GeneratedColumn<String>(
+    'exercise_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gymIdMeta = const VerificationMeta('gymId');
+  @override
+  late final GeneratedColumn<String> gymId = GeneratedColumn<String>(
+    'gym_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nicknameMeta = const VerificationMeta(
+    'nickname',
+  );
+  @override
+  late final GeneratedColumn<String> nickname = GeneratedColumn<String>(
+    'nickname',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nicknameKeyMeta = const VerificationMeta(
+    'nicknameKey',
+  );
+  @override
+  late final GeneratedColumn<String> nicknameKey = GeneratedColumn<String>(
+    'nickname_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _brandMeta = const VerificationMeta('brand');
+  @override
+  late final GeneratedColumn<String> brand = GeneratedColumn<String>(
+    'brand',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _archivedAtMeta = const VerificationMeta(
+    'archivedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> archivedAt = GeneratedColumn<DateTime>(
+    'archived_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _pendingSyncMeta = const VerificationMeta(
+    'pendingSync',
+  );
+  @override
+  late final GeneratedColumn<bool> pendingSync = GeneratedColumn<bool>(
+    'pending_sync',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pending_sync" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    exerciseId,
+    gymId,
+    nickname,
+    nicknameKey,
+    brand,
+    note,
+    archivedAt,
+    createdAt,
+    updatedAt,
+    version,
+    pendingSync,
+    syncedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'exercise_stations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExerciseStation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('exercise_id')) {
+      context.handle(
+        _exerciseIdMeta,
+        exerciseId.isAcceptableOrUnknown(data['exercise_id']!, _exerciseIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_exerciseIdMeta);
+    }
+    if (data.containsKey('gym_id')) {
+      context.handle(
+        _gymIdMeta,
+        gymId.isAcceptableOrUnknown(data['gym_id']!, _gymIdMeta),
+      );
+    }
+    if (data.containsKey('nickname')) {
+      context.handle(
+        _nicknameMeta,
+        nickname.isAcceptableOrUnknown(data['nickname']!, _nicknameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nicknameMeta);
+    }
+    if (data.containsKey('nickname_key')) {
+      context.handle(
+        _nicknameKeyMeta,
+        nicknameKey.isAcceptableOrUnknown(
+          data['nickname_key']!,
+          _nicknameKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nicknameKeyMeta);
+    }
+    if (data.containsKey('brand')) {
+      context.handle(
+        _brandMeta,
+        brand.isAcceptableOrUnknown(data['brand']!, _brandMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('archived_at')) {
+      context.handle(
+        _archivedAtMeta,
+        archivedAt.isAcceptableOrUnknown(data['archived_at']!, _archivedAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('pending_sync')) {
+      context.handle(
+        _pendingSyncMeta,
+        pendingSync.isAcceptableOrUnknown(
+          data['pending_sync']!,
+          _pendingSyncMeta,
+        ),
+      );
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExerciseStation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExerciseStation(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      exerciseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exercise_id'],
+      )!,
+      gymId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gym_id'],
+      ),
+      nickname: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nickname'],
+      )!,
+      nicknameKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nickname_key'],
+      )!,
+      brand: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brand'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      archivedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}archived_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      pendingSync: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pending_sync'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+    );
+  }
+
+  @override
+  $ExerciseStationsTable createAlias(String alias) {
+    return $ExerciseStationsTable(attachedDatabase, alias);
+  }
+}
+
+class ExerciseStation extends DataClass implements Insertable<ExerciseStation> {
+  final String id;
+  final String userId;
+  final String exerciseId;
+  final String? gymId;
+  final String nickname;
+  final String nicknameKey;
+  final String? brand;
+  final String? note;
+  final DateTime? archivedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final int version;
+  final bool pendingSync;
+  final DateTime? syncedAt;
+  const ExerciseStation({
+    required this.id,
+    required this.userId,
+    required this.exerciseId,
+    this.gymId,
+    required this.nickname,
+    required this.nicknameKey,
+    this.brand,
+    this.note,
+    this.archivedAt,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.version,
+    required this.pendingSync,
+    this.syncedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['exercise_id'] = Variable<String>(exerciseId);
+    if (!nullToAbsent || gymId != null) {
+      map['gym_id'] = Variable<String>(gymId);
+    }
+    map['nickname'] = Variable<String>(nickname);
+    map['nickname_key'] = Variable<String>(nicknameKey);
+    if (!nullToAbsent || brand != null) {
+      map['brand'] = Variable<String>(brand);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || archivedAt != null) {
+      map['archived_at'] = Variable<DateTime>(archivedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['version'] = Variable<int>(version);
+    map['pending_sync'] = Variable<bool>(pendingSync);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    return map;
+  }
+
+  ExerciseStationsCompanion toCompanion(bool nullToAbsent) {
+    return ExerciseStationsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      exerciseId: Value(exerciseId),
+      gymId: gymId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gymId),
+      nickname: Value(nickname),
+      nicknameKey: Value(nicknameKey),
+      brand: brand == null && nullToAbsent
+          ? const Value.absent()
+          : Value(brand),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      archivedAt: archivedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(archivedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      version: Value(version),
+      pendingSync: Value(pendingSync),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+    );
+  }
+
+  factory ExerciseStation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExerciseStation(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      exerciseId: serializer.fromJson<String>(json['exerciseId']),
+      gymId: serializer.fromJson<String?>(json['gymId']),
+      nickname: serializer.fromJson<String>(json['nickname']),
+      nicknameKey: serializer.fromJson<String>(json['nicknameKey']),
+      brand: serializer.fromJson<String?>(json['brand']),
+      note: serializer.fromJson<String?>(json['note']),
+      archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      version: serializer.fromJson<int>(json['version']),
+      pendingSync: serializer.fromJson<bool>(json['pendingSync']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'exerciseId': serializer.toJson<String>(exerciseId),
+      'gymId': serializer.toJson<String?>(gymId),
+      'nickname': serializer.toJson<String>(nickname),
+      'nicknameKey': serializer.toJson<String>(nicknameKey),
+      'brand': serializer.toJson<String?>(brand),
+      'note': serializer.toJson<String?>(note),
+      'archivedAt': serializer.toJson<DateTime?>(archivedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'version': serializer.toJson<int>(version),
+      'pendingSync': serializer.toJson<bool>(pendingSync),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+    };
+  }
+
+  ExerciseStation copyWith({
+    String? id,
+    String? userId,
+    String? exerciseId,
+    Value<String?> gymId = const Value.absent(),
+    String? nickname,
+    String? nicknameKey,
+    Value<String?> brand = const Value.absent(),
+    Value<String?> note = const Value.absent(),
+    Value<DateTime?> archivedAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? version,
+    bool? pendingSync,
+    Value<DateTime?> syncedAt = const Value.absent(),
+  }) => ExerciseStation(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    exerciseId: exerciseId ?? this.exerciseId,
+    gymId: gymId.present ? gymId.value : this.gymId,
+    nickname: nickname ?? this.nickname,
+    nicknameKey: nicknameKey ?? this.nicknameKey,
+    brand: brand.present ? brand.value : this.brand,
+    note: note.present ? note.value : this.note,
+    archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    version: version ?? this.version,
+    pendingSync: pendingSync ?? this.pendingSync,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+  );
+  ExerciseStation copyWithCompanion(ExerciseStationsCompanion data) {
+    return ExerciseStation(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      exerciseId: data.exerciseId.present
+          ? data.exerciseId.value
+          : this.exerciseId,
+      gymId: data.gymId.present ? data.gymId.value : this.gymId,
+      nickname: data.nickname.present ? data.nickname.value : this.nickname,
+      nicknameKey: data.nicknameKey.present
+          ? data.nicknameKey.value
+          : this.nicknameKey,
+      brand: data.brand.present ? data.brand.value : this.brand,
+      note: data.note.present ? data.note.value : this.note,
+      archivedAt: data.archivedAt.present
+          ? data.archivedAt.value
+          : this.archivedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      version: data.version.present ? data.version.value : this.version,
+      pendingSync: data.pendingSync.present
+          ? data.pendingSync.value
+          : this.pendingSync,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExerciseStation(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('exerciseId: $exerciseId, ')
+          ..write('gymId: $gymId, ')
+          ..write('nickname: $nickname, ')
+          ..write('nicknameKey: $nicknameKey, ')
+          ..write('brand: $brand, ')
+          ..write('note: $note, ')
+          ..write('archivedAt: $archivedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version, ')
+          ..write('pendingSync: $pendingSync, ')
+          ..write('syncedAt: $syncedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    exerciseId,
+    gymId,
+    nickname,
+    nicknameKey,
+    brand,
+    note,
+    archivedAt,
+    createdAt,
+    updatedAt,
+    version,
+    pendingSync,
+    syncedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExerciseStation &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.exerciseId == this.exerciseId &&
+          other.gymId == this.gymId &&
+          other.nickname == this.nickname &&
+          other.nicknameKey == this.nicknameKey &&
+          other.brand == this.brand &&
+          other.note == this.note &&
+          other.archivedAt == this.archivedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.version == this.version &&
+          other.pendingSync == this.pendingSync &&
+          other.syncedAt == this.syncedAt);
+}
+
+class ExerciseStationsCompanion extends UpdateCompanion<ExerciseStation> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> exerciseId;
+  final Value<String?> gymId;
+  final Value<String> nickname;
+  final Value<String> nicknameKey;
+  final Value<String?> brand;
+  final Value<String?> note;
+  final Value<DateTime?> archivedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> version;
+  final Value<bool> pendingSync;
+  final Value<DateTime?> syncedAt;
+  final Value<int> rowid;
+  const ExerciseStationsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.exerciseId = const Value.absent(),
+    this.gymId = const Value.absent(),
+    this.nickname = const Value.absent(),
+    this.nicknameKey = const Value.absent(),
+    this.brand = const Value.absent(),
+    this.note = const Value.absent(),
+    this.archivedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.pendingSync = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExerciseStationsCompanion.insert({
+    required String id,
+    required String userId,
+    required String exerciseId,
+    this.gymId = const Value.absent(),
+    required String nickname,
+    required String nicknameKey,
+    this.brand = const Value.absent(),
+    this.note = const Value.absent(),
+    this.archivedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.pendingSync = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       exerciseId = Value(exerciseId),
+       nickname = Value(nickname),
+       nicknameKey = Value(nicknameKey);
+  static Insertable<ExerciseStation> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? exerciseId,
+    Expression<String>? gymId,
+    Expression<String>? nickname,
+    Expression<String>? nicknameKey,
+    Expression<String>? brand,
+    Expression<String>? note,
+    Expression<DateTime>? archivedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? version,
+    Expression<bool>? pendingSync,
+    Expression<DateTime>? syncedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (exerciseId != null) 'exercise_id': exerciseId,
+      if (gymId != null) 'gym_id': gymId,
+      if (nickname != null) 'nickname': nickname,
+      if (nicknameKey != null) 'nickname_key': nicknameKey,
+      if (brand != null) 'brand': brand,
+      if (note != null) 'note': note,
+      if (archivedAt != null) 'archived_at': archivedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (version != null) 'version': version,
+      if (pendingSync != null) 'pending_sync': pendingSync,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExerciseStationsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? exerciseId,
+    Value<String?>? gymId,
+    Value<String>? nickname,
+    Value<String>? nicknameKey,
+    Value<String?>? brand,
+    Value<String?>? note,
+    Value<DateTime?>? archivedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? version,
+    Value<bool>? pendingSync,
+    Value<DateTime?>? syncedAt,
+    Value<int>? rowid,
+  }) {
+    return ExerciseStationsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      exerciseId: exerciseId ?? this.exerciseId,
+      gymId: gymId ?? this.gymId,
+      nickname: nickname ?? this.nickname,
+      nicknameKey: nicknameKey ?? this.nicknameKey,
+      brand: brand ?? this.brand,
+      note: note ?? this.note,
+      archivedAt: archivedAt ?? this.archivedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      version: version ?? this.version,
+      pendingSync: pendingSync ?? this.pendingSync,
+      syncedAt: syncedAt ?? this.syncedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (exerciseId.present) {
+      map['exercise_id'] = Variable<String>(exerciseId.value);
+    }
+    if (gymId.present) {
+      map['gym_id'] = Variable<String>(gymId.value);
+    }
+    if (nickname.present) {
+      map['nickname'] = Variable<String>(nickname.value);
+    }
+    if (nicknameKey.present) {
+      map['nickname_key'] = Variable<String>(nicknameKey.value);
+    }
+    if (brand.present) {
+      map['brand'] = Variable<String>(brand.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (archivedAt.present) {
+      map['archived_at'] = Variable<DateTime>(archivedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (pendingSync.present) {
+      map['pending_sync'] = Variable<bool>(pendingSync.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExerciseStationsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('exerciseId: $exerciseId, ')
+          ..write('gymId: $gymId, ')
+          ..write('nickname: $nickname, ')
+          ..write('nicknameKey: $nicknameKey, ')
+          ..write('brand: $brand, ')
+          ..write('note: $note, ')
+          ..write('archivedAt: $archivedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version, ')
+          ..write('pendingSync: $pendingSync, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8426,6 +9834,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RestDaysTable restDays = $RestDaysTable(this);
   late final $WorkoutOutboxTable workoutOutbox = $WorkoutOutboxTable(this);
   late final $WorkoutDraftsTable workoutDrafts = $WorkoutDraftsTable(this);
+  late final $GymsTable gyms = $GymsTable(this);
+  late final $ExerciseStationsTable exerciseStations = $ExerciseStationsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8441,6 +9853,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     restDays,
     workoutOutbox,
     workoutDrafts,
+    gyms,
+    exerciseStations,
   ];
 }
 
@@ -9955,6 +11369,7 @@ typedef $$WorkoutSessionsTableCreateCompanionBuilder =
       Value<DateTime?> endedAt,
       Value<bool> isManual,
       Value<String?> notes,
+      Value<String?> gymId,
       Value<String?> deviceId,
       Value<double?> totalVolume,
       Value<int?> topSetsCount,
@@ -9975,6 +11390,7 @@ typedef $$WorkoutSessionsTableUpdateCompanionBuilder =
       Value<DateTime?> endedAt,
       Value<bool> isManual,
       Value<String?> notes,
+      Value<String?> gymId,
       Value<String?> deviceId,
       Value<double?> totalVolume,
       Value<int?> topSetsCount,
@@ -10028,6 +11444,11 @@ class $$WorkoutSessionsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gymId => $composableBuilder(
+    column: $table.gymId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10121,6 +11542,11 @@ class $$WorkoutSessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get gymId => $composableBuilder(
+    column: $table.gymId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get deviceId => $composableBuilder(
     column: $table.deviceId,
     builder: (column) => ColumnOrderings(column),
@@ -10196,6 +11622,9 @@ class $$WorkoutSessionsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get gymId =>
+      $composableBuilder(column: $table.gymId, builder: (column) => column);
 
   GeneratedColumn<String> get deviceId =>
       $composableBuilder(column: $table.deviceId, builder: (column) => column);
@@ -10275,6 +11704,7 @@ class $$WorkoutSessionsTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
                 Value<bool> isManual = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> gymId = const Value.absent(),
                 Value<String?> deviceId = const Value.absent(),
                 Value<double?> totalVolume = const Value.absent(),
                 Value<int?> topSetsCount = const Value.absent(),
@@ -10293,6 +11723,7 @@ class $$WorkoutSessionsTableTableManager
                 endedAt: endedAt,
                 isManual: isManual,
                 notes: notes,
+                gymId: gymId,
                 deviceId: deviceId,
                 totalVolume: totalVolume,
                 topSetsCount: topSetsCount,
@@ -10313,6 +11744,7 @@ class $$WorkoutSessionsTableTableManager
                 Value<DateTime?> endedAt = const Value.absent(),
                 Value<bool> isManual = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> gymId = const Value.absent(),
                 Value<String?> deviceId = const Value.absent(),
                 Value<double?> totalVolume = const Value.absent(),
                 Value<int?> topSetsCount = const Value.absent(),
@@ -10331,6 +11763,7 @@ class $$WorkoutSessionsTableTableManager
                 endedAt: endedAt,
                 isManual: isManual,
                 notes: notes,
+                gymId: gymId,
                 deviceId: deviceId,
                 totalVolume: totalVolume,
                 topSetsCount: topSetsCount,
@@ -10388,6 +11821,7 @@ typedef $$SerieLogsTableCreateCompanionBuilder =
       Value<int?> miniSetIndex,
       Value<String?> setType,
       Value<bool> isDerived,
+      Value<String?> stationId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> version,
@@ -10416,6 +11850,7 @@ typedef $$SerieLogsTableUpdateCompanionBuilder =
       Value<int?> miniSetIndex,
       Value<String?> setType,
       Value<bool> isDerived,
+      Value<String?> stationId,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> version,
@@ -10525,6 +11960,11 @@ class $$SerieLogsTableFilterComposer
 
   ColumnFilters<bool> get isDerived => $composableBuilder(
     column: $table.isDerived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stationId => $composableBuilder(
+    column: $table.stationId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10658,6 +12098,11 @@ class $$SerieLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get stationId => $composableBuilder(
+    column: $table.stationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -10762,6 +12207,9 @@ class $$SerieLogsTableAnnotationComposer
   GeneratedColumn<bool> get isDerived =>
       $composableBuilder(column: $table.isDerived, builder: (column) => column);
 
+  GeneratedColumn<String> get stationId =>
+      $composableBuilder(column: $table.stationId, builder: (column) => column);
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -10827,6 +12275,7 @@ class $$SerieLogsTableTableManager
                 Value<int?> miniSetIndex = const Value.absent(),
                 Value<String?> setType = const Value.absent(),
                 Value<bool> isDerived = const Value.absent(),
+                Value<String?> stationId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -10853,6 +12302,7 @@ class $$SerieLogsTableTableManager
                 miniSetIndex: miniSetIndex,
                 setType: setType,
                 isDerived: isDerived,
+                stationId: stationId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 version: version,
@@ -10881,6 +12331,7 @@ class $$SerieLogsTableTableManager
                 Value<int?> miniSetIndex = const Value.absent(),
                 Value<String?> setType = const Value.absent(),
                 Value<bool> isDerived = const Value.absent(),
+                Value<String?> stationId = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -10907,6 +12358,7 @@ class $$SerieLogsTableTableManager
                 miniSetIndex: miniSetIndex,
                 setType: setType,
                 isDerived: isDerived,
+                stationId: stationId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 version: version,
@@ -12306,6 +13758,642 @@ typedef $$WorkoutDraftsTableProcessedTableManager =
       WorkoutDraftRow,
       PrefetchHooks Function()
     >;
+typedef $$GymsTableCreateCompanionBuilder =
+    GymsCompanion Function({
+      required String id,
+      required String userId,
+      required String name,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> version,
+      Value<bool> pendingSync,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+typedef $$GymsTableUpdateCompanionBuilder =
+    GymsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> name,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> version,
+      Value<bool> pendingSync,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+
+class $$GymsTableFilterComposer extends Composer<_$AppDatabase, $GymsTable> {
+  $$GymsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$GymsTableOrderingComposer extends Composer<_$AppDatabase, $GymsTable> {
+  $$GymsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$GymsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $GymsTable> {
+  $$GymsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+}
+
+class $$GymsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $GymsTable,
+          Gym,
+          $$GymsTableFilterComposer,
+          $$GymsTableOrderingComposer,
+          $$GymsTableAnnotationComposer,
+          $$GymsTableCreateCompanionBuilder,
+          $$GymsTableUpdateCompanionBuilder,
+          (Gym, BaseReferences<_$AppDatabase, $GymsTable, Gym>),
+          Gym,
+          PrefetchHooks Function()
+        > {
+  $$GymsTableTableManager(_$AppDatabase db, $GymsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GymsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GymsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GymsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<bool> pendingSync = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GymsCompanion(
+                id: id,
+                userId: userId,
+                name: name,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                version: version,
+                pendingSync: pendingSync,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String name,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<bool> pendingSync = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => GymsCompanion.insert(
+                id: id,
+                userId: userId,
+                name: name,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                version: version,
+                pendingSync: pendingSync,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$GymsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $GymsTable,
+      Gym,
+      $$GymsTableFilterComposer,
+      $$GymsTableOrderingComposer,
+      $$GymsTableAnnotationComposer,
+      $$GymsTableCreateCompanionBuilder,
+      $$GymsTableUpdateCompanionBuilder,
+      (Gym, BaseReferences<_$AppDatabase, $GymsTable, Gym>),
+      Gym,
+      PrefetchHooks Function()
+    >;
+typedef $$ExerciseStationsTableCreateCompanionBuilder =
+    ExerciseStationsCompanion Function({
+      required String id,
+      required String userId,
+      required String exerciseId,
+      Value<String?> gymId,
+      required String nickname,
+      required String nicknameKey,
+      Value<String?> brand,
+      Value<String?> note,
+      Value<DateTime?> archivedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> version,
+      Value<bool> pendingSync,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+typedef $$ExerciseStationsTableUpdateCompanionBuilder =
+    ExerciseStationsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> exerciseId,
+      Value<String?> gymId,
+      Value<String> nickname,
+      Value<String> nicknameKey,
+      Value<String?> brand,
+      Value<String?> note,
+      Value<DateTime?> archivedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> version,
+      Value<bool> pendingSync,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+
+class $$ExerciseStationsTableFilterComposer
+    extends Composer<_$AppDatabase, $ExerciseStationsTable> {
+  $$ExerciseStationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exerciseId => $composableBuilder(
+    column: $table.exerciseId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gymId => $composableBuilder(
+    column: $table.gymId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nickname => $composableBuilder(
+    column: $table.nickname,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nicknameKey => $composableBuilder(
+    column: $table.nicknameKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brand => $composableBuilder(
+    column: $table.brand,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ExerciseStationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ExerciseStationsTable> {
+  $$ExerciseStationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exerciseId => $composableBuilder(
+    column: $table.exerciseId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gymId => $composableBuilder(
+    column: $table.gymId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nickname => $composableBuilder(
+    column: $table.nickname,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nicknameKey => $composableBuilder(
+    column: $table.nicknameKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brand => $composableBuilder(
+    column: $table.brand,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ExerciseStationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ExerciseStationsTable> {
+  $$ExerciseStationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get exerciseId => $composableBuilder(
+    column: $table.exerciseId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get gymId =>
+      $composableBuilder(column: $table.gymId, builder: (column) => column);
+
+  GeneratedColumn<String> get nickname =>
+      $composableBuilder(column: $table.nickname, builder: (column) => column);
+
+  GeneratedColumn<String> get nicknameKey => $composableBuilder(
+    column: $table.nicknameKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get brand =>
+      $composableBuilder(column: $table.brand, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<bool> get pendingSync => $composableBuilder(
+    column: $table.pendingSync,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+}
+
+class $$ExerciseStationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ExerciseStationsTable,
+          ExerciseStation,
+          $$ExerciseStationsTableFilterComposer,
+          $$ExerciseStationsTableOrderingComposer,
+          $$ExerciseStationsTableAnnotationComposer,
+          $$ExerciseStationsTableCreateCompanionBuilder,
+          $$ExerciseStationsTableUpdateCompanionBuilder,
+          (
+            ExerciseStation,
+            BaseReferences<
+              _$AppDatabase,
+              $ExerciseStationsTable,
+              ExerciseStation
+            >,
+          ),
+          ExerciseStation,
+          PrefetchHooks Function()
+        > {
+  $$ExerciseStationsTableTableManager(
+    _$AppDatabase db,
+    $ExerciseStationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExerciseStationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExerciseStationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExerciseStationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> exerciseId = const Value.absent(),
+                Value<String?> gymId = const Value.absent(),
+                Value<String> nickname = const Value.absent(),
+                Value<String> nicknameKey = const Value.absent(),
+                Value<String?> brand = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<DateTime?> archivedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<bool> pendingSync = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExerciseStationsCompanion(
+                id: id,
+                userId: userId,
+                exerciseId: exerciseId,
+                gymId: gymId,
+                nickname: nickname,
+                nicknameKey: nicknameKey,
+                brand: brand,
+                note: note,
+                archivedAt: archivedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                version: version,
+                pendingSync: pendingSync,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String exerciseId,
+                Value<String?> gymId = const Value.absent(),
+                required String nickname,
+                required String nicknameKey,
+                Value<String?> brand = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<DateTime?> archivedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<bool> pendingSync = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExerciseStationsCompanion.insert(
+                id: id,
+                userId: userId,
+                exerciseId: exerciseId,
+                gymId: gymId,
+                nickname: nickname,
+                nicknameKey: nicknameKey,
+                brand: brand,
+                note: note,
+                archivedAt: archivedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                version: version,
+                pendingSync: pendingSync,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ExerciseStationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ExerciseStationsTable,
+      ExerciseStation,
+      $$ExerciseStationsTableFilterComposer,
+      $$ExerciseStationsTableOrderingComposer,
+      $$ExerciseStationsTableAnnotationComposer,
+      $$ExerciseStationsTableCreateCompanionBuilder,
+      $$ExerciseStationsTableUpdateCompanionBuilder,
+      (
+        ExerciseStation,
+        BaseReferences<_$AppDatabase, $ExerciseStationsTable, ExerciseStation>,
+      ),
+      ExerciseStation,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -12330,4 +14418,7 @@ class $AppDatabaseManager {
       $$WorkoutOutboxTableTableManager(_db, _db.workoutOutbox);
   $$WorkoutDraftsTableTableManager get workoutDrafts =>
       $$WorkoutDraftsTableTableManager(_db, _db.workoutDrafts);
+  $$GymsTableTableManager get gyms => $$GymsTableTableManager(_db, _db.gyms);
+  $$ExerciseStationsTableTableManager get exerciseStations =>
+      $$ExerciseStationsTableTableManager(_db, _db.exerciseStations);
 }

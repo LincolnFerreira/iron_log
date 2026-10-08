@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:iron_log/core/database/exercise_stations_table.dart';
 import 'package:iron_log/core/database/exercises_table.dart';
+import 'package:iron_log/core/database/gyms_table.dart';
 import 'package:iron_log/core/database/rest_days_table.dart';
 import 'package:iron_log/core/database/routines_table.dart';
 import 'package:iron_log/core/database/serie_logs_table.dart';
@@ -26,13 +28,15 @@ part 'app_database.g.dart';
     RestDays,
     WorkoutOutbox,
     WorkoutDrafts,
+    Gyms,
+    ExerciseStations,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -55,6 +59,12 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 6) {
             await customStatement('DROP TABLE IF EXISTS api_error_logs');
+          }
+          if (from < 8) {
+            await m.createTable(gyms);
+            await m.createTable(exerciseStations);
+            await m.addColumn(workoutSessions, workoutSessions.gymId);
+            await m.addColumn(serieLogs, serieLogs.stationId);
           }
           if (from < 7) {
             await m.createTable(workoutDrafts);

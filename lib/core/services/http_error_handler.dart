@@ -13,6 +13,18 @@ class ErrorColors {
 /// Serviço responsável pelo tratamento centralizado de erros HTTP
 /// Segue o Single Responsibility Principle - foca apenas em error handling
 class HttpErrorHandler {
+  /// Mensagem legível retornada pelo backend (`message`, string ou lista).
+  static String? extractApiMessage(DioException error) {
+    final data = error.response?.data;
+    if (data is! Map) return null;
+    final raw = data['message'];
+    if (raw is String && raw.isNotEmpty) return raw;
+    if (raw is List && raw.isNotEmpty) {
+      return raw.map((e) => e.toString()).join('; ');
+    }
+    return null;
+  }
+
   /// Trata erros da API de forma centralizada
   static void handleError(DioException error) {
     switch (error.response?.statusCode) {
@@ -38,9 +50,16 @@ class HttpErrorHandler {
 
   static void _handleBadRequest(DioException error) {
     if (kDebugMode) {
+      final apiMessage = extractApiMessage(error);
       print(
-        '${ErrorColors.brightYellow}🚨 Bad Request (400): Dados inválidos enviados${ErrorColors.reset}',
+        '${ErrorColors.brightYellow}🚨 Bad Request (400): ${apiMessage ?? 'Dados inválidos enviados'}${ErrorColors.reset}',
       );
+      final code = error.response?.data is Map
+          ? (error.response!.data as Map)['code']
+          : null;
+      if (code != null) {
+        print('${ErrorColors.yellow}🏷️ API code: $code${ErrorColors.reset}');
+      }
     }
   }
 
@@ -110,7 +129,8 @@ class HttpErrorHandler {
 
     switch (error.response?.statusCode) {
       case 400:
-        return 'Dados inválidos. Verifique as informações.';
+        return extractApiMessage(error) ??
+            'Dados inválidos. Verifique as informações.';
       case 401:
         return 'Sessão expirada. Faça login novamente.';
       case 403:

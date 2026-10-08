@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:iron_log/core/debug/diag_log.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
 import 'package:iron_log/features/routines/domain/entities/routine_update.dart';
 import 'package:iron_log/features/routines/domain/entities/session_creation.dart';
@@ -29,6 +30,10 @@ class RoutineController extends _$RoutineController {
       ref.read(deleteRoutineUseCaseProvider);
 
   Future<void> loadRoutines() async {
+    DiagLog.provider(
+      'RoutineController.loadRoutines',
+      detail: 'isLoading→true (routines=${state.routines.length})',
+    );
     if (kDebugMode) {
       debugPrint('🔄 Iniciando carregamento de rotinas...');
     }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
+import 'package:iron_log/features/training_place/domain/entities/exercise_query_key.dart';
+import 'package:iron_log/features/training_place/domain/station_equipment_gate.dart';
+import 'package:iron_log/features/training_place/presentation/widgets/station_context_chip.dart';
 import 'package:iron_log/features/workout_day/domain/entities/series_entry.dart';
 import 'package:iron_log/features/workout_day/domain/entities/suggestion_result.dart';
 import 'package:iron_log/features/workout_day/domain/entities/technique_block.dart';
@@ -415,9 +418,11 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
   }
 
   Widget _buildChipsRow(WidgetRef ref) {
-    final historyAsync = ref.watch(
-      exerciseLastSetsProvider(widget.exercise.id),
+    final historyKey = ExerciseQueryKey(
+      widget.exercise.movementId,
+      widget.exercise.stationId,
     );
+    final historyAsync = ref.watch(exerciseLastSetsProvider(historyKey));
     final history = historyAsync.asData?.value;
 
     return Row(
@@ -433,6 +438,13 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
               : null,
         ),
         const SizedBox(width: 8),
+        if (_showsStationChip(ref)) ...[
+          StationContextChip(
+            exercise: widget.exercise,
+            onStation: _applyStation,
+          ),
+          const SizedBox(width: 8),
+        ],
         AiSuggestionChip(isLoading: _isSuggestionLoading, onTap: _onAiChipTap),
       ],
     );
@@ -445,7 +457,12 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     });
     try {
       final result = await ref.read(
-        exerciseSuggestionProvider(widget.exercise.id).future,
+        exerciseSuggestionProvider(
+          ExerciseQueryKey(
+            widget.exercise.movementId,
+            widget.exercise.stationId,
+          ),
+        ).future,
       );
       if (mounted) {
         setState(() {
@@ -833,6 +850,29 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
     }
   }
 
+  bool _showsStationChip(WidgetRef ref) {
+    final mode = ref.watch(workoutScreenModeProvider);
+    if (mode == WorkoutScreenMode.template) return false;
+    return stationEquipmentRequiresStation(widget.exercise.equipmentName);
+  }
+
+  void _applyStation(String? stationId, String? stationNickname) {
+    final updated = TechniqueBlockMapper.withBlocks(
+      widget.exercise.copyWith(
+        series: _series,
+        reps: _reps,
+        weight: _weight,
+        rir: _rir,
+        restTime: _restTime,
+        notes: _notes.isEmpty ? null : _notes,
+        stationId: stationId,
+        stationNickname: stationNickname,
+      ),
+      _blocks,
+    );
+    _pushExercise(updated);
+  }
+
   // Atualiza o exercício localmente no provider com os valores actuais.
   // Não persiste no backend aqui — isso acontece apenas ao finalizar o treino.
   void _updateExercise() {
@@ -848,10 +888,13 @@ class _ExerciseCardState extends ConsumerState<ExerciseCard> {
       _blocks,
     );
 
+    _pushExercise(updated);
+  }
+
+  void _pushExercise(WorkoutExercise updated) {
     final mode = ref.read(workoutScreenModeProvider);
     final notifier = ref.read(workoutDayExercisesProvider.notifier);
 
-    // Chama o método de atualização apropriado baseado no modo atual
     try {
       if (mode == WorkoutScreenMode.execution) {
         notifier.updateExerciseExecution(widget.exercise.id, updated);

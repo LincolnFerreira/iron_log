@@ -35,12 +35,18 @@ class WorkoutDayRepositoryImpl implements WorkoutDayRepository {
       _remote.patchWorkout(workoutId, payload);
 
   @override
-  Future<ExerciseSetHistory> fetchExerciseLastSets(String exerciseId) =>
-      _remote.fetchExerciseLastSets(exerciseId);
+  Future<ExerciseSetHistory> fetchExerciseLastSets(
+    String exerciseId, {
+    String? stationId,
+  }) =>
+      _remote.fetchExerciseLastSets(exerciseId, stationId: stationId);
 
   @override
-  Future<SuggestionResult> fetchExerciseSuggestion(String exerciseId) =>
-      _remote.fetchExerciseSuggestion(exerciseId);
+  Future<SuggestionResult> fetchExerciseSuggestion(
+    String exerciseId, {
+    String? stationId,
+  }) =>
+      _remote.fetchExerciseSuggestion(exerciseId, stationId: stationId);
 
   @override
   Future<Map<String, dynamic>> createWorkoutActivity(

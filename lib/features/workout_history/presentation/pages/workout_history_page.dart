@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iron_log/core/debug/diag_log.dart';
+import 'package:iron_log/core/debug/widget_lifecycle_diag.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/core/routes/workout_route_locations.dart';
 import 'package:iron_log/features/home/presentation/components/organisms/session_picker_sheet.dart';
@@ -89,15 +91,21 @@ class WorkoutHistoryPage extends ConsumerStatefulWidget {
 }
 
 class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
-    with WidgetsBindingObserver, RouteAware {
+    with WidgetLifecycleDiag, RouteAware {
+  void _refreshHistory({required String origin}) {
+    DiagLog.widget('refresh history', detail: 'WorkoutHistoryPage → $origin');
+    final _ = (
+      ref.refresh(workoutHistoryProvider),
+      ref.refresh(activeWorkoutDraftProvider),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.invalidate(workoutHistoryProvider);
-      ref.invalidate(activeWorkoutDraftProvider);
+      _refreshHistory(origin: 'initState postFrame');
     });
-    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -110,33 +118,23 @@ class _WorkoutHistoryPageState extends ConsumerState<WorkoutHistoryPage>
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didPopNext() {
-    ref.invalidate(workoutHistoryProvider);
-    ref.invalidate(activeWorkoutDraftProvider);
+    _refreshHistory(origin: 'didPopNext');
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      ref.invalidate(workoutHistoryProvider);
-      ref.invalidate(activeWorkoutDraftProvider);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget buildWithDiag(BuildContext context) {
     final historyAsync = ref.watch(workoutHistoryProvider);
     final filter = ref.watch(historyFilterProvider);
     final activeDraft = ref.watch(activeWorkoutDraftProvider).valueOrNull;
 
     return Scaffold(
       body: historyAsync.when(
-        skipLoadingOnRefresh: false,
+        skipLoadingOnRefresh: true,
         loading: () => CustomScrollView(
           slivers: [
             _buildAppBar(context, null, filter),

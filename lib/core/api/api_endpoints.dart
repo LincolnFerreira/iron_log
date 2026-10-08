@@ -59,12 +59,29 @@ class ApiEndpoints {
   static const String restDay = '/rest-day';
 
   // Workout history per exercise
-  static String exerciseLastSets(String exerciseId, {int limit = 2}) =>
-      '/workout/exercise/$exerciseId/last-sets?limit=$limit';
+  static String exerciseLastSets(
+    String exerciseId, {
+    int limit = 2,
+    String? stationId,
+  }) {
+    final station = stationId == null || stationId.isEmpty
+        ? ''
+        : '&stationId=$stationId';
+    return '/workout/exercise/$exerciseId/last-sets?limit=$limit$station';
+  }
 
   // AI suggestion for an exercise
-  static String exerciseSuggestion(String exerciseId) =>
-      '/suggestion?exerciseId=$exerciseId';
+  static String exerciseSuggestion(String exerciseId, {String? stationId}) {
+    final station = stationId == null || stationId.isEmpty
+        ? ''
+        : '&stationId=$stationId';
+    return '/suggestion?exerciseId=$exerciseId$station';
+  }
+
+  static const String gyms = '/gyms';
+  static String gymById(String id) => '/gyms/$id';
+  static const String exerciseStations = '/exercise-stations';
+  static String exerciseStationById(String id) => '/exercise-stations/$id';
 }
 
 /// Configuração de parâmetros de query padrão

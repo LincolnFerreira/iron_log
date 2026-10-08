@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
+import 'package:iron_log/core/debug/diag_log.dart';
+import 'package:iron_log/core/debug/widget_lifecycle_diag.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/features/home/presentation/providers/home_provider.dart';
 import 'package:iron_log/features/routines/domain/entities/routine.dart';
@@ -19,14 +21,17 @@ class RoutinesPage extends ConsumerStatefulWidget {
 }
 
 class _RoutinesPageState extends ConsumerState<RoutinesPage>
-    with WidgetsBindingObserver, RouteAware {
+    with WidgetLifecycleDiag, RouteAware {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      DiagLog.widget(
+        'loadRoutines',
+        detail: 'RoutinesPage → initState postFrame',
+      );
       ref.read(routineNotifierProvider.notifier).loadRoutines();
     });
-    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
@@ -41,25 +46,20 @@ class _RoutinesPageState extends ConsumerState<RoutinesPage>
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didPopNext() {
-    // Voltamos para esta página (subpágina foi fechada) — recarrega.
+    DiagLog.widget(
+      'loadRoutines',
+      detail: 'RoutinesPage → didPopNext (sub-rota fechada)',
+    );
     ref.read(routineNotifierProvider.notifier).loadRoutines();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      ref.read(routineNotifierProvider.notifier).loadRoutines();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget buildWithDiag(BuildContext context) {
     ref.listen(routineUiFeedbackProvider, (previous, next) {
       if (next == null || !mounted) return;
 

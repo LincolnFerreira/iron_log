@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/env.dart';
 import 'package:iron_log/core/services/auth_interceptor.dart';
+import 'package:iron_log/core/services/diag_http_interceptor.dart';
 
 
 
@@ -90,9 +92,10 @@ class HttpService {
   /// Adiciona interceptors
 
   void _setupInterceptors() {
-
+    if (kDebugMode) {
+      _dio.interceptors.add(DiagHttpInterceptor());
+    }
     _dio.interceptors.add(AuthInterceptor());
-
   }
 
 

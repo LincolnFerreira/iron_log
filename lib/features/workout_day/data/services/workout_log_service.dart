@@ -43,6 +43,7 @@ class WorkoutLogService {
     String? sessionId,
     String? draftId,
     bool markPendingOnFailure = false,
+    String? gymId,
   }) async {
     final payload = buildCreatePayload(
       exercises: exercises,
@@ -52,6 +53,7 @@ class WorkoutLogService {
       isManual: isManual,
       notes: notes,
       sessionId: sessionId,
+      gymId: gymId,
     );
 
     try {
@@ -80,6 +82,7 @@ class WorkoutLogService {
     String? sessionId,
     String? draftId,
     bool markPendingOnFailure = false,
+    String? gymId,
   }) async {
     final payload = buildPatchPayload(
       exercises: exercises,
@@ -87,6 +90,7 @@ class WorkoutLogService {
       endedAt: endedAt,
       notes: notes,
       sessionId: sessionId,
+      gymId: gymId,
     );
 
     try {
@@ -116,9 +120,11 @@ class WorkoutLogService {
     bool isManual = false,
     String? notes,
     String? sessionId,
+    String? gymId,
   }) {
     return {
       if (routineId != null) 'routineId': routineId,
+      if (gymId != null) 'gymId': gymId,
       'date': startedAt.toIso8601String(),
       'endedAt': endedAt.toIso8601String(),
       'isManual': isManual,
@@ -138,8 +144,10 @@ class WorkoutLogService {
     required DateTime endedAt,
     String? notes,
     String? sessionId,
+    String? gymId,
   }) {
     return {
+      if (gymId != null) 'gymId': gymId,
       'date': startedAt.toIso8601String(),
       'endedAt': endedAt.toIso8601String(),
       if (notes != null) 'notes': notes,
@@ -228,6 +236,7 @@ class WorkoutLogService {
       if (rirList != null) 'rir': rirList,
       if (restSecondsList != null) 'restSeconds': restSecondsList,
       if (exercise.notes != null) 'notes': exercise.notes,
+      if (exercise.stationId != null) 'stationId': exercise.stationId,
       'techniqueBlocks': TechniqueBlockMapper.blocksToDto(
         blocks,
         exerciseRir: exercise.rir,

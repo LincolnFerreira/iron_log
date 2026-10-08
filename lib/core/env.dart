@@ -5,7 +5,11 @@
 /// **Local API**: `--dart-define=FLAVOR=dev` → `http://127.0.0.1:3000`
 /// (celular/emulador com `adb reverse tcp:3000 tcp:3000` — launch Local API).
 ///
-/// **Escape hatch**: `--dart-define=API_HOST=<ip>` se precisar de LAN sem reverse.
+/// **Wi‑Fi (celular físico)**: copie `dart_defines.dev.example.json` →
+/// `dart_defines.dev.json`, fixe o IP no roteador (reserva DHCP) e use
+/// `--dart-define-from-file=dart_defines.dev.json` no launch.
+///
+/// **Escape hatch**: `--dart-define=API_HOST=<ip>` pontual.
 class Env {
   static const String flavor = String.fromEnvironment(
     'FLAVOR',

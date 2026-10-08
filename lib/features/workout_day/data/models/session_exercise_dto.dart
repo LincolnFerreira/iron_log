@@ -10,6 +10,7 @@ class ExerciseDataDto {
   final String? name;
   final String? category;
   final String? primaryMuscle;
+  final String? equipmentName;
   final List<dynamic> tags;
 
   ExerciseDataDto({
@@ -17,6 +18,7 @@ class ExerciseDataDto {
     this.name,
     this.category,
     this.primaryMuscle,
+    this.equipmentName,
     this.tags = const [],
   });
 
@@ -37,8 +39,15 @@ class ExerciseDataDto {
       name: json[ApiFieldNames.name]?.toString(),
       category: json[ApiFieldNames.category]?.toString(),
       primaryMuscle: muscleName,
+      equipmentName: _readEquipmentName(json['equipment']),
       tags: json[ApiFieldNames.tags] as List<dynamic>? ?? [],
     );
+  }
+
+  static String? _readEquipmentName(dynamic raw) {
+    if (raw is Map) return raw['name']?.toString();
+    if (raw is String && raw.isNotEmpty) return raw;
+    return null;
   }
 
   /// Maps exercise data to ExerciseTag inline
@@ -140,6 +149,7 @@ class SessionExerciseDto {
       restTime: firstSeries?.restTime ?? 0,
       order: order,
       entries: entries,
+      equipmentName: exercise.equipmentName,
     );
   }
 

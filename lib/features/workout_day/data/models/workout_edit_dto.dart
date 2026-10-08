@@ -89,6 +89,10 @@ class WorkoutEditDto {
         entries: entries,
         blocks: blocks,
         notes: first.exerciseNotes,
+        equipmentName: first.equipmentName,
+        stationId: first.stationId,
+        stationNickname: first.stationNickname,
+        catalogExerciseId: first.exerciseId,
       );
     }).toList();
   }
@@ -221,6 +225,9 @@ class WorkoutEditSerieLogDto {
   final bool isDerived;
   final int? miniSetIndex;
   final String? setType;
+  final String? stationId;
+  final String? stationNickname;
+  final String? equipmentName;
 
   WorkoutEditSerieLogDto({
     required this.id,
@@ -244,6 +251,9 @@ class WorkoutEditSerieLogDto {
     this.isDerived = false,
     this.miniSetIndex,
     this.setType,
+    this.stationId,
+    this.stationNickname,
+    this.equipmentName,
   });
 
   factory WorkoutEditSerieLogDto.fromJson(Map<String, dynamic> json) {
@@ -251,6 +261,11 @@ class WorkoutEditSerieLogDto {
         json['sessionExercise'] as Map<String, dynamic>? ?? {};
     final exerciseData =
         sessionExerciseData['exercise'] as Map<String, dynamic>? ?? {};
+    final station = json['station'] as Map<String, dynamic>?;
+    final equipment = exerciseData['equipment'];
+    final equipmentName = equipment is Map
+        ? equipment['name']?.toString()
+        : equipment?.toString();
     final tags = exerciseData['tags'] as List<dynamic>? ?? [];
 
     // Parse primaryMuscle — can be object { name: "Chest" } or string
@@ -330,6 +345,9 @@ class WorkoutEditSerieLogDto {
       isDerived: (json['isDerived'] as bool?) ?? false,
       miniSetIndex: parseToInt(json['miniSetIndex'], 'miniSetIndex'),
       setType: json['setType']?.toString(),
+      stationId: json['stationId']?.toString() ?? station?['id']?.toString(),
+      stationNickname: station?['nickname']?.toString(),
+      equipmentName: equipmentName,
     );
   }
 

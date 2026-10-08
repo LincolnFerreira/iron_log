@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iron_log/core/components/app_snackbar.dart';
+import 'package:iron_log/core/debug/widget_lifecycle_diag.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/core/routes/workout_route_locations.dart';
 import 'package:iron_log/features/auth/auth.dart';
@@ -20,7 +21,8 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> with RouteAware {
+class _HomePageState extends ConsumerState<HomePage>
+    with WidgetLifecycleDiag, RouteAware {
   @override
   void initState() {
     super.initState();
@@ -51,7 +53,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildWithDiag(BuildContext context) {
     ref.listen(homeUiFeedbackProvider, (previous, next) {
       if (next == null || !mounted) return;
 

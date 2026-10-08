@@ -23,6 +23,7 @@ class SerieLogs extends Table {
   IntColumn get miniSetIndex => integer().nullable()();
   TextColumn get setType => text().nullable()();
   BoolColumn get isDerived => boolean().withDefault(const Constant(false))();
+  TextColumn get stationId => text().nullable()();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

@@ -8,19 +8,14 @@ class AuthRemoteDataSource {
 
   final HttpService _http;
 
+  /// Garante que o usuário existe no backend usando o token Firebase.
+  /// O guard em `/auth/me` cria o registro na primeira vez e reutiliza nas próximas.
   Future<void> upsertUser({
     required String firebaseId,
     required String email,
     String? name,
   }) async {
-    await _http.post(
-      '/user',
-      data: {
-        'firebaseId': firebaseId,
-        'email': email,
-        'name': name,
-      },
-    );
+    await _http.get(ApiEndpoints.me);
   }
 
   /// GET `/auth/me` — retorna null se a resposta não trouxer `user`.

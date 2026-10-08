@@ -8,6 +8,7 @@ class WorkoutSessions extends Table {
   DateTimeColumn get endedAt => dateTime().nullable()();
   BoolColumn get isManual => boolean().withDefault(const Constant(false))();
   TextColumn get notes => text().nullable()();
+  TextColumn get gymId => text().nullable()();
   TextColumn get deviceId => text().nullable()();
 
   // Summary metrics

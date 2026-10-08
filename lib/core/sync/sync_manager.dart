@@ -2,9 +2,12 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:iron_log/core/database/app_database.dart';
+import 'package:iron_log/core/debug/diag_log.dart';
 import 'package:iron_log/core/network/connectivity_utils.dart';
+import 'package:iron_log/core/sync/training_place_sync.dart';
 import 'package:iron_log/core/sync/workout_outbox_sync.dart';
 
 /// Main sync manager: orchestrates offline-first sync operations
@@ -42,8 +45,18 @@ class SyncManager {
   /// Initialize connectivity listener for auto-sync
   void _initConnectivityListener() {
     connectivity.onConnectivityChanged.listen((result) async {
+      if (kDebugMode) {
+        DiagLog.connectivity(
+          'onConnectivityChanged',
+          detail: result.toString(),
+        );
+      }
       if (isConnectivityLikelyOnline(result)) {
+        if (kDebugMode) {
+          DiagLog.connectivity('likely online → outbox flush + syncIfNeeded');
+        }
         try {
+          await flushTrainingPlaces(database: database, dio: dio);
           await flushWorkoutOutbox(database: database, dio: dio);
         } catch (_) {}
         await syncIfNeeded();
@@ -69,6 +82,7 @@ class SyncManager {
 
     try {
       try {
+        await flushTrainingPlaces(database: database, dio: dio);
         await flushWorkoutOutbox(database: database, dio: dio);
       } catch (_) {}
 
@@ -257,13 +271,23 @@ class SyncManager {
         .select(database.workoutOutbox)
         .get();
 
+    final gyms = await (database.select(
+      database.gyms,
+    )..where((g) => g.pendingSync.equals(true))).get();
+
+    final stations = await (database.select(
+      database.exerciseStations,
+    )..where((s) => s.pendingSync.equals(true))).get();
+
     return routines.length +
         sessions.length +
         workouts.length +
         techniqueBlocks.length +
         series.length +
         restDays.length +
-        workoutOutboxRows.length;
+        workoutOutboxRows.length +
+        gyms.length +
+        stations.length;
   }
 
   /// Mark entity as synced in local database

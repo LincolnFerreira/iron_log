@@ -1,41 +1,133 @@
 {
+
   "version": "0.2.0",
+
   "configurations": [
+
     {
-      "name": "Cloud · Debug",
-      "type": "dart",
+
+      "name": "📱 LOCAL · Debug",
+
       "request": "launch",
+
+      "type": "dart",
+
       "program": "lib/main.dart",
+
+      "cwd": "${workspaceFolder}",
+
+      "flutterMode": "debug",
+
+      "args": ["--dart-define-from-file=dart_defines.dev.json"],
+
+      "preLaunchTask": "stack: wait-backend",
+
+      "presentation": { "group": "1 · App", "order": 1 }
+
+    },
+
+    {
+
+      "name": "📱 PROD · Debug",
+
+      "request": "launch",
+
+      "type": "dart",
+
+      "program": "lib/main.dart",
+
+      "cwd": "${workspaceFolder}",
+
+      "flutterMode": "debug",
+
       "args": ["--dart-define=FLAVOR=prod"],
-      "presentation": { "group": "Cloud", "order": 1 }
+
+      "presentation": { "group": "1 · App", "order": 2 }
+
     },
+
     {
-      "name": "Cloud · Release",
-      "type": "dart",
+
+      "name": "📱 LOCAL · Release",
+
       "request": "launch",
+
+      "type": "dart",
+
       "program": "lib/main.dart",
+
+      "cwd": "${workspaceFolder}",
+
+      "flutterMode": "release",
+
+      "args": ["--dart-define-from-file=dart_defines.dev.json"],
+
+      "presentation": { "group": "2 · Release / Profile", "order": 1 }
+
+    },
+
+    {
+
+      "name": "📱 PROD · Release",
+
+      "request": "launch",
+
+      "type": "dart",
+
+      "program": "lib/main.dart",
+
+      "cwd": "${workspaceFolder}",
+
+      "flutterMode": "release",
+
       "args": ["--dart-define=FLAVOR=prod"],
-      "flutterMode": "release",
-      "presentation": { "group": "Cloud", "order": 2 }
+
+      "presentation": { "group": "2 · Release / Profile", "order": 2 }
+
     },
+
     {
-      "name": "Local API · Debug",
-      "type": "dart",
+
+      "name": "📊 LOCAL · Profile",
+
       "request": "launch",
+
+      "type": "dart",
+
       "program": "lib/main.dart",
-      "args": ["--dart-define=FLAVOR=dev"],
-      "preLaunchTask": "adb: reverse 3000",
-      "presentation": { "group": "Local API", "order": 1 }
+
+      "cwd": "${workspaceFolder}",
+
+      "flutterMode": "profile",
+
+      "args": ["--dart-define-from-file=dart_defines.dev.json"],
+
+      "presentation": { "group": "2 · Release / Profile", "order": 3 }
+
     },
+
     {
-      "name": "Local API · Release",
-      "type": "dart",
+
+      "name": "🧪 E2E · LOCAL",
+
       "request": "launch",
-      "program": "lib/main.dart",
+
+      "type": "dart",
+
+      "program": "integration_test/workout_create_e2e_test.dart",
+
+      "cwd": "${workspaceFolder}",
+
+      "flutterMode": "debug",
+
       "args": ["--dart-define=FLAVOR=dev"],
-      "flutterMode": "release",
-      "preLaunchTask": "adb: reverse 3000",
-      "presentation": { "group": "Local API", "order": 2 }
+
+      "presentation": { "group": "3 · Tests", "order": 1 }
+
     }
+
   ]
+
 }
+
+

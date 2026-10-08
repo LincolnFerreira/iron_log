@@ -6,7 +6,7 @@ part of 'routine_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$routineControllerHash() => r'0d88ae3ebb612ca418033cbd39b53ef64bc207dc';
+String _$routineControllerHash() => r'ebe514ec5d17badfe12d19060bdfb2fc45577999';
 
 /// See also [RoutineController].
 @ProviderFor(RoutineController)

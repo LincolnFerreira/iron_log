@@ -70,14 +70,13 @@ Unit/widget: `test/` + `getTestProviderOverrides()`. E2E: Patrol em
 
 ## Plano ativo
 
-**Plan**: `specs/010-state-management-audit/plan.md`  
-**Tasks**: `specs/010-state-management-audit/tasks.md`  
-**Spec**: `specs/010-state-management-audit/spec.md`  
-**Contracts**: `specs/010-state-management-audit/contracts/`  
-**Quickstart**: `specs/010-state-management-audit/quickstart.md`
+**Plan**: `specs/011-gym-machine-stations/plan.md`  
+**Tasks**: `specs/011-gym-machine-stations/tasks.md`  
+**Spec**: `specs/011-gym-machine-stations/spec.md`  
+**Contracts**: `specs/011-gym-machine-stations/contracts/`  
+**Quickstart**: `specs/011-gym-machine-stations/quickstart.md`
 
-010 auditoria estado + ciclo de widget: `ref.listen`, watch/read, setState boundary.
+011 academia e estação na execução: histórico e sugestão por máquina, sem duplicar o exercício na rotina.
 Padrão Riverpod: `specs/006-flutter-architecture-standard/contracts/riverpod-conventions.md`.
-Gabaritos: `contracts/state-patterns.md` + home pós-008 + `elapsedTimeProvider`.
-008 concluída (camadas/StateNotifier); não reabrir.
+008 concluída (camadas/StateNotifier); não reabrir. 010 (estado) concluída como plano anterior.
 <!-- SPECKIT END -->

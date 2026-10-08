@@ -7,6 +7,7 @@ import 'package:iron_log/core/providers/sync_providers.dart';
 import 'package:iron_log/core/services/http_error_handler.dart';
 import 'package:iron_log/features/auth/auth.dart';
 import 'package:iron_log/features/routines/presentation/providers/routine_provider.dart';
+import 'package:iron_log/features/training_place/training_place_providers.dart';
 import 'package:iron_log/features/workout_day/data/datasources/workout_outbox_local_datasource.dart';
 import 'package:iron_log/features/workout_day/data/mappers/plan_session_exercises_mapper.dart';
 import 'package:iron_log/features/workout_day/data/mappers/workout_draft_snapshot_mapper.dart';
@@ -570,6 +571,7 @@ class WorkoutDayExercises extends _$WorkoutDayExercises {
         isManual: isManual,
         sessionId: sessionId,
         draftId: draftId,
+        gymId: await ref.read(trainingPlaceRepositoryProvider).gymIdForWorkout(),
       );
 
       ref.read(workoutSessionIdProvider.notifier).state = workoutSessionId;
@@ -757,6 +759,7 @@ class WorkoutDayExercises extends _$WorkoutDayExercises {
       routineId: ctx.routineId,
       sessionId: ctx.sessionId,
       manualDate: ctx.manualDate,
+      gymId: await ref.read(trainingPlaceRepositoryProvider).gymIdForWorkout(),
     );
 
     final draft = WorkoutDraft(
@@ -856,7 +859,11 @@ class WorkoutDayExercises extends _$WorkoutDayExercises {
       );
 
       // Constrói payload similiar a saveWorkout mas como PATCH
+      final gymId = await ref
+          .read(trainingPlaceRepositoryProvider)
+          .gymIdForWorkout();
       final Map<String, dynamic> payload = {
+        if (gymId != null) 'gymId': gymId,
         'exercises': exercises
             .asMap()
             .entries
@@ -898,4 +905,8 @@ void applyDraftSnapshotToProviders(Ref ref, DraftSnapshotV1 snapshot) {
       .read(workoutDayExercisesProvider.notifier)
       .replaceExercises(snapshot.exercises, persistDraft: false);
   ref.read(workoutSessionIdProvider.notifier).state = snapshot.workoutSessionId;
+  final gymId = snapshot.gymId;
+  if (gymId != null && gymId.isNotEmpty) {
+    ref.read(trainingPlaceRepositoryProvider).touchGym(gymId);
+  }
 }

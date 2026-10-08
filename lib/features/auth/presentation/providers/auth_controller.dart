@@ -94,12 +94,7 @@ class AuthController extends _$AuthController {
         email: user.email ?? '',
         name: user.displayName,
       );
-      state = state.copyWith(
-        feedback: AuthFeedback.success(
-          title: 'Sucesso',
-          message: 'Usuário sincronizado com o servidor',
-        ),
-      );
+      ref.invalidate(userProfileProvider);
     } catch (e) {
       state = state.copyWith(
         feedback: AuthFeedback.warning(

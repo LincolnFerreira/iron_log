@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_theme.dart';
+import 'package:iron_log/core/debug/diag_log.dart';
 import 'package:iron_log/core/providers/sync_providers.dart';
 import 'package:iron_log/core/routes/app_router.dart';
 import 'package:iron_log/core/services/http_service.dart';
@@ -14,13 +15,25 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _flushPendingWorkoutDraftsOnStartup();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    DiagLog.lifecycle(state.name);
   }
 
   Future<void> _flushPendingWorkoutDraftsOnStartup() async {

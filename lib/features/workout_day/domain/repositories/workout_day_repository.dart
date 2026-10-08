@@ -16,9 +16,15 @@ abstract class WorkoutDayRepository {
 
   Future<void> patchWorkout(String workoutId, Map<String, dynamic> payload);
 
-  Future<ExerciseSetHistory> fetchExerciseLastSets(String exerciseId);
+  Future<ExerciseSetHistory> fetchExerciseLastSets(
+    String exerciseId, {
+    String? stationId,
+  });
 
-  Future<SuggestionResult> fetchExerciseSuggestion(String exerciseId);
+  Future<SuggestionResult> fetchExerciseSuggestion(
+    String exerciseId, {
+    String? stationId,
+  });
 
   Future<Map<String, dynamic>> createWorkoutActivity(
     Map<String, dynamic> payload,

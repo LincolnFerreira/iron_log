@@ -8,6 +8,7 @@ import 'package:iron_log/features/routines/domain/entities/search_exercise.dart'
 import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
 import 'package:iron_log/features/workout_day/domain/entities/exercise_tag.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_draft.dart';
+import 'package:iron_log/features/training_place/presentation/widgets/gym_context_chip.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/enums/workout_screen_mode.dart';
 import 'package:iron_log/features/workout_day/presentation/components/molecules/workout_day_header.dart';
@@ -507,7 +508,13 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
             Expanded(
               child: exercisesAsync.when(
                 skipLoadingOnRefresh: false,
-                data: (exercises) => exercises.isEmpty
+                data: (exercises) => Column(
+                  children: [
+                    if (ref.watch(workoutScreenModeProvider) !=
+                        WorkoutScreenMode.template)
+                      const GymContextChip(),
+                    Expanded(
+                      child: exercises.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -555,6 +562,9 @@ class _WorkoutDayScreenState extends ConsumerState<WorkoutDayScreen> {
                         //NÃO retirar esse método daqui, ele está totalmente correto aqui!
                         onAddExercise: () => _showAddExerciseBottomSheet(),
                       ),
+                    ),
+                  ],
+                ),
                 loading: () => ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: 3,

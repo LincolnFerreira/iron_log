@@ -2,9 +2,20 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "adb: reverse 3000",
+      "label": "stack: wait-backend",
       "type": "shell",
-      "command": "adb reverse tcp:3000 tcp:3000",
+      "command": "bash scripts/wait_backend_port.sh 127.0.0.1 3000 120",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "flutter: pub get",
+      "type": "shell",
+      "command": "flutter pub get",
       "problemMatcher": [],
       "presentation": {
         "reveal": "silent",

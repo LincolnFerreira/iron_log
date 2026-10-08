@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iron_log/core/app_colors.dart';
 import 'package:iron_log/core/extensions/string_extensions.dart';
+import 'package:iron_log/features/training_place/domain/entities/exercise_query_key.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
 import 'package:iron_log/features/workout_day/domain/entities/suggestion_result.dart';
 import 'package:iron_log/features/workout_day/presentation/exercise_tag_styles.dart';
@@ -392,7 +393,11 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
 
   Widget _buildNextExerciseCard(ThemeData theme, bool isDark) {
     final exercise = _nextExercise!;
-    final historyAsync = ref.watch(exerciseLastSetsProvider(exercise.id));
+    final historyAsync = ref.watch(
+      exerciseLastSetsProvider(
+        ExerciseQueryKey(exercise.movementId, exercise.stationId),
+      ),
+    );
     final lastSets = historyAsync.asData?.value;
 
     return Padding(
@@ -527,7 +532,9 @@ class _SessionExercisesSheetState extends ConsumerState<SessionExercisesSheet> {
   Widget _buildAiSuggestion(ThemeData theme, bool isDark) {
     final exercise = _nextExercise!;
     final suggestionAsync = ref.watch(
-      exerciseSuggestionProvider(exercise.id),
+      exerciseSuggestionProvider(
+        ExerciseQueryKey(exercise.movementId, exercise.stationId),
+      ),
     );
 
     return suggestionAsync.when(

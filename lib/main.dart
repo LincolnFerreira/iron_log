@@ -14,6 +14,7 @@ import 'package:iron_log/core/services/auth_service.dart';
 import 'package:iron_log/core/widgets/app_error_fallback.dart';
 import 'package:iron_log/features/home/home_providers.dart';
 import 'package:iron_log/features/routines/routine_providers.dart';
+import 'package:iron_log/features/training_place/training_place_providers.dart';
 import 'package:iron_log/features/workout_day/presentation/providers/workout_draft_providers.dart';
 import 'package:iron_log/features/workout_history/workout_history_providers.dart';
 import 'package:iron_log/firebase_options.dart';
@@ -73,6 +74,7 @@ Future<void> main() async {
             ...homeProvidersOverrides,
             ...workoutDraftProvidersOverrides,
             ...workoutHistoryProvidersOverrides,
+            ...trainingPlaceProvidersOverrides,
           ],
           child: const MyApp(),
         ),
@@ -89,4 +91,3 @@ Future<void> main() async {
     },
   );
 }
-

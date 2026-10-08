@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:iron_log/features/training_place/training_place_providers.dart';
 import 'package:iron_log/features/workout_day/data/services/workout_log_service.dart';
 import 'package:iron_log/features/workout_day/data/workout_local_ids.dart';
 import 'package:iron_log/features/workout_day/domain/entities/workout_exercise.dart';
@@ -147,6 +148,9 @@ class WorkoutController extends _$WorkoutController {
           sessionId: sessionId,
           draftId: draftId,
           markPendingOnFailure: true,
+          gymId: await ref
+              .read(trainingPlaceRepositoryProvider)
+              .gymIdForWorkout(),
         );
 
         if (draftId != null) {
@@ -203,6 +207,10 @@ class WorkoutController extends _$WorkoutController {
         );
       }
 
+      final gymId = await ref
+          .read(trainingPlaceRepositoryProvider)
+          .gymIdForWorkout();
+
       final pendingWsId = ref.read(workoutSessionIdProvider);
 
       final usePatchExisting =
@@ -221,6 +229,7 @@ class WorkoutController extends _$WorkoutController {
             sessionId: sessionId,
             draftId: draftId,
             markPendingOnFailure: true,
+            gymId: gymId,
           );
         } else {
           await logService.saveWorkout(
@@ -232,6 +241,7 @@ class WorkoutController extends _$WorkoutController {
             sessionId: sessionId,
             draftId: draftId,
             markPendingOnFailure: true,
+            gymId: gymId,
           );
         }
 

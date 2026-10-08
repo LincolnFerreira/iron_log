@@ -12,6 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 
+# Dev LAN API (copy from dart_defines.dev.example.json)
+dart_defines.dev.json
+
 # IntelliJ related
 *.iml
 *.ipr
